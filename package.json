@@ -7,10 +7,17 @@
     "email": "2100921003@qq.com",
     "url": "https://github.com/Hughe5"
   },
+  "contributors": [
+    {
+      "name": "shichzh",
+      "email": "1767604480@qq.com",
+      "url": "https://github.com/shichzh"
+    }
+  ],
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Hughe5/ai-client-sdk.git"
+    "url": "https://github.com/shichzh/ai-client-sdk.git"
   },
   "types": "dist/index.d.ts",
   "main": "./dist/ai-client-sdk.umd.js",
