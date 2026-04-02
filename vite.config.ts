@@ -4,8 +4,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: './src/index.ts',
-      name: 'AIClientKit',
-      fileName: 'ai-client-kit',
+      name: 'AIClientSDK',
+      fileName: 'ai-client-sdk',
     },
   },
   server: {

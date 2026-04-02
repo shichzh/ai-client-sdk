@@ -1,5 +1,5 @@
 {
-  "name": "ai-client-kit",
+  "name": "ai-client-sdk",
   "version": "2.1.0",
   "description": "一款 AI 集成套件，适配任意前端框架，兼容多种大模型、聊天面板、Function Calling、Agent、工作流等。",
   "author": {
@@ -10,16 +10,16 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Hughe5/ai-client-kit.git"
+    "url": "https://github.com/Hughe5/ai-client-sdk.git"
   },
   "types": "dist/index.d.ts",
-  "main": "./dist/ai-client-kit.umd.js",
-  "module": "./dist/ai-client-kit.mjs",
+  "main": "./dist/ai-client-sdk.umd.js",
+  "module": "./dist/ai-client-sdk.mjs",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/ai-client-kit.mjs",
-      "require": "./dist/ai-client-kit.umd.js"
+      "import": "./dist/ai-client-sdk.mjs",
+      "require": "./dist/ai-client-sdk.umd.js"
     }
   },
   "files": [

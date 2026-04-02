@@ -1,6 +1,6 @@
-# AI Client Kit
+# AI Client SDK
 
-`AI Client Kit` 是一款 AI 集成套件，方便开发者在任意 Web 应用中接入 AI 功能。
+`AI Client SDK` 是一款 AI 集成套件，方便开发者在任意 Web 应用中接入 AI 功能。
 
 ## Features
 
@@ -17,9 +17,9 @@
 使用 npm 或 yarn
 
 ```bash
-npm install ai-client-kit
+npm install ai-client-sdk
 # 或
-yarn add ai-client-kit
+yarn add ai-client-sdk
 ```
 
 ## 开发
@@ -55,7 +55,7 @@ npm run build
 ### 示例
 
 ```typescript
-import {AIChatPanel} from 'ai-client-kit';
+import {AIChatPanel} from 'ai-client-sdk';
 
 const container = document.getElementById('container');
 const panel = new AIChatPanel({container});
