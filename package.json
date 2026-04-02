@@ -17,6 +17,7 @@
   "module": "./dist/ai-client-kit.mjs",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/ai-client-kit.mjs",
       "require": "./dist/ai-client-kit.umd.js"
     }
