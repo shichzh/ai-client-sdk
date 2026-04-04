@@ -1,6 +1,6 @@
 # AI Client SDK
 
-`AI Client SDK` 是一款 AI 集成套件，方便开发者在任意 Web 应用中接入 AI 功能。
+`AI Client SDK` 方便开发者在任意 Web 应用中接入 AI 功能。
 
 ## Features
 
