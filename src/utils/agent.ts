@@ -176,7 +176,10 @@ class ToolManager {
     return Object.values(this.tools).map((t) => t.def);
   }
 
-  getDefinitions(names: string[]): Definition[] {
+  getDefinitions(names: string[]): Definition[] | null {
+    if (!names.length) {
+      return null;
+    }
     return names.map((n) => this.getDefinition(n)).filter((d): d is Definition => Boolean(d));
   }
 
