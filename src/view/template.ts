@@ -1,5 +1,6 @@
 /**
  * Copyright 2025 Hughe5
+ * Copyright 2026 shichzh
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +38,7 @@ template.innerHTML = `
                 </button>
             </div>
             <div class="user-input-container" id="user-input-container">
-                <textarea class="user-input" id="user-input" placeholder="Enter -> 发送   Shift + Enter -> 换行"></textarea>
+                <textarea class="user-input" id="user-input" placeholder="发消息..."></textarea>
                 <div class="button-wrap">
                     <button class="icon square plain tooltip" id="submit-icon" type="button" aria-label="发送">
                         <div class="submit-icon">
