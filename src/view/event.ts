@@ -1,5 +1,6 @@
 /**
  * Copyright 2025 Hughe5
+ * Copyright 2026 shichzh
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,10 +54,10 @@ const handleStop = (): void => {
   userInputRender.focus();
 };
 
-// 创建新聊天
+// 创建新对话
 const handleCreate = async (): Promise<void> => {
   messagesContainerRender.clear();
-  alertRender.show('新聊天已创建');
+  alertRender.show('新对话已创建');
   userInputRender.focus();
   await eventManager.emit('create');
 };

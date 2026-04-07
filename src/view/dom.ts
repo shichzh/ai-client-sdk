@@ -341,7 +341,7 @@ const buttonRender = {
     stopIcon.style.display = 'none';
   },
 
-  // 聊天状态：只显示停止按钮
+  // 对话状态：只显示停止按钮
   chatting(): void {
     const {submitIcon, stopIcon} = getElements();
     submitIcon.style.display = 'none';

@@ -5,9 +5,9 @@
 ## Features
 
 - 兼容多种大模型
-- AI 聊天面板
+- AI 对话界面
 - 配置系统消息
-- 接入自定义工具函数（Function Calling，将 AI 聊天与业务逻辑相结合）
+- 接入自定义工具函数（Function Calling，将 AI 对话与业务逻辑相结合）
 - 提供一些常用的工具函数（如解析中文语境的相对时间），开发者可按需使用
 - 纯原生实现，技术栈无关，适配任意前端框架（React、Vue 等）及纯 HTML 页面
 - 封装了与大模型交互的基础工具类（Agent class），开发者可基于此构建灵活的工作流
@@ -48,9 +48,9 @@ npm run build
 
 ## 快速开始
 
-### 初始化 AI 聊天面板
+### 初始化 AI 对话界面
 
-实例化 `AIChatPanel` 把 Web 端的 AI 聊天面板挂载到指定容器。
+实例化 `AIChatPanel` 把 Web 端的 AI 对话界面挂载到指定容器。
 
 ### 示例
 
@@ -65,7 +65,7 @@ const panel = new AIChatPanel({container});
 
 | Parameter   | Type                  | Required | Description             |
 | ----------- | --------------------- | :------: | ----------------------- |
-| `container` | `HTMLElement \| null` |    Y     | 聊天面板挂载的 DOM 容器 |
+| `container` | `HTMLElement \| null` |    Y     | 对话界面挂载的 DOM 容器 |
 
 ### 注意事项
 
