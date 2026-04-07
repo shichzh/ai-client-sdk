@@ -1,5 +1,6 @@
 /**
  * Copyright 2025 Hughe5
+ * Copyright 2026 shichzh
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +65,7 @@ function remarkPrettier() {
           .format(node.value, {
             parser,
             plugins,
+            semi: false, // 不主动添加分号
           })
           .then((formatted) => {
             node.value = formatted;
@@ -103,6 +105,7 @@ function remarkPrettier() {
           .format(code, {
             parser,
             plugins,
+            semi: false, // 不主动添加分号
           })
           .then((formatted) => {
             parent.children[index] = {
