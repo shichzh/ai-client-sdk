@@ -316,7 +316,7 @@ const userInputRender = {
     return elements.userInput.value.trim();
   },
 
-  set value(value: string) {
+  setValue(value: string): void {
     const elements = getElements();
     elements.userInput.value = value;
   },

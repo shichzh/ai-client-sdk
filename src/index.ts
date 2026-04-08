@@ -1,5 +1,6 @@
 /**
  * Copyright 2025 Hughe5
+ * Copyright 2026 shichzh
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +15,7 @@
  * limitations under the License.
  */
 
-import {messagesContainerRender} from './view/dom';
+import {messagesContainerRender, userInputRender} from './view/dom';
 import {eventManager} from './view/event';
 import {init} from './view/index';
 import {template} from './view/template';
@@ -53,6 +54,7 @@ export class AIChatPanel {
     messagesContainerRender.updateLoadingMessageReasoningContent;
   updateLoadingMessageContent = messagesContainerRender.updateLoadingMessageContent;
   finishLoadingMessage = messagesContainerRender.finishLoadingMessage;
+  setInputValue = userInputRender.setValue;
   constructor(config: Config) {
     const {container} = config;
     if (!container) {
