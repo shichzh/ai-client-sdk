@@ -54,7 +54,7 @@ export class AIChatPanel {
     messagesContainerRender.updateLoadingMessageReasoningContent;
   updateLoadingMessageContent = messagesContainerRender.updateLoadingMessageContent;
   finishLoadingMessage = messagesContainerRender.finishLoadingMessage;
-  setInputValue = userInputRender.setValue;
+  setUserInputValue = userInputRender.setValue;
   constructor(config: Config) {
     const {container} = config;
     if (!container) {
