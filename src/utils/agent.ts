@@ -311,6 +311,11 @@ class Agent extends ToolManager {
     }
   }
 
+  resetMessages() {
+    const systemMessage = this.messages.find((element) => element.role === 'system');
+    this.messages = systemMessage ? [systemMessage] : [];
+  }
+
   merge<T extends object, S extends object>(
     target: T | null,
     source: S,
