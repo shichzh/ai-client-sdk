@@ -1,6 +1,6 @@
 # AI Client SDK
 
-`AI Client SDK` 方便开发者在任意 Web 应用中接入 AI 功能。
+支持开发者在任意 Web 应用中接入 AI 功能
 
 ## Features
 
