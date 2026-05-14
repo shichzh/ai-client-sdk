@@ -149,11 +149,11 @@
   transform: rotate(90deg);
   transition: transform 0.3s;
 }
-.message.assistant .reasoning-container.collapse .reasoning-header svg {
+.message.assistant .reasoning-container.collapsed .reasoning-header svg {
   transform: rotate(0deg);
   transition: transform 0.3s;
 }
-.message.assistant .reasoning-container.collapse .reasoning-content {
+.message.assistant .reasoning-container.collapsed .reasoning-content {
   height: 0;
   overflow: hidden;
 }

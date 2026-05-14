@@ -1,5 +1,6 @@
 /*
  * Copyright 2025 Hughe5
+ * Copyright 2026 shichzh
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,13 +54,4 @@ button.plain:hover {
 }
 button.error:hover {
   background-color: rgb(255, 120, 117);
-}
-button[data-action='copy'] .copied-text {
-  display: none;
-}
-button[data-action='copy'].copied .copied-text {
-  display: block;
-}
-button[data-action='copy'].copied svg {
-  display: none;
 }

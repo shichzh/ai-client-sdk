@@ -24,32 +24,34 @@ const main = async () => {
     model: 'zai-org/GLM-4.6-turbo', // 大模型 ID
     url: 'http://localhost:8080/api/chat/completions', // 大模型 API 的代理接口
   });
-  const init = () => {
-    panel.pushMessage({role: 'assistant', content: 'hello'});
+
+  const init = async () => {
+    await panel.pushMessage({id: crypto.randomUUID(), role: 'assistant', content: 'hello'});
   };
-  init();
+
+  await panel.ready();
+  await init();
+
   panel.on('send', async (message: Message) => {
     try {
       agent.pushMessage(message);
-      panel.pushLoadingMessage();
-      const response = await agent.invoke();
+      await panel.pushLoadingMessage();
+      const response = await agent.invoke({panel});
       if (!response) {
         return;
       }
       agent.pushMessage(response);
       const {reasoning_content, content} = response;
       if (reasoning_content) {
-        panel.updateLoadingMessageReasoningContent(reasoning_content);
+        await panel.updateLoadingMessageReasoningContent(reasoning_content);
       }
       if (content) {
-        panel.updateLoadingMessageContent(content);
+        await panel.updateLoadingMessageContent(content);
       }
-      panel.finishLoadingMessage();
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         console.log('请求已被取消');
-        panel.updateLoadingMessageContent('请求已被取消');
-        panel.finishLoadingMessage();
+        await panel.updateLoadingMessageContent('请求已被取消');
         return;
       }
       const msg =
@@ -62,8 +64,9 @@ const main = async () => {
       console.error('操作失败:', msg);
     }
   });
-  panel.on('create', () => {
-    init();
+
+  panel.on('create', async () => {
+    await init();
   });
 };
 

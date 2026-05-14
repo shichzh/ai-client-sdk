@@ -17,7 +17,7 @@
 
 import Ajv, {type ValidateFunction, type AnySchema} from 'ajv';
 import {mergeWith} from 'lodash-es';
-import {messagesContainerRender} from '../view/dom';
+import {type PanelElement} from '../index';
 
 let controller: AbortController | null = null;
 
@@ -231,11 +231,13 @@ type ToolCall = {
 };
 
 interface SimpleMessage {
+  id: string;
   role: 'system' | 'user';
   content: string;
 }
 
 interface AssistantMessage {
+  id: string;
   role: 'assistant';
   content: string;
   reasoning_content?: string;
@@ -243,6 +245,7 @@ interface AssistantMessage {
 }
 
 interface ToolMessage {
+  id: string;
   role: 'tool';
   content: string;
   tool_call_id: string;
@@ -253,6 +256,7 @@ type Message = SimpleMessage | AssistantMessage | ToolMessage;
 interface Params {
   tools?: string[];
   roundsLeft?: number;
+  panel?: Pick<PanelElement, 'pushLoadingMessage' | 'updateLoadingMessageContent'>;
 }
 
 interface Chunk {
@@ -289,6 +293,7 @@ class Agent extends ToolManager {
     }
     if (systemMessageContent) {
       this.messages[0] = {
+        id: crypto.randomUUID(),
         role: 'system',
         content: systemMessageContent,
       };
@@ -298,6 +303,9 @@ class Agent extends ToolManager {
   pushMessage(message: Message) {
     if (!message) {
       return;
+    }
+    if (!message.id) {
+      message.id = crypto.randomUUID();
     }
     this.messages.push(message);
   }
@@ -339,7 +347,7 @@ class Agent extends ToolManager {
   }
 
   async invoke(params = this.defaultParams): Promise<AssistantMessage | undefined> {
-    const {tools = [], roundsLeft = this.maxRounds} = params;
+    const {tools = [], roundsLeft = this.maxRounds, panel} = params;
     abort();
     controller = new AbortController();
     try {
@@ -382,13 +390,13 @@ class Agent extends ToolManager {
         return message;
       }
 
-      if (content) {
-        messagesContainerRender.pushLoadingMessage();
-        requestAnimationFrame(() => messagesContainerRender.updateLoadingMessageContent(content));
-        messagesContainerRender.finishLoadingMessage();
+      if (content && panel) {
+        await panel.pushLoadingMessage();
+        await panel.updateLoadingMessageContent(content);
       }
 
       this.messages.push({
+        id: crypto.randomUUID(),
         content,
         role,
         tool_calls,
@@ -401,6 +409,7 @@ class Agent extends ToolManager {
         } = element;
         const resp = await this.call(name, JSON.parse(args));
         this.messages.push({
+          id: crypto.randomUUID(),
           content: resp,
           role: 'tool',
           tool_call_id: id,
@@ -410,8 +419,10 @@ class Agent extends ToolManager {
 
       // 剩余轮次 > 0 时继续回调
       if (roundsLeft - 1 > 0) {
-        messagesContainerRender.pushLoadingMessage();
-        return await this.invoke({tools: [], roundsLeft: roundsLeft - 1});
+        if (panel) {
+          await panel.pushLoadingMessage();
+        }
+        return await this.invoke({tools: [], roundsLeft: roundsLeft - 1, panel});
       }
     } finally {
       controller = null;
@@ -497,6 +508,7 @@ class Agent extends ToolManager {
       }
 
       this.messages.push({
+        id: crypto.randomUUID(),
         content,
         role,
         tool_calls,
@@ -509,6 +521,7 @@ class Agent extends ToolManager {
         } = element;
         const resp = await this.call(name, JSON.parse(args));
         this.messages.push({
+          id: crypto.randomUUID(),
           content: resp,
           role: 'tool',
           tool_call_id: id,

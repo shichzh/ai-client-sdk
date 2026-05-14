@@ -15,118 +15,7 @@
  * limitations under the License.
  */
 
-import {
-  getElements,
-  messagesContainerRender,
-  userInputRender,
-  alertRender,
-  buttonRender,
-} from './dom';
-import {type Message, abort} from '../utils/agent';
-
-const escapeHtml = (text: string): string => {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-};
-
-const handleSend = async (): Promise<void> => {
-  if (!userInputRender.value) {
-    return;
-  }
-  try {
-    const content = escapeHtml(userInputRender.value);
-    buttonRender.chatting();
-    userInputRender.clear();
-    const message: Message = {role: 'user', content};
-    messagesContainerRender.pushMessage(message);
-    await eventManager.emit('send', message);
-  } finally {
-    buttonRender.default();
-    userInputRender.focus();
-  }
-};
-
-// 处理停止按钮点击事件
-const handleStop = (): void => {
-  abort();
-  buttonRender.default();
-  userInputRender.focus();
-};
-
-// 创建新对话
-const handleCreate = async (): Promise<void> => {
-  messagesContainerRender.clear();
-  alertRender.show('新对话已创建');
-  userInputRender.focus();
-  await eventManager.emit('create');
-};
-
-// 初始化事件监听器
-function bindEvents(): void {
-  const {submitIcon, createButton, messagesContainer, userInputContainer, userInput, stopIcon} =
-    getElements();
-
-  userInputContainer.addEventListener('click', (e: MouseEvent) => {
-    if (!submitIcon.contains(e.target as Node) && !stopIcon.contains(e.target as Node)) {
-      userInputRender.focus();
-    }
-  });
-
-  userInput.addEventListener('keydown', (e: KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  });
-
-  // 发送按钮点击事件
-  submitIcon.addEventListener('click', handleSend);
-
-  // 停止按钮点击事件
-  stopIcon.addEventListener('click', handleStop);
-
-  createButton.addEventListener('click', handleCreate);
-
-  // Event Delegation for Copy Buttons
-  messagesContainer.addEventListener('click', function (event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    const copyButton = target.closest<HTMLElement>('[data-action="copy"]');
-    const reasoningHeader = target.closest<HTMLElement>('.reasoning-header');
-    if (copyButton && !copyButton.classList.contains('copied')) {
-      event.stopPropagation();
-      const messageElement = copyButton.closest<HTMLElement>('.message');
-      if (!messageElement) {
-        return;
-      }
-      const contentContainer = messageElement.querySelector<HTMLElement>('.content-container');
-      if (!contentContainer) {
-        return;
-      }
-      const text = contentContainer.textContent;
-      if (!text) {
-        return;
-      }
-      copyButton.classList.add('copied');
-      navigator.clipboard
-        .writeText(text)
-        .catch((err) => {
-          console.error('Failed to copy text: ', err);
-        })
-        .finally(() => {
-          setTimeout(() => {
-            copyButton.classList.remove('copied');
-          }, 1500);
-        });
-    }
-    if (reasoningHeader) {
-      const reasoningContainer = reasoningHeader.parentElement;
-      if (reasoningContainer) {
-        reasoningContainer.classList.toggle('collapse');
-      }
-    }
-  });
-}
+import {type Message} from '../utils/agent';
 
 type EventType = 'send' | 'create';
 
@@ -162,4 +51,4 @@ class EventManager {
 
 const eventManager = new EventManager();
 
-export {bindEvents, eventManager};
+export {eventManager};

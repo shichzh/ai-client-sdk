@@ -15,27 +15,66 @@
  * limitations under the License.
  */
 
-import {messagesContainerRender, userInputRender} from './view/dom';
 import {eventManager} from './view/event';
-import {init} from './view/index';
-import {template} from './view/template';
-export {tools} from './utils/tools';
-export {Agent, type Message, type StreamResult, type AssistantMessage} from './utils/agent';
+import {init, type Result} from './view/index';
+import {tools} from './utils/tools';
+import {Agent, type Message, type StreamResult, type AssistantMessage} from './utils/agent';
 
-class Panel extends HTMLElement {
+export interface PanelElement extends HTMLElement {
+  ready(): Promise<void>;
+  pushMessage(message: Message): Promise<void>;
+  pushMessages(messages: Message[]): Promise<void>;
+  pushLoadingMessage(): Promise<void>;
+  updateLoadingMessageReasoningContent(content: string): Promise<void>;
+  updateLoadingMessageContent(content: string): Promise<void>;
+}
+
+class Panel extends HTMLElement implements PanelElement {
+  private appRef!: Result;
+  private promise: Promise<void>;
+  private resolve!: () => void;
+
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
-    if (!this.shadowRoot) {
-      return;
-    }
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
+    this.promise = new Promise<void>((resolve) => {
+      this.resolve = resolve;
+    });
   }
+
   connectedCallback() {
-    // 元素插入 DOM 后，做初始化
     if (this.shadowRoot) {
-      init(this.shadowRoot);
+      this.appRef = init({domNode: this.shadowRoot, onReady: () => this.resolve()});
     }
+  }
+
+  ready(): Promise<void> {
+    return this.promise;
+  }
+
+  async pushMessage(message: Message): Promise<void> {
+    await this.promise;
+    this.appRef?.current?.pushMessage(message);
+  }
+
+  async pushMessages(messages: Message[]): Promise<void> {
+    await this.promise;
+    this.appRef?.current?.pushMessages(messages);
+  }
+
+  async pushLoadingMessage(): Promise<void> {
+    await this.promise;
+    this.appRef?.current?.pushLoadingMessage();
+  }
+
+  async updateLoadingMessageReasoningContent(content: string): Promise<void> {
+    await this.promise;
+    this.appRef?.current?.updateLoadingMessageReasoningContent(content);
+  }
+
+  async updateLoadingMessageContent(content: string): Promise<void> {
+    await this.promise;
+    this.appRef?.current?.updateLoadingMessageContent(content);
   }
 }
 
@@ -47,20 +86,40 @@ interface Config {
 
 export class AIChatPanel {
   on = eventManager.on;
-  pushMessage = messagesContainerRender.pushMessage;
-  pushMessages = messagesContainerRender.pushMessages;
-  pushLoadingMessage = messagesContainerRender.pushLoadingMessage;
-  updateLoadingMessageReasoningContent =
-    messagesContainerRender.updateLoadingMessageReasoningContent;
-  updateLoadingMessageContent = messagesContainerRender.updateLoadingMessageContent;
-  finishLoadingMessage = messagesContainerRender.finishLoadingMessage;
-  setUserInputValue = userInputRender.setValue;
+  private readonly panelElement: PanelElement;
+
   constructor(config: Config) {
     const {container} = config;
     if (!container) {
       throw new Error('未提供有效的 container');
     }
-    const element = document.createElement('ai-chat-panel');
-    container.appendChild(element);
+    this.panelElement = document.createElement('ai-chat-panel') as PanelElement;
+    container.appendChild(this.panelElement);
+  }
+
+  ready(): Promise<void> {
+    return this.panelElement.ready();
+  }
+
+  pushMessage(message: Message): Promise<void> {
+    return this.panelElement.pushMessage(message);
+  }
+
+  pushMessages(messages: Message[]): Promise<void> {
+    return this.panelElement.pushMessages(messages);
+  }
+
+  pushLoadingMessage(): Promise<void> {
+    return this.panelElement.pushLoadingMessage();
+  }
+
+  updateLoadingMessageReasoningContent(content: string): Promise<void> {
+    return this.panelElement.updateLoadingMessageReasoningContent(content);
+  }
+
+  updateLoadingMessageContent(content: string): Promise<void> {
+    return this.panelElement.updateLoadingMessageContent(content);
   }
 }
+
+export {tools, Agent, type Message, type StreamResult, type AssistantMessage};

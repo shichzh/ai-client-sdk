@@ -24,22 +24,26 @@ const main = async () => {
     model: 'doubao-seed-2-0-pro-260215', // 大模型 ID
     url: 'http://localhost:8080/api/chat/completions', // 大模型 API 的代理接口
   });
-  const init = () => {
-    panel.pushMessage({role: 'assistant', content: 'hello'});
+
+  const init = async () => {
+    await panel.pushMessage({id: crypto.randomUUID(), role: 'assistant', content: 'hello'});
   };
-  init();
+
+  await panel.ready();
+  await init();
+
   function isAssistantMessage(v: AssistantMessage | StreamResult): v is AssistantMessage {
     return 'role' in v;
   }
+
   async function processGenerator(generator: StreamResult): Promise<void> {
-    panel.pushLoadingMessage();
+    await panel.pushLoadingMessage();
     let reasoningContentMarkdownStr = '';
     let contentMarkdownStr = '';
     while (true) {
       const {value, done} = await generator.next();
       if (done) {
         if (value) {
-          panel.finishLoadingMessage();
           if (isAssistantMessage(value)) {
             agent.pushMessage(value);
           } else {
@@ -51,14 +55,15 @@ const main = async () => {
       const delta = value.choices?.[0]?.delta;
       if (delta?.reasoning_content) {
         reasoningContentMarkdownStr += delta.reasoning_content;
-        panel.updateLoadingMessageReasoningContent(reasoningContentMarkdownStr);
+        await panel.updateLoadingMessageReasoningContent(reasoningContentMarkdownStr);
       }
       if (delta?.content) {
         contentMarkdownStr += delta.content;
-        panel.updateLoadingMessageContent(contentMarkdownStr);
+        await panel.updateLoadingMessageContent(contentMarkdownStr);
       }
     }
   }
+
   panel.on('send', async (message: Message) => {
     try {
       agent.pushMessage(message);
@@ -67,8 +72,7 @@ const main = async () => {
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         console.log('请求已被取消');
-        panel.updateLoadingMessageContent('请求已被取消');
-        panel.finishLoadingMessage();
+        await panel.updateLoadingMessageContent('请求已被取消');
         return;
       }
       const msg =
@@ -81,8 +85,9 @@ const main = async () => {
       console.error('操作失败:', msg);
     }
   });
-  panel.on('create', () => {
-    init();
+
+  panel.on('create', async () => {
+    await init();
   });
 };
 
