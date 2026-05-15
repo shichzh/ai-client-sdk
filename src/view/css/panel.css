@@ -16,12 +16,15 @@
 
 .app-container {
   height: 100%;
-  display: flex;
-  flex-direction: column;
   background: #fff;
 }
 .bottom-container {
-  margin: 12px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px;
+  background: #fff;
 }
 .action-bar {
   margin-bottom: 12px;
@@ -51,10 +54,9 @@
   gap: 12px;
 }
 .messages-container {
-  flex: 1;
-  padding-top: 12px;
-  padding-left: 12px;
-  padding-right: 12px;
+  height: 100%;
+  padding: 12px;
+  padding-bottom: calc(100vh - 12px);
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -156,4 +158,38 @@
 .message.assistant .reasoning-container.collapsed .reasoning-content {
   height: 0;
   overflow: hidden;
+}
+.context-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+.context-text {
+  flex: 1;
+  font-size: 13px;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.context-delete {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+.context-delete:hover {
+  background-color: #e5e7eb;
+  color: #374151;
 }

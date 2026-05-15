@@ -27,6 +27,7 @@ export interface PanelElement extends HTMLElement {
   pushLoadingMessage(): Promise<void>;
   updateLoadingMessageReasoningContent(content: string): Promise<void>;
   updateLoadingMessageContent(content: string): Promise<void>;
+  updateContext(content: string): Promise<void>;
 }
 
 class Panel extends HTMLElement implements PanelElement {
@@ -76,6 +77,11 @@ class Panel extends HTMLElement implements PanelElement {
     await this.promise;
     this.appRef?.current?.updateLoadingMessageContent(content);
   }
+
+  async updateContext(content: string): Promise<void> {
+    await this.promise;
+    this.appRef?.current?.updateContext(content);
+  }
 }
 
 customElements.define('ai-chat-panel', Panel);
@@ -119,6 +125,10 @@ export class AIChatPanel {
 
   updateLoadingMessageContent(content: string): Promise<void> {
     return this.panelElement.updateLoadingMessageContent(content);
+  }
+
+  updateContext(content: string): Promise<void> {
+    return this.panelElement.updateContext(content);
   }
 }
 

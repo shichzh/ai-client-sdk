@@ -27,6 +27,7 @@ export interface AppRef {
   pushLoadingMessage: () => void;
   updateLoadingMessageReasoningContent: (content: string) => void;
   updateLoadingMessageContent: (content: string) => void;
+  updateContext: (content: string) => void;
 }
 
 interface AppProps {
@@ -37,46 +38,14 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInputValue, setUserInputValue] = useState('');
   const [isChatting, setIsChatting] = useState(false);
+  const [context, setContext] = useState('');
   const [api, contextHolder] = notification.useNotification();
   const userInputRef = useRef<HTMLTextAreaElement>(null);
   const lastMessageRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const appContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const MESSAGES_CONTAINER_PADDING_TOP = 12; // .messages-container 元素的 padding-top
-    const BOTTOM_CONTAINER_CONTENT_HEIGHT = 142; // .bottom-container 元素的内容高度
-    const BOTTOM_CONTAINER_MARGIN = 12; // .bottom-container 元素的 margin
-    let height = 0;
-    let animationId: number | null = null;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const {height: newHeight} = entry.contentRect;
-        if (newHeight === height) {
-          continue;
-        }
-        height = newHeight;
-        if (animationId !== null) {
-          cancelAnimationFrame(animationId);
-        }
-        animationId = requestAnimationFrame(() => {
-          if (messagesContainerRef.current) {
-            messagesContainerRef.current.style.paddingBottom = `${height - MESSAGES_CONTAINER_PADDING_TOP - BOTTOM_CONTAINER_CONTENT_HEIGHT - BOTTOM_CONTAINER_MARGIN * 2}px`;
-          }
-          animationId = null;
-        });
-      }
-    });
-    if (appContainerRef.current) {
-      observer.observe(appContainerRef.current);
-    }
     onReady();
-    return () => {
-      observer.disconnect();
-      if (animationId !== null) {
-        cancelAnimationFrame(animationId);
-      }
-    };
   }, [onReady]);
 
   useEffect(() => {
@@ -159,12 +128,21 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     });
   };
 
+  const updateContext = (content: string) => {
+    setContext(content);
+  };
+
+  const handleDeleteContext = () => {
+    setContext('');
+  };
+
   useImperativeHandle(ref, () => ({
     pushMessage,
     pushMessages,
     pushLoadingMessage,
     updateLoadingMessageReasoningContent,
     updateLoadingMessageContent,
+    updateContext,
   }));
 
   const escapeHtml = (text: string): string => {
@@ -182,7 +160,8 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       setIsChatting(true);
       const content = escapeHtml(userInputValue.trim());
       setUserInputValue('');
-      const message: Message = {id: crypto.randomUUID(), role: 'user', content};
+      const finalContent = context ? `${context}\n\n${content}` : content;
+      const message: Message = {id: crypto.randomUUID(), role: 'user', content: finalContent};
       setMessages((prev) => [...prev, message]);
       await eventManager.emit('send', message);
     } finally {
@@ -223,7 +202,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   };
 
   return (
-    <div className="app-container" ref={appContainerRef}>
+    <div className="app-container">
       {contextHolder}
       <div className="messages-container" ref={messagesContainerRef}>
         {messages.map((message, index) => (
@@ -249,6 +228,23 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
             </button>
           </Tooltip>
         </div>
+        {context && (
+          <div className="context-container">
+            <span className="context-text">{context}</span>
+            <Tooltip title="删除上下文" placement="topLeft">
+              <button
+                className="context-delete"
+                type="button"
+                aria-label="删除上下文"
+                onClick={handleDeleteContext}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor">
+                  <path d="M7 8.414L3.293 12.121a1 1 0 0 1-1.414-1.414L5.586 7 1.879 3.293a1 1 0 0 1 1.414-1.414L7 5.586l3.707-3.707a1 1 0 1 1 1.414 1.414L8.414 7l3.707 3.707a1 1 0 0 1-1.414 1.414L7 8.414z" />
+                </svg>
+              </button>
+            </Tooltip>
+          </div>
+        )}
         <div className="user-input-container">
           <textarea
             className="user-input"
