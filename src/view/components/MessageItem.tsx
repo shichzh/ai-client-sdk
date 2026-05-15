@@ -16,6 +16,7 @@
 
 import {useState, useEffect, useRef, forwardRef, MouseEvent} from 'react';
 import {type Message, type AssistantMessage} from '../../utils/agent';
+import {Tooltip} from 'antd';
 import {unified} from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
@@ -125,25 +126,22 @@ const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(({message}, ref
         )}
       </div>
       <div className="button-container">
-        <button
-          className="icon square plain tooltip"
-          type="button"
-          aria-label="复制"
-          onClick={handleCopy}
-        >
-          {isCopied ? (
-            <span>Copied</span>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 1024 1024">
-              <path d="M298.667 256V128a42.667 42.667 0 0 1 42.666-42.667h512A42.667 42.667 0 0 1 896 128v597.333A42.667 42.667 0 0 1 853.333 768h-128v128c0 23.552-19.2 42.667-42.965 42.667H170.965A42.71 42.71 0 0 1 128 896l.128-597.333c0-23.552 19.2-42.667 42.923-42.667h127.616zm-85.248 85.333-.086 512H640v-512H213.419zM384 256h341.333v426.667h85.334v-512H384V256z" />
-            </svg>
-          )}
-          <span
-            className={`tooltip-text ${message.role === 'user' ? 'bottom-left' : 'bottom-right'}`}
+        <Tooltip title="复制" placement={message.role === 'user' ? 'bottomLeft' : 'bottomRight'}>
+          <button
+            className="icon square plain"
+            type="button"
+            aria-label="复制"
+            onClick={handleCopy}
           >
-            复制
-          </span>
-        </button>
+            {isCopied ? (
+              <span>Copied</span>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 1024 1024">
+                <path d="M298.667 256V128a42.667 42.667 0 0 1 42.666-42.667h512A42.667 42.667 0 0 1 896 128v597.333A42.667 42.667 0 0 1 853.333 768h-128v128c0 23.552-19.2 42.667-42.965 42.667H170.965A42.71 42.71 0 0 1 128 896l.128-597.333c0-23.552 19.2-42.667 42.923-42.667h127.616zm-85.248 85.333-.086 512H640v-512H213.419zM384 256h341.333v426.667h85.334v-512H384V256z" />
+              </svg>
+            )}
+          </button>
+        </Tooltip>
       </div>
     </div>
   );
