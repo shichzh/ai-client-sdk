@@ -222,7 +222,12 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
               aria-label="新对话"
               onClick={handleCreate}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 1024 1024">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 1024 1024"
+              >
                 <path d="M597.333 128v85.333H170.667v571.094l75.221-59.094h607.445V426.667h85.334V768A42.667 42.667 0 0 1 896 810.667H275.413L85.333 960V170.667A42.667 42.667 0 0 1 128 128h469.333zm213.334 0V0H896v128h128v85.333H896v128h-85.333v-128h-128V128h128z" />
               </svg>
             </button>
@@ -264,7 +269,12 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
                 style={{display: isChatting ? 'none' : 'flex'}}
               >
                 <div className="submit-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    fill="currentColor"
+                  >
                     <path d="M9 16V6.414L5.707 9.707a1 1 0 1 1-1.414-1.414l5-5 .076-.068a1 1 0 0 1 1.338.068l5 5 .068.076a1 1 0 0 1-1.406 1.406l-.076-.068L11 6.414V16a1 1 0 1 1-2 0Z" />
                   </svg>
                 </div>
@@ -279,7 +289,12 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
                 style={{display: isChatting ? 'flex' : 'none'}}
               >
                 <div className="stop-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    fill="currentColor"
+                  >
                     <path d="M4.5 5.75c0-.69.56-1.25 1.25-1.25h8.5c.69 0 1.25.56 1.25 1.25v8.5c0 .69-.56 1.25-1.25 1.25h-8.5c-.69 0-1.25-.56-1.25-1.25v-8.5Z" />
                   </svg>
                 </div>
