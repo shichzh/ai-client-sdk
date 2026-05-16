@@ -14,12 +14,33 @@
  * limitations under the License.
  */
 
-import {useState, useRef, useImperativeHandle, forwardRef, useEffect, KeyboardEvent} from 'react';
+import {
+  useState,
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+  useEffect,
+  KeyboardEvent,
+  useCallback,
+} from 'react';
 import {type Message} from '../utils/agent';
 import {abort} from '../utils/agent';
 import MessageItem from './components/MessageItem';
 import {eventManager} from './event';
 import {notification, Tooltip} from 'antd';
+
+/**
+ * 12px 是两条 message 之间的间距，在 panel.css 里 message 的样式里
+ */
+const MARGIN_BOTTOM = 12;
+
+const createId = (): string => crypto.randomUUID();
+
+const escapeHtml = (text: string): string => {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+};
 
 export interface AppRef {
   pushMessage: (message: Message) => void;
@@ -53,50 +74,49 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     if (lastMessageRef.current && lastMessage?.role === 'user') {
       /**
        * 把新加的 user message 滚动到距离顶部 12px 的位置，下面腾出来的空间用来渲染 assistant message
-       * 12px 是两条 message 之间的间距，在 panel.css 里 message 的样式里
        * 一屏只展示一对 user message 和 assistant message
        */
-      const MARGIN_BOTTOM = 12;
       const container = messagesContainerRef.current;
       if (container) {
         container.scrollTo({
           top: lastMessageRef.current.offsetTop - MARGIN_BOTTOM,
-          behavior: 'smooth',
+          behavior: 'instant',
         });
       }
     }
   }, [messages]);
 
-  const pushMessage = (message: Message | undefined) => {
-    if (!message) {
-      return;
-    }
+  const pushMessage = useCallback((message: Message) => {
     if (!message.id) {
-      message.id = crypto.randomUUID();
+      message.id = createId();
     }
     setMessages((prev) => [...prev, message]);
-  };
+  }, []);
 
-  const pushMessages = (messages: Message[]) => {
+  const pushMessages = useCallback((messages: Message[]) => {
     if (!messages.length) {
       return;
     }
-    for (const message of messages) {
-      pushMessage(message);
-    }
-  };
 
-  const pushLoadingMessage = () => {
+    const newMessages = messages.map((message) => ({
+      ...message,
+      id: message.id || createId(),
+    }));
+
+    setMessages((prev) => [...prev, ...newMessages]);
+  }, []);
+
+  const pushLoadingMessage = useCallback(() => {
     const loadingMessage: Message = {
-      id: crypto.randomUUID(),
+      id: createId(),
       role: 'assistant',
       reasoning_content: '',
       content: '',
     };
     setMessages((prev) => [...prev, loadingMessage]);
-  };
+  }, []);
 
-  const updateLoadingMessageReasoningContent = (content: string) => {
+  const updateLoadingMessageReasoningContent = useCallback((content: string) => {
     setMessages((prev) => {
       const newMessages = [...prev];
       if (newMessages.length > 0) {
@@ -110,9 +130,9 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       }
       return newMessages;
     });
-  };
+  }, []);
 
-  const updateLoadingMessageContent = (content: string) => {
+  const updateLoadingMessageContent = useCallback((content: string) => {
     setMessages((prev) => {
       const newMessages = [...prev];
       if (newMessages.length > 0) {
@@ -126,32 +146,37 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       }
       return newMessages;
     });
-  };
+  }, []);
 
-  const updateContext = (content: string) => {
+  const updateContext = useCallback((content: string) => {
     setContext(content);
-  };
+  }, []);
 
-  const handleDeleteContext = () => {
+  const handleDeleteContext = useCallback(() => {
     setContext('');
-  };
+  }, []);
 
-  useImperativeHandle(ref, () => ({
-    pushMessage,
-    pushMessages,
-    pushLoadingMessage,
-    updateLoadingMessageReasoningContent,
-    updateLoadingMessageContent,
-    updateContext,
-  }));
+  useImperativeHandle(
+    ref,
+    () => ({
+      pushMessage,
+      pushMessages,
+      pushLoadingMessage,
+      updateLoadingMessageReasoningContent,
+      updateLoadingMessageContent,
+      updateContext,
+    }),
+    [
+      pushMessage,
+      pushMessages,
+      pushLoadingMessage,
+      updateLoadingMessageReasoningContent,
+      updateLoadingMessageContent,
+      updateContext,
+    ],
+  );
 
-  const escapeHtml = (text: string): string => {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  };
-
-  const handleSend = async () => {
+  const handleSend = useCallback(async () => {
     if (!userInputValue.trim()) {
       return;
     }
@@ -160,17 +185,17 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       setIsChatting(true);
       const content = escapeHtml(userInputValue.trim());
       setUserInputValue('');
-      const finalContent = context ? `${context}\n\n${content}` : content;
-      const message: Message = {id: crypto.randomUUID(), role: 'user', content: finalContent};
+      const finalContent = context.trim() ? `${context}\n\n${content}` : content;
+      const message: Message = {id: createId(), role: 'user', content: finalContent};
       setMessages((prev) => [...prev, message]);
       await eventManager.emit('send', message);
     } finally {
       setIsChatting(false);
       userInputRef.current?.focus();
     }
-  };
+  }, [userInputValue, context]);
 
-  const handleStop = () => {
+  const handleStop = useCallback(() => {
     abort();
     setIsChatting(false);
     userInputRef.current?.focus();
@@ -180,9 +205,9 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       placement: 'top',
       closable: false,
     });
-  };
+  }, [api]);
 
-  const handleCreate = async () => {
+  const handleCreate = useCallback(async () => {
     setMessages([]);
     userInputRef.current?.focus();
     await eventManager.emit('create');
@@ -192,14 +217,17 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       placement: 'top',
       closable: false,
     });
-  };
+  }, [api]);
 
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
+    },
+    [handleSend],
+  );
 
   return (
     <div className="app-container">
@@ -260,46 +288,47 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
             ref={userInputRef}
           />
           <div className="button-wrap">
-            <Tooltip title="发送 (↵)" placement="topLeft">
-              <button
-                className="icon square plain"
-                type="button"
-                aria-label="发送"
-                onClick={handleSend}
-                style={{display: isChatting ? 'none' : 'flex'}}
-              >
-                <div className="submit-icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    fill="currentColor"
-                  >
-                    <path d="M9 16V6.414L5.707 9.707a1 1 0 1 1-1.414-1.414l5-5 .076-.068a1 1 0 0 1 1.338.068l5 5 .068.076a1 1 0 0 1-1.406 1.406l-.076-.068L11 6.414V16a1 1 0 1 1-2 0Z" />
-                  </svg>
-                </div>
-              </button>
-            </Tooltip>
-            <Tooltip title="停止" placement="topLeft">
-              <button
-                className="icon square plain"
-                type="button"
-                aria-label="停止"
-                onClick={handleStop}
-                style={{display: isChatting ? 'flex' : 'none'}}
-              >
-                <div className="stop-icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    fill="currentColor"
-                  >
-                    <path d="M4.5 5.75c0-.69.56-1.25 1.25-1.25h8.5c.69 0 1.25.56 1.25 1.25v8.5c0 .69-.56 1.25-1.25 1.25h-8.5c-.69 0-1.25-.56-1.25-1.25v-8.5Z" />
-                  </svg>
-                </div>
-              </button>
-            </Tooltip>
+            {isChatting ? (
+              <Tooltip title="停止" placement="topLeft">
+                <button
+                  className="icon square plain"
+                  type="button"
+                  aria-label="停止"
+                  onClick={handleStop}
+                >
+                  <div className="stop-icon">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      fill="currentColor"
+                    >
+                      <path d="M4.5 5.75c0-.69.56-1.25 1.25-1.25h8.5c.69 0 1.25.56 1.25 1.25v8.5c0 .69-.56 1.25-1.25 1.25h-8.5c-.69 0-1.25-.56-1.25-1.25v-8.5Z" />
+                    </svg>
+                  </div>
+                </button>
+              </Tooltip>
+            ) : (
+              <Tooltip title="发送 (↵)" placement="topLeft">
+                <button
+                  className="icon square plain"
+                  type="button"
+                  aria-label="发送"
+                  onClick={handleSend}
+                >
+                  <div className="submit-icon">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      fill="currentColor"
+                    >
+                      <path d="M9 16V6.414L5.707 9.707a1 1 0 1 1-1.414-1.414l5-5 .076-.068a1 1 0 0 1 1.338.068l5 5 .068.076a1 1 0 0 1-1.406 1.406l-.076-.068L11 6.414V16a1 1 0 1 1-2 0Z" />
+                    </svg>
+                  </div>
+                </button>
+              </Tooltip>
+            )}
           </div>
         </div>
       </div>

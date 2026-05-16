@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {useState, useEffect, useRef, forwardRef, MouseEvent} from 'react';
+import {useState, useEffect, useRef, forwardRef, type MouseEvent} from 'react';
 import {type Message, type AssistantMessage} from '../../utils/agent';
 import {Tooltip} from 'antd';
 import {unified} from 'unified';
@@ -28,28 +28,28 @@ interface MessageItemProps {
   message: Message;
 }
 
+const parseMarkdown = async (content: string): Promise<string> => {
+  const file = await unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkRehype, {allowDangerousHtml: true})
+    .use(rehypeStringify, {allowDangerousHtml: true})
+    .process(content);
+
+  const dirty = String(file);
+  return DOMPurify.sanitize(dirty);
+};
+
+const isAssistantMessage = (message: Message): message is AssistantMessage => {
+  return message.role === 'assistant';
+};
+
 const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(({message}, ref) => {
   const [isCopied, setIsCopied] = useState(false);
   const [parsedReasoningContent, setParsedReasoningContent] = useState('');
   const [parsedContent, setParsedContent] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(true);
   const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const parseMarkdown = async (content: string): Promise<string> => {
-    const file = await unified()
-      .use(remarkParse)
-      .use(remarkGfm)
-      .use(remarkRehype, {allowDangerousHtml: true})
-      .use(rehypeStringify, {allowDangerousHtml: true})
-      .process(content);
-
-    const dirty = String(file);
-    return DOMPurify.sanitize(dirty);
-  };
-
-  const isAssistantMessage = (message: Message): message is AssistantMessage => {
-    return message.role === 'assistant';
-  };
 
   useEffect(() => {
     if (message.content) {
@@ -103,7 +103,11 @@ const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(({message}, ref
     <div ref={ref} className={`message ${message.role} ${isLoading ? 'loading' : ''}`}>
       {isAssistantMessage(message) && parsedReasoningContent && (
         <div className={`reasoning-container ${isCollapsed ? 'collapsed' : ''}`}>
-          <div className="reasoning-header" onClick={handleToggle}>
+          <button
+            className="reasoning-header plain"
+            type="button"
+            onClick={handleToggle}
+          >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 1024 1024">
               <path
                 d="M724.48 521.728c-1.8432 7.7824-5.7344 14.848-11.3664 20.48l-341.9136 342.016c-16.6912 16.6912-43.7248 16.6912-60.3136 0s-16.6912-43.7248 0-60.3136L622.6944 512 310.8864 200.0896c-16.6912-16.6912-16.6912-43.7248 0-60.3136 16.6912-16.6912 43.7248-16.6912 60.3136 0l341.9136 341.9136c10.8544 10.8544 14.6432 26.112 11.3664 40.0384z"
@@ -111,7 +115,7 @@ const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(({message}, ref
               />
             </svg>
             思考过程
-          </div>
+          </button>
           <div
             className="reasoning-content"
             dangerouslySetInnerHTML={{__html: parsedReasoningContent}}

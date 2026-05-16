@@ -127,7 +127,6 @@
   background-color: #e0e0e0;
 }
 .message.assistant .reasoning-container {
-  padding: 0 14px;
   border-radius: 8px;
   overflow-x: auto;
   color: #6b7280;
@@ -137,19 +136,20 @@
 }
 .message.assistant .reasoning-container .reasoning-header {
   display: flex;
-  align-items: center;
+  /* 覆盖 button 的 justify-content 居中 */
+  justify-content: flex-start;
   gap: 4px;
   padding-top: 8px;
-  /*
-   * 此处用 margin-bottom 而不是 padding-bottom 是为了跟 reasoning-content 里面的 margin 重叠
-   * 避免间距过大
-   */
-  margin-bottom: 8px;
-  cursor: pointer;
+  padding-bottom: 8px;
+  padding-inline: 14px;
+  width: 100%;
 }
 .message.assistant .reasoning-container .reasoning-header svg {
   transform: rotate(90deg);
   transition: transform 0.3s;
+}
+.message.assistant .reasoning-container .reasoning-content {
+  padding: 0 14px;
 }
 .message.assistant .reasoning-container.collapsed .reasoning-header svg {
   transform: rotate(0deg);
