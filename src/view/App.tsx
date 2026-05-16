@@ -20,8 +20,8 @@ import {
   useImperativeHandle,
   forwardRef,
   useEffect,
-  KeyboardEvent,
   useCallback,
+  type KeyboardEvent,
 } from 'react';
 import {type Message} from '../utils/agent';
 import {abort} from '../utils/agent';
