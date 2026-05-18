@@ -36,12 +36,6 @@ const MARGIN_BOTTOM = 12;
 
 const createId = (): string => crypto.randomUUID();
 
-const escapeHtml = (text: string): string => {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-};
-
 export interface AppRef {
   pushMessage: (message: Message) => void;
   pushMessages: (messages: Message[]) => void;
@@ -177,13 +171,13 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   );
 
   const handleSend = useCallback(async () => {
-    if (!userInputValue.trim()) {
+    const content = userInputValue.trim();
+    if (!content) {
       return;
     }
 
     try {
       setIsChatting(true);
-      const content = escapeHtml(userInputValue.trim());
       setUserInputValue('');
       const finalContent = context.trim() ? `${context}\n\n${content}` : content;
       const message: Message = {id: createId(), role: 'user', content: finalContent};
