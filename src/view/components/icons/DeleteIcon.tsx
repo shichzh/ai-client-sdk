@@ -15,8 +15,9 @@
  */
 
 import type {SVGProps} from 'react';
+import {memo} from 'react';
 
-const DeleteIcon = (props: SVGProps<SVGSVGElement>) => {
+const DeleteIcon = memo((props: SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -28,6 +29,6 @@ const DeleteIcon = (props: SVGProps<SVGSVGElement>) => {
       <path d="M7 8.414L3.293 12.121a1 1 0 0 1-1.414-1.414L5.586 7 1.879 3.293a1 1 0 0 1 1.414-1.414L7 5.586l3.707-3.707a1 1 0 1 1 1.414 1.414L8.414 7l3.707 3.707a1 1 0 0 1-1.414 1.414L7 8.414z" />
     </svg>
   );
-};
+});
 
 export default DeleteIcon;
