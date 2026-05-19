@@ -130,11 +130,7 @@ const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(({message}, ref
             aria-label="复制"
             onClick={handleCopy}
           >
-            {isCopied ? (
-              <span>Copied</span>
-            ) : (
-              <CopyIcon />
-            )}
+            {isCopied ? <span>Copied</span> : <CopyIcon />}
           </button>
         </Tooltip>
       </div>

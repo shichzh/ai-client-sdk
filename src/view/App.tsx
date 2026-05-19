@@ -221,10 +221,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       {contextHolder}
       <div className="messages-container" ref={messagesContainerRef}>
         {messages.map((message) => (
-          <MessageItem
-            key={message.id}
-            message={message}
-          />
+          <MessageItem key={message.id} message={message} />
         ))}
       </div>
       <div className="bottom-container">
