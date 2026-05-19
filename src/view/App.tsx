@@ -61,22 +61,12 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     onReady();
   }, [onReady]);
 
-  useEffect(() => {
-    /**
-     * 添加 user message 后，messages-container 滚动到最底部
-     */
-    const lastMessage = messages.at(-1);
-    if (lastMessage?.role !== 'user') return;
-
-    const container = messagesContainerRef.current;
-    if (!container) return;
-
-    // setTimeout 确保在 MessageItem 子组件 useEffect 中解析内容的微任务完成后获取到最终的 scrollHeight
-    setTimeout(() => {
-      container.scrollTop = container.scrollHeight;
-    }, 0);
-  }, [messages]);
-
+  /**
+   * 如果开发者会使用 pushMessage 或 pushMessages 添加 user message
+   * 则可能需要像 handleSend 一样，需要添加滚动逻辑
+   * 暂时没有添加滚动逻辑是认为开发者应该只添加 assistant message
+   * 而 user message 只在 user-input 里输入
+   */
   const pushMessage = useCallback((message: Message) => {
     if (!message.id) {
       message.id = createId();
@@ -179,6 +169,12 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       const finalContent = context.trim() ? `${context}\n\n${content}` : content;
       const message: Message = {id: createId(), role: 'user', content: finalContent};
       setMessages((prev) => [...prev, message]);
+      /**
+       * messages-container 滚动到最底部
+       * 将最新一轮对话里的 user message 显示在屏幕顶部
+       */
+      if (!messagesContainerRef.current) return;
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
       await eventManager.emit('send', message);
     } finally {
       setIsChatting(false);
