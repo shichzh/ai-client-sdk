@@ -298,7 +298,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
                   aria-label="发送"
                   onClick={handleSend}
                 >
-                  <div className="submit-icon">
+                  <div className="send-icon">
                     <SendIcon />
                   </div>
                 </button>
