@@ -33,11 +33,6 @@ import DeleteIcon from './components/icons/DeleteIcon';
 import StopIcon from './components/icons/StopIcon';
 import SendIcon from './components/icons/SendIcon';
 
-/**
- * 12px 是两条 message 之间的间距，在 panel.css 里 message 的样式里
- */
-const MARGIN_BOTTOM = 12;
-
 const createId = (): string => crypto.randomUUID();
 
 export interface AppRef {
@@ -60,7 +55,6 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   const [context, setContext] = useState('');
   const [api, contextHolder] = notification.useNotification();
   const userInputRef = useRef<HTMLTextAreaElement>(null);
-  const lastMessageRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,20 +62,19 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   }, [onReady]);
 
   useEffect(() => {
+    /**
+     * 添加 user message 后，messages-container 滚动到最底部
+     */
     const lastMessage = messages.at(-1);
-    if (lastMessageRef.current && lastMessage?.role === 'user') {
-      /**
-       * 把新加的 user message 滚动到距离顶部 12px 的位置，下面腾出来的空间用来渲染 assistant message
-       * 一屏只展示一对 user message 和 assistant message
-       */
-      const container = messagesContainerRef.current;
-      if (container) {
-        container.scrollTo({
-          top: lastMessageRef.current.offsetTop - MARGIN_BOTTOM,
-          behavior: 'instant',
-        });
-      }
-    }
+    if (lastMessage?.role !== 'user') return;
+
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    // setTimeout 确保在 MessageItem 子组件 useEffect 中解析内容的微任务完成后获取到最终的 scrollHeight
+    setTimeout(() => {
+      container.scrollTop = container.scrollHeight;
+    }, 0);
   }, [messages]);
 
   const pushMessage = useCallback((message: Message) => {
@@ -231,10 +224,9 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     <div className="app-container">
       {contextHolder}
       <div className="messages-container" ref={messagesContainerRef}>
-        {messages.map((message, index) => (
+        {messages.map((message) => (
           <MessageItem
             key={message.id}
-            ref={index === messages.length - 1 ? lastMessageRef : null}
             message={message}
           />
         ))}
