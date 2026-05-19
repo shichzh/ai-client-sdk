@@ -17,6 +17,8 @@
 import {useState, useEffect, useRef, forwardRef, type MouseEvent} from 'react';
 import {type Message, type AssistantMessage} from '../../utils/agent';
 import {Tooltip} from 'antd';
+import ArrowIcon from './icons/ArrowIcon';
+import CopyIcon from './icons/CopyIcon';
 import {unified} from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
@@ -104,12 +106,7 @@ const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(({message}, ref
       {isAssistantMessage(message) && parsedReasoningContent && (
         <div className={`reasoning-container ${isCollapsed ? 'collapsed' : ''}`}>
           <button className="reasoning-header plain" type="button" onClick={handleToggle}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 1024 1024">
-              <path
-                d="M724.48 521.728c-1.8432 7.7824-5.7344 14.848-11.3664 20.48l-341.9136 342.016c-16.6912 16.6912-43.7248 16.6912-60.3136 0s-16.6912-43.7248 0-60.3136L622.6944 512 310.8864 200.0896c-16.6912-16.6912-16.6912-43.7248 0-60.3136 16.6912-16.6912 43.7248-16.6912 60.3136 0l341.9136 341.9136c10.8544 10.8544 14.6432 26.112 11.3664 40.0384z"
-                fill="currentColor"
-              />
-            </svg>
+            <ArrowIcon />
             思考过程
           </button>
           <div
@@ -136,14 +133,7 @@ const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(({message}, ref
             {isCopied ? (
               <span>Copied</span>
             ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 1024 1024"
-              >
-                <path d="M298.667 256V128a42.667 42.667 0 0 1 42.666-42.667h512A42.667 42.667 0 0 1 896 128v597.333A42.667 42.667 0 0 1 853.333 768h-128v128c0 23.552-19.2 42.667-42.965 42.667H170.965A42.71 42.71 0 0 1 128 896l.128-597.333c0-23.552 19.2-42.667 42.923-42.667h127.616zm-85.248 85.333-.086 512H640v-512H213.419zM384 256h341.333v426.667h85.334v-512H384V256z" />
-              </svg>
+              <CopyIcon />
             )}
           </button>
         </Tooltip>
