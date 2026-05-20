@@ -226,9 +226,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   );
 
   const messageItems = useMemo(() => {
-    return messages.map((message) => (
-      <MessageItem key={message.id} message={message} />
-    ));
+    return messages.map((message) => <MessageItem key={message.id} message={message} />);
   }, [messages]);
 
   return (
