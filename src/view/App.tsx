@@ -21,6 +21,8 @@ import {
   forwardRef,
   useEffect,
   useCallback,
+  startTransition,
+  useMemo,
   type KeyboardEvent,
 } from 'react';
 import {type Message} from '../utils/agent';
@@ -99,34 +101,38 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   }, []);
 
   const updateLoadingMessageReasoningContent = useCallback((content: string) => {
-    setMessages((prev) => {
-      const newMessages = [...prev];
-      if (newMessages.length > 0) {
-        const lastMessage = newMessages.at(-1);
-        if (lastMessage?.role === 'assistant') {
-          newMessages[newMessages.length - 1] = {
-            ...lastMessage,
-            reasoning_content: content,
-          };
+    startTransition(() => {
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        if (newMessages.length > 0) {
+          const lastMessage = newMessages.at(-1);
+          if (lastMessage?.role === 'assistant') {
+            newMessages[newMessages.length - 1] = {
+              ...lastMessage,
+              reasoning_content: content,
+            };
+          }
         }
-      }
-      return newMessages;
+        return newMessages;
+      });
     });
   }, []);
 
   const updateLoadingMessageContent = useCallback((content: string) => {
-    setMessages((prev) => {
-      const newMessages = [...prev];
-      if (newMessages.length > 0) {
-        const lastMessage = newMessages.at(-1);
-        if (lastMessage?.role === 'assistant') {
-          newMessages[newMessages.length - 1] = {
-            ...lastMessage,
-            content: content,
-          };
+    startTransition(() => {
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        if (newMessages.length > 0) {
+          const lastMessage = newMessages.at(-1);
+          if (lastMessage?.role === 'assistant') {
+            newMessages[newMessages.length - 1] = {
+              ...lastMessage,
+              content: content,
+            };
+          }
         }
-      }
-      return newMessages;
+        return newMessages;
+      });
     });
   }, []);
 
@@ -219,14 +225,18 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     [handleSend],
   );
 
+  const messageItems = useMemo(() => {
+    return messages.map((message) => (
+      <MessageItem key={message.id} message={message} />
+    ));
+  }, [messages]);
+
   return (
     <div className="app-container">
       <style>{styles}</style>
       {contextHolder}
       <div className="messages-container" ref={messagesContainerRef}>
-        {messages.map((message) => (
-          <MessageItem key={message.id} message={message} />
-        ))}
+        {messageItems}
       </div>
       <div className="bottom-container">
         <div className="action-bar">

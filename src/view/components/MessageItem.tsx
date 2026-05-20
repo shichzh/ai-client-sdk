@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {useState, useEffect, useRef, forwardRef, type MouseEvent} from 'react';
+import {memo, useState, useEffect, useRef, forwardRef, type MouseEvent} from 'react';
 import {type Message, type AssistantMessage} from '../../utils/agent';
 import {Tooltip} from 'antd';
 import ArrowIcon from './icons/ArrowIcon';
@@ -138,4 +138,4 @@ const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(({message}, ref
   );
 });
 
-export default MessageItem;
+export default memo(MessageItem);
