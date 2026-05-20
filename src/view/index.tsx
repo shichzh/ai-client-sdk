@@ -17,14 +17,8 @@
 import {createRef, StrictMode, RefObject} from 'react';
 import ReactDOM from 'react-dom/client';
 import App, {AppRef} from './App';
-import buttonCSS from './css/button.css?inline';
-import loadingCSS from './css/loading.css?inline';
-import panelCSS from './css/panel.css?inline';
-import commonCSS from './css/common.css?inline';
 import {ConfigProvider} from 'antd';
 import {StyleProvider, createCache} from '@ant-design/cssinjs';
-
-const combinedCSS = [buttonCSS, loadingCSS, panelCSS, commonCSS].join('\n');
 
 interface Params {
   domNode: ShadowRoot;
@@ -34,10 +28,6 @@ interface Params {
 type Result = RefObject<AppRef | null>;
 
 const init = ({domNode, onReady}: Params): Result => {
-  const style = document.createElement('style');
-  style.textContent = combinedCSS;
-  domNode.appendChild(style);
-
   const cache = createCache();
   const appRef = createRef<AppRef>();
 

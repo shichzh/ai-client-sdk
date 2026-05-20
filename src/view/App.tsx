@@ -32,6 +32,7 @@ import CreateIcon from './components/icons/CreateIcon';
 import DeleteIcon from './components/icons/DeleteIcon';
 import StopIcon from './components/icons/StopIcon';
 import SendIcon from './components/icons/SendIcon';
+import styles from './css/index.css?inline';
 
 const createId = (): string => crypto.randomUUID();
 
@@ -220,6 +221,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
 
   return (
     <div className="app-container">
+      <style>{styles}</style>
       {contextHolder}
       <div className="messages-container" ref={messagesContainerRef}>
         {messages.map((message) => (
