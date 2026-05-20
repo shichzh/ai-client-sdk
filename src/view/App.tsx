@@ -173,7 +173,9 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
        * messages-container 滚动到最底部
        * 将最新一轮对话里的 user message 显示在屏幕顶部
        */
-      if (!messagesContainerRef.current) return;
+      if (!messagesContainerRef.current) {
+        return;
+      }
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
       await eventManager.emit('send', message);
     } finally {

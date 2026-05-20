@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import type {SVGProps} from 'react';
-import {memo} from 'react';
+import {memo, type SVGProps} from 'react';
 
 const SendIcon = memo((props: SVGProps<SVGSVGElement>) => {
   return (
