@@ -19,15 +19,6 @@ import Ajv, {type ValidateFunction, type AnySchema} from 'ajv';
 import {mergeWith} from 'lodash-es';
 import {type PanelElement} from '../index';
 
-let controller: AbortController | null = null;
-
-function abort(): void {
-  if (controller) {
-    controller.abort();
-    controller = null;
-  }
-}
-
 interface StringParameter {
   type: 'string';
   description?: string;
@@ -282,6 +273,14 @@ class Agent extends ToolManager {
     tools: [],
     roundsLeft: this.maxRounds,
   };
+  private controller: AbortController | null = null;
+
+  abort(): void {
+    if (this.controller) {
+      this.controller.abort();
+      this.controller = null;
+    }
+  }
 
   constructor(config: Config) {
     super();
@@ -348,8 +347,8 @@ class Agent extends ToolManager {
 
   async invoke(params = this.defaultParams): Promise<AssistantMessage | undefined> {
     const {tools = [], roundsLeft = this.maxRounds, panel} = params;
-    abort();
-    controller = new AbortController();
+    this.abort();
+    this.controller = new AbortController();
     try {
       const response = await fetch(this.url, {
         method: 'POST',
@@ -362,11 +361,11 @@ class Agent extends ToolManager {
           tools: this.getDefinitions(tools),
           stream: false,
         }),
-        signal: controller.signal,
+        signal: this.controller.signal,
       });
 
-      if (controller.signal.aborted) {
-        throw new DOMException('请求已被取消', 'AbortError');
+      if (this.controller.signal.aborted) {
+        throw new DOMException('对话已停止', 'AbortError');
       }
 
       const result = (await response.json()) as Result;
@@ -425,14 +424,14 @@ class Agent extends ToolManager {
         return await this.invoke({tools: [], roundsLeft: roundsLeft - 1, panel});
       }
     } finally {
-      controller = null;
+      this.controller = null;
     }
   }
 
   async *invokeStream(params = this.defaultParams): StreamResult {
     const {tools = [], roundsLeft = this.maxRounds} = params;
-    abort();
-    controller = new AbortController();
+    this.abort();
+    this.controller = new AbortController();
     try {
       const response = await fetch(this.url, {
         method: 'POST',
@@ -445,11 +444,11 @@ class Agent extends ToolManager {
           tools: this.getDefinitions(tools),
           stream: true,
         }),
-        signal: controller.signal,
+        signal: this.controller.signal,
       });
 
-      if (controller.signal.aborted) {
-        throw new DOMException('请求已被取消', 'AbortError');
+      if (this.controller.signal.aborted) {
+        throw new DOMException('对话已停止', 'AbortError');
       }
 
       const reader = response.body?.getReader();
@@ -534,7 +533,7 @@ class Agent extends ToolManager {
         return this.invokeStream({tools: [], roundsLeft: roundsLeft - 1});
       }
     } finally {
-      controller = null;
+      this.controller = null;
     }
   }
 }
@@ -547,7 +546,6 @@ export {
   type Message,
   type AssistantMessage,
   type StreamResult,
-  abort,
   ToolManager,
   Agent,
 };

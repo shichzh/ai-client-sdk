@@ -17,11 +17,12 @@
 
 import {type Message} from '../utils/agent';
 
-type EventType = 'send' | 'create';
+type EventType = 'send' | 'create' | 'stop';
 
 type EventParams = {
   send: [message: Message];
   create: []; // 空数组表示无参数
+  stop: [];
 };
 
 type EventListener<T extends EventType> = (...args: EventParams[T]) => void | Promise<void>;
@@ -32,6 +33,7 @@ class EventManager {
   } = {
     send: [],
     create: [],
+    stop: [],
   };
 
   on = <T extends EventType>(type: T, listener: EventListener<T>): void => {

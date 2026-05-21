@@ -50,8 +50,7 @@ const main = async () => {
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        console.log('请求已被取消');
-        await panel.updateLoadingMessageContent('请求已被取消');
+        await panel.updateLoadingMessageContent('对话已停止');
         return;
       }
       const msg =
@@ -67,6 +66,10 @@ const main = async () => {
 
   panel.on('create', async () => {
     await init();
+  });
+
+  panel.on('stop', () => {
+    agent.abort();
   });
 };
 
