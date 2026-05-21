@@ -285,7 +285,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       placement: 'top',
       closable: false,
     });
-  }, [api, saveHistoryToStorage]);
+  }, [api]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
