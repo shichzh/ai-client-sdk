@@ -25,7 +25,7 @@ import {
   useMemo,
   type KeyboardEvent,
 } from 'react';
-import { debounce } from 'lodash-es';
+import {debounce} from 'lodash-es';
 import {type Message} from '../utils/agent';
 import {abort} from '../utils/agent';
 import MessageItem from './components/MessageItem';
@@ -77,7 +77,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   }, []);
 
   const debouncedSaveHistory = useMemo(() => {
-    return debounce(saveHistoryToStorage, 500, { trailing: true });
+    return debounce(saveHistoryToStorage, 500, {trailing: true});
   }, [saveHistoryToStorage]);
 
   useEffect(() => {
@@ -88,11 +88,11 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
 
     const defaultChatId = createId();
     setCurrentChatId(defaultChatId);
-    
+
     onReady();
     const savedHistory = localStorage.getItem('chatHistory');
     let initialHistory: HistoryItem[] = [];
-    
+
     if (savedHistory) {
       try {
         initialHistory = JSON.parse(savedHistory);
@@ -100,8 +100,8 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
         initialHistory = [];
       }
     }
-    
-    const defaultItem = { id: defaultChatId, createdAt: Date.now(), messages: [] };
+
+    const defaultItem = {id: defaultChatId, createdAt: Date.now(), messages: []};
     const updatedHistory = [...initialHistory, defaultItem];
     setHistory(updatedHistory);
   }, [onReady]);
@@ -112,9 +112,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       return;
     }
     setHistory((prev) =>
-      prev.map((item) =>
-        item.id === currentChatId ? { ...item, messages } : item
-      )
+      prev.map((item) => (item.id === currentChatId ? {...item, messages} : item)),
     );
   }, [messages, currentChatId]);
 
@@ -124,7 +122,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       return;
     }
     debouncedSaveHistory(history);
-    
+
     return () => {
       debouncedSaveHistory.cancel();
       saveHistoryToStorage(history);
