@@ -345,6 +345,23 @@ class Agent extends ToolManager {
     );
   }
 
+  private async executeTools(tool_calls: ToolCall[]): Promise<void> {
+    const promises = tool_calls.map(async (element) => {
+      const {
+        function: {name, arguments: args},
+        id,
+      } = element;
+      const resp = await this.call(name, JSON.parse(args));
+      this.messages.push({
+        id: crypto.randomUUID(),
+        content: resp,
+        role: 'tool',
+        tool_call_id: id,
+      });
+    });
+    await Promise.all(promises);
+  }
+
   async invoke(params = this.defaultParams): Promise<AssistantMessage | undefined> {
     const {tools = [], roundsLeft = this.maxRounds, panel} = params;
     this.abort();
@@ -400,21 +417,7 @@ class Agent extends ToolManager {
         role,
         tool_calls,
       });
-
-      const promises = tool_calls.map(async (element) => {
-        const {
-          function: {name, arguments: args},
-          id,
-        } = element;
-        const resp = await this.call(name, JSON.parse(args));
-        this.messages.push({
-          id: crypto.randomUUID(),
-          content: resp,
-          role: 'tool',
-          tool_call_id: id,
-        });
-      });
-      await Promise.all(promises);
+      await this.executeTools(tool_calls);
 
       // 剩余轮次 > 0 时继续回调
       if (roundsLeft - 1 > 0) {
@@ -512,21 +515,7 @@ class Agent extends ToolManager {
         role,
         tool_calls,
       });
-
-      const promises = tool_calls.map(async (element) => {
-        const {
-          function: {name, arguments: args},
-          id,
-        } = element;
-        const resp = await this.call(name, JSON.parse(args));
-        this.messages.push({
-          id: crypto.randomUUID(),
-          content: resp,
-          role: 'tool',
-          tool_call_id: id,
-        });
-      });
-      await Promise.all(promises);
+      await this.executeTools(tool_calls);
 
       // 剩余轮次 > 0 时继续回调
       if (roundsLeft - 1 > 0) {
