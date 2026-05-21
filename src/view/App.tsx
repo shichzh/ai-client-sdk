@@ -25,6 +25,7 @@ import {
   useMemo,
   type KeyboardEvent,
 } from 'react';
+import { debounce } from 'lodash-es';
 import {type Message} from '../utils/agent';
 import {abort} from '../utils/agent';
 import MessageItem from './components/MessageItem';
@@ -66,7 +67,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   const [api, contextHolder] = notification.useNotification();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
-  const [currentChatId, setCurrentChatId] = useState<string>(createId());
+  const [currentChatId, setCurrentChatId] = useState<string>('');
   const userInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isInitializedRef = useRef(false);
@@ -75,11 +76,18 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     localStorage.setItem('chatHistory', JSON.stringify(historyList));
   }, []);
 
+  const debouncedSaveHistory = useMemo(() => {
+    return debounce(saveHistoryToStorage, 500, { trailing: true });
+  }, [saveHistoryToStorage]);
+
   useEffect(() => {
     if (isInitializedRef.current) {
       return;
     }
     isInitializedRef.current = true;
+
+    const defaultChatId = createId();
+    setCurrentChatId(defaultChatId);
     
     onReady();
     const savedHistory = localStorage.getItem('chatHistory');
@@ -93,25 +101,35 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       }
     }
     
-    const defaultItem = { id: currentChatId, createdAt: Date.now(), messages: [] };
+    const defaultItem = { id: defaultChatId, createdAt: Date.now(), messages: [] };
     const updatedHistory = [...initialHistory, defaultItem];
     setHistory(updatedHistory);
-    saveHistoryToStorage(updatedHistory);
-  }, [onReady, saveHistoryToStorage, currentChatId]);
+  }, [onReady]);
 
-  // 监听 messages 变化，实时保存到当前对话
+  // 监听 messages 变化，更新当前对话
   useEffect(() => {
     if (messages.length === 0) {
       return;
     }
-    setHistory((prev) => {
-      const updated = prev.map((item) =>
-        item.id === currentChatId ? { ...item, messages: [...messages] } : item
-      );
-      saveHistoryToStorage(updated);
-      return updated;
-    });
-  }, [messages, saveHistoryToStorage, currentChatId]);
+    setHistory((prev) =>
+      prev.map((item) =>
+        item.id === currentChatId ? { ...item, messages } : item
+      )
+    );
+  }, [messages, currentChatId]);
+
+  // 监听 history 变化，自动保存到 localStorage
+  useEffect(() => {
+    if (history.length === 0) {
+      return;
+    }
+    debouncedSaveHistory(history);
+    
+    return () => {
+      debouncedSaveHistory.cancel();
+      saveHistoryToStorage(history);
+    };
+  }, [history, debouncedSaveHistory, saveHistoryToStorage]);
 
   /**
    * 如果开发者会使用 pushMessage 或 pushMessages 添加 user message
@@ -259,11 +277,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       createdAt: Date.now(),
       messages: [],
     };
-    setHistory((prev) => {
-      const updated = [...prev, newHistoryItem];
-      saveHistoryToStorage(updated);
-      return updated;
-    });
+    setHistory((prev) => [...prev, newHistoryItem]);
     setCurrentChatId(newChatId);
     setMessages([]);
     userInputRef.current?.focus();
