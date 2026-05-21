@@ -201,13 +201,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       updateLoadingMessage,
       updateContext,
     }),
-    [
-      pushMessage,
-      pushMessages,
-      pushLoadingMessage,
-      updateLoadingMessage,
-      updateContext,
-    ],
+    [pushMessage, pushMessages, pushLoadingMessage, updateLoadingMessage, updateContext],
   );
 
   const handleSend = useCallback(async () => {
