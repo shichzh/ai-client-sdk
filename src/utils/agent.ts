@@ -484,7 +484,7 @@ class Agent extends ToolManager {
             yield json;
             buffer = '';
           } catch (error) {
-            console.log('JSON 解析失败，等待下一个数据块继续拼接', {error, jsonStr});
+            console.warn('JSON 解析失败，等待下一个数据块继续拼接', {error, jsonStr});
             buffer += jsonStr;
           }
         }
