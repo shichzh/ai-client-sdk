@@ -123,7 +123,7 @@ const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(({message}, ref
         )}
       </div>
       <div className="button-container">
-        <Tooltip title="复制" placement={message.role === 'user' ? 'bottomLeft' : 'bottomRight'}>
+        <Tooltip title="复制" placement={message.role === 'user' ? 'bottomRight' : 'bottomLeft'}>
           <button
             className="icon square plain"
             type="button"

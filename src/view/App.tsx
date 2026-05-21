@@ -29,14 +29,21 @@ import {type Message} from '../utils/agent';
 import {abort} from '../utils/agent';
 import MessageItem from './components/MessageItem';
 import {eventManager} from './event';
-import {notification, Tooltip} from 'antd';
+import {notification, Tooltip, Modal} from 'antd';
 import CreateIcon from './components/icons/CreateIcon';
 import DeleteIcon from './components/icons/DeleteIcon';
 import StopIcon from './components/icons/StopIcon';
 import SendIcon from './components/icons/SendIcon';
+import HistoryIcon from './components/icons/HistoryIcon';
 import styles from './css/index.css?inline';
 
 const createId = (): string => crypto.randomUUID();
+
+interface HistoryItem {
+  id: string;
+  createdAt: number;
+  messages: Message[];
+}
 
 export interface AppRef {
   pushMessage: (message: Message) => void;
@@ -57,12 +64,54 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   const [isChatting, setIsChatting] = useState(false);
   const [context, setContext] = useState('');
   const [api, contextHolder] = notification.useNotification();
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
+  const [currentChatId, setCurrentChatId] = useState<string>(createId());
   const userInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const isInitializedRef = useRef(false);
+
+  const saveHistoryToStorage = useCallback((historyList: HistoryItem[]) => {
+    localStorage.setItem('chatHistory', JSON.stringify(historyList));
+  }, []);
 
   useEffect(() => {
+    if (isInitializedRef.current) {
+      return;
+    }
+    isInitializedRef.current = true;
+    
     onReady();
-  }, [onReady]);
+    const savedHistory = localStorage.getItem('chatHistory');
+    let initialHistory: HistoryItem[] = [];
+    
+    if (savedHistory) {
+      try {
+        initialHistory = JSON.parse(savedHistory);
+      } catch {
+        initialHistory = [];
+      }
+    }
+    
+    const defaultItem = { id: currentChatId, createdAt: Date.now(), messages: [] };
+    const updatedHistory = [...initialHistory, defaultItem];
+    setHistory(updatedHistory);
+    saveHistoryToStorage(updatedHistory);
+  }, [onReady, saveHistoryToStorage, currentChatId]);
+
+  // 监听 messages 变化，实时保存到当前对话
+  useEffect(() => {
+    if (messages.length === 0) {
+      return;
+    }
+    setHistory((prev) => {
+      const updated = prev.map((item) =>
+        item.id === currentChatId ? { ...item, messages: [...messages] } : item
+      );
+      saveHistoryToStorage(updated);
+      return updated;
+    });
+  }, [messages, saveHistoryToStorage, currentChatId]);
 
   /**
    * 如果开发者会使用 pushMessage 或 pushMessages 添加 user message
@@ -204,6 +253,18 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   }, [api]);
 
   const handleCreate = useCallback(async () => {
+    const newChatId = createId();
+    const newHistoryItem: HistoryItem = {
+      id: newChatId,
+      createdAt: Date.now(),
+      messages: [],
+    };
+    setHistory((prev) => {
+      const updated = [...prev, newHistoryItem];
+      saveHistoryToStorage(updated);
+      return updated;
+    });
+    setCurrentChatId(newChatId);
     setMessages([]);
     userInputRef.current?.focus();
     await eventManager.emit('create');
@@ -213,7 +274,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       placement: 'top',
       closable: false,
     });
-  }, [api]);
+  }, [api, saveHistoryToStorage]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -224,6 +285,30 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     },
     [handleSend],
   );
+
+  const handleOpenHistory = useCallback(() => {
+    setIsHistoryModalVisible(true);
+  }, []);
+
+  const handleCloseHistory = useCallback(() => {
+    setIsHistoryModalVisible(false);
+  }, []);
+
+  const handleSelectHistory = useCallback((item: HistoryItem) => {
+    setMessages(item.messages);
+    setCurrentChatId(item.id);
+    setIsHistoryModalVisible(false);
+  }, []);
+
+  const formatDate = useCallback((timestamp: number) => {
+    const date = new Date(timestamp);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  }, []);
 
   const messageItems = useMemo(() => {
     return messages.map((message) => <MessageItem key={message.id} message={message} />);
@@ -238,7 +323,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       </div>
       <div className="bottom-container">
         <div className="action-bar">
-          <Tooltip title="新对话" placement="bottomRight">
+          <Tooltip title="新对话" placement="bottomLeft">
             <button
               className="icon square plain"
               type="button"
@@ -246,6 +331,16 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
               onClick={handleCreate}
             >
               <CreateIcon />
+            </button>
+          </Tooltip>
+          <Tooltip title="历史对话" placement="bottomLeft">
+            <button
+              className="icon square plain"
+              type="button"
+              aria-label="历史对话"
+              onClick={handleOpenHistory}
+            >
+              <HistoryIcon />
             </button>
           </Tooltip>
         </div>
@@ -304,6 +399,31 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
           </div>
         </div>
       </div>
+      <Modal
+        title="历史对话"
+        open={isHistoryModalVisible}
+        onCancel={handleCloseHistory}
+        footer={null}
+      >
+        <div className="history-list">
+          {history.length === 0 ? (
+            <div className="history-empty">暂无历史对话</div>
+          ) : (
+            <ul className="history-items">
+              {history.map((item) => (
+                <li
+                  key={item.id}
+                  className={`history-item ${currentChatId === item.id ? 'selected' : ''}`}
+                  onClick={() => handleSelectHistory(item)}
+                >
+                  <div className="history-content">{item.messages[0]?.content || ''}</div>
+                  <div className="history-time">{formatDate(item.createdAt)}</div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 });
