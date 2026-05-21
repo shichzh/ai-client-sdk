@@ -43,14 +43,14 @@ const main = async () => {
       agent.pushMessage(response);
       const {reasoning_content, content} = response;
       if (reasoning_content) {
-        await panel.updateLoadingMessageReasoningContent(reasoning_content);
+        await panel.updateLoadingMessage('reasoning_content', reasoning_content);
       }
       if (content) {
-        await panel.updateLoadingMessageContent(content);
+        await panel.updateLoadingMessage('content', content);
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        await panel.updateLoadingMessageContent('对话已停止');
+        await panel.updateLoadingMessage('content', '对话已停止');
         return;
       }
       const msg =

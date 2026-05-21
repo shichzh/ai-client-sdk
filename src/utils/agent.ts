@@ -247,7 +247,7 @@ type Message = SimpleMessage | AssistantMessage | ToolMessage;
 interface Params {
   tools?: string[];
   roundsLeft?: number;
-  panel?: Pick<PanelElement, 'pushLoadingMessage' | 'updateLoadingMessageContent'>;
+  panel?: Pick<PanelElement, 'pushLoadingMessage' | 'updateLoadingMessage'>;
 }
 
 interface Chunk {
@@ -408,7 +408,7 @@ class Agent extends ToolManager {
 
       if (content && panel) {
         await panel.pushLoadingMessage();
-        await panel.updateLoadingMessageContent(content);
+        await panel.updateLoadingMessage('content', content);
       }
 
       this.messages.push({

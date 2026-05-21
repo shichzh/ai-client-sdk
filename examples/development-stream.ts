@@ -55,11 +55,11 @@ const main = async () => {
       const delta = value.choices?.[0]?.delta;
       if (delta?.reasoning_content) {
         reasoningContentMarkdownStr += delta.reasoning_content;
-        await panel.updateLoadingMessageReasoningContent(reasoningContentMarkdownStr);
+        await panel.updateLoadingMessage('reasoning_content', reasoningContentMarkdownStr);
       }
       if (delta?.content) {
         contentMarkdownStr += delta.content;
-        await panel.updateLoadingMessageContent(contentMarkdownStr);
+        await panel.updateLoadingMessage('content', contentMarkdownStr);
       }
     }
   }
@@ -71,7 +71,7 @@ const main = async () => {
       await processGenerator(generator);
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        await panel.updateLoadingMessageContent('对话已停止');
+        await panel.updateLoadingMessage('content', '对话已停止');
         return;
       }
       const msg =

@@ -49,8 +49,7 @@ export interface AppRef {
   pushMessage: (message: Message) => void;
   pushMessages: (messages: Message[]) => void;
   pushLoadingMessage: () => void;
-  updateLoadingMessageReasoningContent: (content: string) => void;
-  updateLoadingMessageContent: (content: string) => void;
+  updateLoadingMessage: (field: 'content' | 'reasoning_content', value: string) => void;
   updateContext: (content: string) => void;
 }
 
@@ -164,41 +163,26 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     setMessages((prev) => [...prev, loadingMessage]);
   }, []);
 
-  const updateLoadingMessageReasoningContent = useCallback((content: string) => {
-    startTransition(() => {
-      setMessages((prev) => {
-        const newMessages = [...prev];
-        if (newMessages.length > 0) {
-          const lastMessage = newMessages.at(-1);
-          if (lastMessage?.role === 'assistant') {
-            newMessages[newMessages.length - 1] = {
-              ...lastMessage,
-              reasoning_content: content,
-            };
+  const updateLoadingMessage = useCallback(
+    (field: 'content' | 'reasoning_content', value: string) => {
+      startTransition(() => {
+        setMessages((prev) => {
+          const newMessages = [...prev];
+          if (newMessages.length > 0) {
+            const lastMessage = newMessages.at(-1);
+            if (lastMessage?.role === 'assistant') {
+              newMessages[newMessages.length - 1] = {
+                ...lastMessage,
+                [field]: value,
+              };
+            }
           }
-        }
-        return newMessages;
+          return newMessages;
+        });
       });
-    });
-  }, []);
-
-  const updateLoadingMessageContent = useCallback((content: string) => {
-    startTransition(() => {
-      setMessages((prev) => {
-        const newMessages = [...prev];
-        if (newMessages.length > 0) {
-          const lastMessage = newMessages.at(-1);
-          if (lastMessage?.role === 'assistant') {
-            newMessages[newMessages.length - 1] = {
-              ...lastMessage,
-              content: content,
-            };
-          }
-        }
-        return newMessages;
-      });
-    });
-  }, []);
+    },
+    [],
+  );
 
   const updateContext = useCallback((content: string) => {
     setContext(content);
@@ -214,16 +198,14 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       pushMessage,
       pushMessages,
       pushLoadingMessage,
-      updateLoadingMessageReasoningContent,
-      updateLoadingMessageContent,
+      updateLoadingMessage,
       updateContext,
     }),
     [
       pushMessage,
       pushMessages,
       pushLoadingMessage,
-      updateLoadingMessageReasoningContent,
-      updateLoadingMessageContent,
+      updateLoadingMessage,
       updateContext,
     ],
   );
