@@ -30,9 +30,9 @@ export interface PanelElement extends HTMLElement {
 }
 
 class Panel extends HTMLElement implements PanelElement {
-  private appRef!: Result;
+  private appRef: Result | null = null;
   private promise: Promise<void>;
-  private resolve!: () => void;
+  private resolve: (() => void) | null = null;
 
   constructor() {
     super();
@@ -44,7 +44,7 @@ class Panel extends HTMLElement implements PanelElement {
 
   connectedCallback() {
     if (this.shadowRoot) {
-      this.appRef = init({domNode: this.shadowRoot, onReady: () => this.resolve()});
+      this.appRef = init({domNode: this.shadowRoot, onReady: () => this.resolve?.()});
     }
   }
 
