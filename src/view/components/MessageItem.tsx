@@ -30,14 +30,14 @@ interface MessageItemProps {
   message: Message;
 }
 
-const parseMarkdown = async (content: string): Promise<string> => {
-  const file = await unified()
-    .use(remarkParse)
-    .use(remarkGfm)
-    .use(remarkRehype, {allowDangerousHtml: true})
-    .use(rehypeStringify, {allowDangerousHtml: true})
-    .process(content);
+const markdownProcessor = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(remarkRehype, {allowDangerousHtml: true})
+  .use(rehypeStringify, {allowDangerousHtml: true});
 
+const parseMarkdown = async (content: string): Promise<string> => {
+  const file = await markdownProcessor.process(content);
   const dirty = String(file);
   return DOMPurify.sanitize(dirty);
 };
