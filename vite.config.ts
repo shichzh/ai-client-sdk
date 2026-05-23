@@ -16,4 +16,7 @@ export default defineConfig({
       },
     },
   },
+  server: {
+    open: '/examples/development-stream.html',
+  },
 });
