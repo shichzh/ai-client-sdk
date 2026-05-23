@@ -44,7 +44,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "check-license": "addlicense -check -c \"Copyright\" -l apache \"examples\" \"src\"",
+    "license:check": "addlicense -check -c \"Copyright\" -l apache \"examples\" \"src\"",
     "prepare": "husky"
   },
   "keywords": [
