@@ -69,13 +69,23 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   const userInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isInitializedRef = useRef(false);
+  const historyRef = useRef<HistoryItem[]>([]);
 
+  /**
+   * TODO: 多页面场景下 localStorage 数据同步
+   */
   const saveHistoryToStorage = useCallback((historyList: HistoryItem[]) => {
     localStorage.setItem('chatHistory', JSON.stringify(historyList));
   }, []);
 
+  useEffect(() => {
+    historyRef.current = history;
+  }, [history]);
+
   const debouncedSaveHistory = useMemo(() => {
-    return debounce(saveHistoryToStorage, 500, {trailing: true});
+    return debounce(() => {
+      saveHistoryToStorage(historyRef.current);
+    }, 500);
   }, [saveHistoryToStorage]);
 
   useEffect(() => {
@@ -114,18 +124,16 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     );
   }, [messages, currentChatId]);
 
-  // 监听 history 变化，自动保存到 localStorage
   useEffect(() => {
-    if (history.length === 0) {
-      return;
-    }
-    debouncedSaveHistory(history);
+    debouncedSaveHistory();
+  }, [history, debouncedSaveHistory]);
 
+  useEffect(() => {
     return () => {
       debouncedSaveHistory.cancel();
-      saveHistoryToStorage(history);
+      saveHistoryToStorage(historyRef.current);
     };
-  }, [history, debouncedSaveHistory, saveHistoryToStorage]);
+  }, [debouncedSaveHistory, saveHistoryToStorage]);
 
   /**
    * 如果开发者会使用 pushMessage 或 pushMessages 添加 user message
