@@ -303,10 +303,8 @@ class Agent extends ToolManager {
     if (!message) {
       return;
     }
-    if (!message.id) {
-      message.id = crypto.randomUUID();
-    }
-    this.messages.push(message);
+    const _message = message.id ? message : {...message, id: crypto.randomUUID()};
+    this.messages.push(_message);
   }
 
   pushMessages(messages: Message[]) {
