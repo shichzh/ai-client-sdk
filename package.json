@@ -1,6 +1,6 @@
 {
   "name": "ai-client-sdk",
-  "version": "4.1.3",
+  "version": "4.1.4",
   "description": "用于开发 AI 应用，适配任意前端框架，兼容多种大模型，提供对话界面、Function Calling、Agent、工作流等",
   "author": {
     "name": "Hughe5",
