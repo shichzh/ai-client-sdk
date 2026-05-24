@@ -87,6 +87,7 @@ const main = async () => {
   });
 
   panel.on('create', async () => {
+    agent.resetMessages();
     await init();
   });
 
