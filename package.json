@@ -20,13 +20,13 @@
     "url": "https://github.com/shichzh/ai-client-sdk.git"
   },
   "types": "dist/index.d.ts",
-  "main": "./dist/umd/ai-client-sdk.umd.js",
-  "module": "./dist/es/ai-client-sdk.mjs",
+  "main": "./dist/ai-client-sdk.umd.js",
+  "module": "./dist/ai-client-sdk.mjs",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/es/ai-client-sdk.mjs",
-      "require": "./dist/umd/ai-client-sdk.umd.js"
+      "import": "./dist/ai-client-sdk.mjs",
+      "require": "./dist/ai-client-sdk.umd.js"
     }
   },
   "files": [
@@ -36,7 +36,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build --config vite.config.es.ts && vite build --config vite.config.umd.ts && tsc -p tsconfig.build.json",
+    "build": "vite build && tsc -p tsconfig.build.json",
     "lint": "eslint . --ext .js,.mjs,.cjs,.ts,.tsx --fix",
     "lint:check": "eslint . --ext .js,.mjs,.cjs,.ts,.tsx",
     "format": "prettier . --write",
