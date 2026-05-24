@@ -82,11 +82,12 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     historyRef.current = history;
   }, [history]);
 
-  const debouncedSaveHistory = useMemo(() => {
-    return debounce(() => {
+  const debouncedSaveHistory = useCallback(
+    debounce(() => {
       saveHistoryToStorage(historyRef.current);
-    }, 500);
-  }, [saveHistoryToStorage]);
+    }, 500),
+    [saveHistoryToStorage],
+  );
 
   useEffect(() => {
     if (isInitializedRef.current) {
