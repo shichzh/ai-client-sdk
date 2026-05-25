@@ -301,9 +301,6 @@ class Agent extends ToolManager {
   }
 
   pushMessage(message: Message) {
-    if (!message) {
-      return;
-    }
     const _message = message.id ? message : {...message, id: generateId()};
     this.messages.push(_message);
   }
