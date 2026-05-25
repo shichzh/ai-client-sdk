@@ -401,24 +401,26 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
         onCancel={handleCloseHistory}
         footer={null}
       >
-        <div className="history-list">
-          {history.length === 0 ? (
-            <div className="history-empty">暂无历史对话</div>
-          ) : (
-            <ul className="history-items">
-              {history.map((item) => (
-                <li
-                  key={item.id}
-                  className={`history-item ${currentChatId === item.id ? 'selected' : ''}`}
-                  onClick={() => handleSelectHistory(item)}
-                >
-                  <div className="history-content">{item.messages[0]?.content || ''}</div>
-                  <div className="history-time">{formatDate(item.createdAt)}</div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        {isHistoryModalVisible && (
+          <div className="history-list">
+            {history.length === 0 ? (
+              <div className="history-empty">暂无历史对话</div>
+            ) : (
+              <ul className="history-items">
+                {history.map((item) => (
+                  <li
+                    key={item.id}
+                    className={`history-item ${currentChatId === item.id ? 'selected' : ''}`}
+                    onClick={() => handleSelectHistory(item)}
+                  >
+                    <div className="history-content">{item.messages[0]?.content || ''}</div>
+                    <div className="history-time">{formatDate(item.createdAt)}</div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </Modal>
     </div>
   );
