@@ -18,6 +18,7 @@
 import Ajv, {type ValidateFunction, type AnySchema} from 'ajv';
 import {mergeWith} from 'lodash-es';
 import {type PanelElement} from '../index';
+import {generateId} from './uuid';
 
 interface StringParameter {
   type: 'string';
@@ -292,7 +293,7 @@ class Agent extends ToolManager {
     }
     if (systemMessageContent) {
       this.messages[0] = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         role: 'system',
         content: systemMessageContent,
       };
@@ -303,7 +304,7 @@ class Agent extends ToolManager {
     if (!message) {
       return;
     }
-    const _message = message.id ? message : {...message, id: crypto.randomUUID()};
+    const _message = message.id ? message : {...message, id: generateId()};
     this.messages.push(_message);
   }
 
@@ -351,7 +352,7 @@ class Agent extends ToolManager {
       } = element;
       const resp = await this.call(name, JSON.parse(args));
       this.messages.push({
-        id: crypto.randomUUID(),
+        id: generateId(),
         content: resp,
         role: 'tool',
         tool_call_id: id,
@@ -410,7 +411,7 @@ class Agent extends ToolManager {
       }
 
       this.messages.push({
-        id: crypto.randomUUID(),
+        id: generateId(),
         content,
         role,
         tool_calls,
@@ -508,7 +509,7 @@ class Agent extends ToolManager {
       }
 
       this.messages.push({
-        id: crypto.randomUUID(),
+        id: generateId(),
         content,
         role,
         tool_calls,

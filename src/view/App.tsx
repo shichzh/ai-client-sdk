@@ -36,8 +36,7 @@ import StopIcon from './components/icons/StopIcon';
 import SendIcon from './components/icons/SendIcon';
 import HistoryIcon from './components/icons/HistoryIcon';
 import styles from './css/index.css?inline';
-
-const createId = (): string => crypto.randomUUID();
+import {generateId} from '../utils/uuid';
 
 interface HistoryItem {
   id: string;
@@ -95,7 +94,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     }
     isInitializedRef.current = true;
 
-    const defaultChatId = createId();
+    const defaultChatId = generateId();
     setCurrentChatId(defaultChatId);
 
     onReady();
@@ -144,7 +143,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
    */
   const pushMessage = useCallback((message: Message) => {
     if (!message.id) {
-      message.id = createId();
+      message.id = generateId();
     }
     setMessages((prev) => [...prev, message]);
   }, []);
@@ -156,7 +155,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
 
     const newMessages = messages.map((message) => ({
       ...message,
-      id: message.id || createId(),
+      id: message.id || generateId(),
     }));
 
     setMessages((prev) => [...prev, ...newMessages]);
@@ -164,7 +163,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
 
   const pushLoadingMessage = useCallback(() => {
     const loadingMessage: Message = {
-      id: createId(),
+      id: generateId(),
       role: 'assistant',
       reasoning_content: '',
       content: '',
@@ -223,7 +222,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       setIsChatting(true);
       setUserInputValue('');
       const finalContent = context.trim() ? `${context}\n\n${content}` : content;
-      const message: Message = {id: createId(), role: 'user', content: finalContent};
+      const message: Message = {id: generateId(), role: 'user', content: finalContent};
       setMessages((prev) => [...prev, message]);
       /**
        * messages-container 滚动到最底部
@@ -253,7 +252,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   }, [api]);
 
   const handleCreate = useCallback(async () => {
-    const newChatId = createId();
+    const newChatId = generateId();
     const newHistoryItem: HistoryItem = {
       id: newChatId,
       createdAt: Date.now(),
