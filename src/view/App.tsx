@@ -70,6 +70,11 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   const isInitializedRef = useRef(false);
   const historyRef = useRef<HistoryItem[]>([]);
 
+  const createNewHistoryItem = useCallback((): HistoryItem => {
+    const id = generateId();
+    return {id, createdAt: Date.now(), messages: []};
+  }, []);
+
   /**
    * TODO: 多页面场景下 localStorage 数据同步
    */
@@ -94,9 +99,6 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     }
     isInitializedRef.current = true;
 
-    const defaultChatId = generateId();
-    setCurrentChatId(defaultChatId);
-
     onReady();
     const savedHistory = localStorage.getItem('chatHistory');
     let initialHistory: HistoryItem[] = [];
@@ -109,10 +111,10 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       }
     }
 
-    const defaultItem = {id: defaultChatId, createdAt: Date.now(), messages: []};
-    const updatedHistory = [...initialHistory, defaultItem];
-    setHistory(updatedHistory);
-  }, [onReady]);
+    const defaultItem = createNewHistoryItem();
+    setHistory([...initialHistory, defaultItem]);
+    setCurrentChatId(defaultItem.id);
+  }, [onReady, createNewHistoryItem]);
 
   // 监听 messages 变化，更新当前对话
   useEffect(() => {
@@ -142,10 +144,8 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
    * 而 user message 只在 user-input 里输入
    */
   const pushMessage = useCallback((message: Message) => {
-    if (!message.id) {
-      message.id = generateId();
-    }
-    setMessages((prev) => [...prev, message]);
+    const _message = message.id ? message : {...message, id: generateId()};
+    setMessages((prev) => [...prev, _message]);
   }, []);
 
   const pushMessages = useCallback((messages: Message[]) => {
@@ -153,12 +153,12 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       return;
     }
 
-    const newMessages = messages.map((message) => ({
+    const _messages = messages.map((message) => ({
       ...message,
       id: message.id || generateId(),
     }));
 
-    setMessages((prev) => [...prev, ...newMessages]);
+    setMessages((prev) => [...prev, ..._messages]);
   }, []);
 
   const pushLoadingMessage = useCallback(() => {
@@ -252,14 +252,9 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   }, [api]);
 
   const handleCreate = useCallback(async () => {
-    const newChatId = generateId();
-    const newHistoryItem: HistoryItem = {
-      id: newChatId,
-      createdAt: Date.now(),
-      messages: [],
-    };
+    const newHistoryItem = createNewHistoryItem();
     setHistory((prev) => [...prev, newHistoryItem]);
-    setCurrentChatId(newChatId);
+    setCurrentChatId(newHistoryItem.id);
     setMessages([]);
     userInputRef.current?.focus();
     await eventManager.emit('create');
