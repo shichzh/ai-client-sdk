@@ -337,16 +337,14 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
         {context && (
           <div className="context-container">
             <span className="context-text">{context}</span>
-            <Tooltip title="删除上下文" placement="topLeft">
-              <button
-                className="context-delete"
-                type="button"
-                aria-label="删除上下文"
-                onClick={handleDeleteContext}
-              >
-                <DeleteIcon />
-              </button>
-            </Tooltip>
+            <button
+              className="context-delete"
+              type="button"
+              aria-label="删除上下文"
+              onClick={handleDeleteContext}
+            >
+              <DeleteIcon />
+            </button>
           </div>
         )}
         <div className="user-input-container">
