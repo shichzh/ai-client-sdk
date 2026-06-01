@@ -212,32 +212,43 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     [pushMessage, pushMessages, pushLoadingMessage, updateLoadingMessage, updateContext],
   );
 
-  const handleSend = useCallback(async () => {
-    const content = userInputValue.trim();
-    if (!content) {
-      return;
-    }
-
-    try {
-      setIsChatting(true);
-      setUserInputValue('');
-      const finalContent = context.trim() ? `${context}\n\n${content}` : content;
-      const message: Message = {id: generateId(), role: 'user', content: finalContent};
-      setMessages((prev) => [...prev, message]);
-      /**
-       * messages-container 滚动到最底部
-       * 将最新一轮对话里的 user message 显示在屏幕顶部
-       */
-      if (!messagesContainerRef.current) {
+  const send = useCallback(
+    async (content: string) => {
+      const trimmedContent = content.trim();
+      if (!trimmedContent) {
         return;
       }
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-      await eventManager.emit('send', message);
-    } finally {
-      setIsChatting(false);
-      userInputRef.current?.focus();
-    }
-  }, [userInputValue, context]);
+
+      try {
+        setIsChatting(true);
+        setUserInputValue('');
+        const finalContent = context.trim() ? `${context}\n\n${trimmedContent}` : trimmedContent;
+        const message: Message = {id: generateId(), role: 'user', content: finalContent};
+        setMessages((prev) => [...prev, message]);
+        /**
+         * messages-container 滚动到最底部
+         * 将最新一轮对话里的 user message 显示在屏幕顶部
+         */
+        if (!messagesContainerRef.current) {
+          return;
+        }
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+        await eventManager.emit('send', message);
+      } finally {
+        setIsChatting(false);
+        userInputRef.current?.focus();
+      }
+    },
+    [context],
+  );
+
+  const handleSend = useCallback(async () => {
+    await send(userInputValue);
+  }, [userInputValue, send]);
+
+  const handleTranslate = useCallback(async () => {
+    await send('翻译');
+  }, [send]);
 
   const handleStop = useCallback(async () => {
     await eventManager.emit('stop');
@@ -335,17 +346,24 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
           </Tooltip>
         </div>
         {context && (
-          <div className="context-container">
-            <span className="context-text">{context}</span>
-            <button
-              className="context-delete"
-              type="button"
-              aria-label="删除上下文"
-              onClick={handleDeleteContext}
-            >
-              <DeleteIcon />
-            </button>
-          </div>
+          <>
+            <div className="context-container">
+              <span className="context-text">{context}</span>
+              <button
+                className="context-delete"
+                type="button"
+                aria-label="删除上下文"
+                onClick={handleDeleteContext}
+              >
+                <DeleteIcon />
+              </button>
+            </div>
+            <div className="shortcut-bar">
+              <button className="text square" type="button" onClick={handleTranslate}>
+                翻译
+              </button>
+            </div>
+          </>
         )}
         <div className="user-input-container">
           <textarea

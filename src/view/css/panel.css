@@ -195,6 +195,12 @@
   color: #374151;
 }
 
+.shortcut-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 .history-list {
   max-height: 400px;
   overflow-y: auto;
