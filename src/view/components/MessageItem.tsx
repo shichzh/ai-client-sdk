@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {memo, useState, useEffect, useRef, forwardRef, type MouseEvent} from 'react';
+import {memo, useState, useEffect, useRef, type MouseEvent} from 'react';
 import {type Message, type AssistantMessage} from '../../utils/agent';
 import {Tooltip} from 'antd';
 import ArrowIcon from './icons/ArrowIcon';
@@ -46,7 +46,7 @@ const isAssistantMessage = (message: Message): message is AssistantMessage => {
   return message.role === 'assistant';
 };
 
-const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(({message}, ref) => {
+const MessageItem = ({message}: MessageItemProps) => {
   const [isCopied, setIsCopied] = useState(false);
   const [parsedReasoningContent, setParsedReasoningContent] = useState('');
   const [parsedContent, setParsedContent] = useState('');
@@ -102,7 +102,7 @@ const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(({message}, ref
   const isLoading = !message.content;
 
   return (
-    <div ref={ref} className={`message ${message.role} ${isLoading ? 'loading' : ''}`}>
+    <div className={`message ${message.role} ${isLoading ? 'loading' : ''}`}>
       {isAssistantMessage(message) && parsedReasoningContent && (
         <div className={`reasoning-container ${isCollapsed ? 'collapsed' : ''}`}>
           <button className="reasoning-header plain" type="button" onClick={handleToggle}>
@@ -136,6 +136,6 @@ const MessageItem = forwardRef<HTMLDivElement, MessageItemProps>(({message}, ref
       </div>
     </div>
   );
-});
+};
 
 export default memo(MessageItem);
