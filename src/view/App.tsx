@@ -348,7 +348,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
         {context && (
           <>
             <div className="context-container">
-              <span className="context-text">{context}</span>
+              <p className="context-text">{context}</p>
               <button
                 className="context-delete"
                 type="button"
@@ -359,7 +359,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
               </button>
             </div>
             <div className="shortcut-bar">
-              <button className="text square" type="button" onClick={handleTranslate}>
+              <button className="text square plain" type="button" onClick={handleTranslate}>
                 翻译
               </button>
             </div>

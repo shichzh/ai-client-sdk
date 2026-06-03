@@ -31,7 +31,7 @@ button.text {
   height: 28px;
 }
 button.square {
-  border-radius: 6px;
+  border-radius: 4px;
 }
 button.circle {
   border-radius: 50%;
@@ -40,5 +40,5 @@ button.plain {
   background-color: transparent;
 }
 button.plain:hover {
-  background-color: rgba(0, 0, 0, 0.04);
+  background-color: #f1f1f1;
 }
