@@ -309,15 +309,24 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   const handleDeleteHistory = useCallback(
     (item: HistoryItem, e: MouseEvent) => {
       e.stopPropagation();
-      setHistory((prev) => prev.filter((h) => h.id !== item.id));
-      if (currentChatId === item.id) {
-        create();
-      }
-      api.info({
-        title: '已删除',
-        description: '历史对话已删除',
-        placement: 'top',
-        closable: false,
+      Modal.confirm({
+        title: '确认删除',
+        content: '确定要删除这条历史对话吗？此操作无法撤销。',
+        okText: '删除',
+        okType: 'danger',
+        cancelText: '取消',
+        onOk: () => {
+          setHistory((prev) => prev.filter((h) => h.id !== item.id));
+          if (currentChatId === item.id) {
+            create();
+          }
+          api.warning({
+            title: '已删除',
+            description: '历史对话已删除',
+            placement: 'top',
+            closable: false,
+          });
+        },
       });
     },
     [currentChatId, create, api],
