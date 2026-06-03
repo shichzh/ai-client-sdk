@@ -36,22 +36,9 @@ button.square {
 button.circle {
   border-radius: 50%;
 }
-button.primary {
-  background-color: rgba(0, 0, 0, 0.04);
-}
 button.plain {
   background-color: transparent;
 }
-button.error {
-  background-color: rgb(255, 77, 79);
-  color: white;
-}
-button.primary:hover {
-  background-color: rgba(0, 0, 0, 0.06);
-}
 button.plain:hover {
   background-color: rgba(0, 0, 0, 0.04);
-}
-button.error:hover {
-  background-color: rgb(255, 120, 117);
 }
