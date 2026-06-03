@@ -219,6 +219,10 @@
   border-radius: 8px;
   transition: background-color 0.2s ease;
   margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .history-item:hover {
@@ -246,4 +250,27 @@
   text-align: center;
   color: #999;
   padding: 40px 0;
+}
+
+.history-info {
+  flex: 1;
+}
+
+.history-delete {
+  flex-shrink: 0;
+  background-color: transparent;
+  color: #9ca3af;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  opacity: 0;
+}
+
+.history-item:hover .history-delete {
+  opacity: 1;
+}
+
+.history-delete:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #ef4444;
 }

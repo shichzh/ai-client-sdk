@@ -24,6 +24,7 @@ import {
   startTransition,
   useMemo,
   type KeyboardEvent,
+  type MouseEvent,
 } from 'react';
 import {debounce} from 'lodash-es';
 import {type Message} from '../utils/agent';
@@ -262,11 +263,15 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     });
   }, [api]);
 
-  const handleCreate = useCallback(async () => {
+  const create = useCallback(() => {
     const newHistoryItem = createNewHistoryItem();
     setHistory((prev) => [...prev, newHistoryItem]);
     setCurrentChatId(newHistoryItem.id);
     setMessages([]);
+  }, [createNewHistoryItem]);
+
+  const handleCreate = useCallback(async () => {
+    create();
     userInputRef.current?.focus();
     await eventManager.emit('create');
     api.success({
@@ -300,6 +305,23 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     setCurrentChatId(item.id);
     setIsHistoryModalVisible(false);
   }, []);
+
+  const handleDeleteHistory = useCallback(
+    (item: HistoryItem, e: MouseEvent) => {
+      e.stopPropagation();
+      setHistory((prev) => prev.filter((h) => h.id !== item.id));
+      if (currentChatId === item.id) {
+        create();
+      }
+      api.info({
+        title: '已删除',
+        description: '历史对话已删除',
+        placement: 'top',
+        closable: false,
+      });
+    },
+    [currentChatId, create, api],
+  );
 
   const formatDate = useCallback((timestamp: number) => {
     const date = new Date(timestamp);
@@ -423,8 +445,18 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
                     className={`history-item ${currentChatId === item.id ? 'selected' : ''}`}
                     onClick={() => handleSelectHistory(item)}
                   >
-                    <div className="history-content">{item.messages[0]?.content || ''}</div>
-                    <div className="history-time">{formatDate(item.createdAt)}</div>
+                    <div className="history-info">
+                      <div className="history-content">{item.messages[0]?.content || ''}</div>
+                      <div className="history-time">{formatDate(item.createdAt)}</div>
+                    </div>
+                    <button
+                      className="history-delete"
+                      type="button"
+                      aria-label="删除历史对话"
+                      onClick={(e) => handleDeleteHistory(item, e)}
+                    >
+                      <DeleteIcon />
+                    </button>
                   </li>
                 ))}
               </ul>
