@@ -455,7 +455,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
                     onClick={() => handleSelectHistory(item)}
                   >
                     <div className="history-info">
-                      <div className="history-content">{item.messages[0]?.content || ''}</div>
+                      <div className="history-content">{item.messages[0]?.content || '无内容'}</div>
                       <div className="history-time">{formatDate(item.createdAt)}</div>
                     </div>
                     <button
