@@ -207,7 +207,7 @@ class ToolManager {
   }
 }
 
-interface Config {
+interface AgentConfig {
   model: string;
   url: string;
   systemMessageContent?: string;
@@ -283,7 +283,7 @@ class Agent extends ToolManager {
     }
   }
 
-  constructor(config: Config) {
+  constructor(config: AgentConfig) {
     super();
     const {model, url, systemMessageContent, maxRounds} = config;
     this.model = model;

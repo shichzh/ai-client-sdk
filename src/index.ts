@@ -80,7 +80,7 @@ class Panel extends HTMLElement implements PanelElement {
 
 customElements.define('ai-chat-panel', Panel);
 
-interface Config {
+interface AIChatPanelConfig {
   container: HTMLElement | null;
 }
 
@@ -88,7 +88,7 @@ export class AIChatPanel {
   on = eventManager.on;
   private readonly panelElement: PanelElement;
 
-  constructor(config: Config) {
+  constructor(config: AIChatPanelConfig) {
     const {container} = config;
     if (!container) {
       throw new Error('未提供有效的 container');
