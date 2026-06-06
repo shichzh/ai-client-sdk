@@ -1,6 +1,7 @@
 {
   "name": "ai-client-sdk",
   "version": "4.3.1",
+  "type": "module",
   "description": "用于开发 AI 应用，适配任意前端框架，兼容多种大模型，提供对话界面、Function Calling、Agent、工作流等",
   "author": {
     "name": "Hughe5",
@@ -20,13 +21,13 @@
     "url": "https://github.com/shichzh/ai-client-sdk.git"
   },
   "types": "dist/index.d.ts",
-  "main": "./dist/ai-client-sdk.umd.js",
-  "module": "./dist/ai-client-sdk.mjs",
+  "main": "./dist/ai-client-sdk.umd.cjs",
+  "module": "./dist/ai-client-sdk.js",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/ai-client-sdk.mjs",
-      "require": "./dist/ai-client-sdk.umd.js"
+      "import": "./dist/ai-client-sdk.js",
+      "require": "./dist/ai-client-sdk.umd.cjs"
     }
   },
   "files": [
@@ -36,7 +37,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build && tsc -p tsconfig.build.json",
+    "build": "vite build && rollup -c rollup.config.ts",
     "lint": "eslint . --ext .js,.mjs,.cjs,.ts,.tsx --fix",
     "lint:check": "eslint . --ext .js,.mjs,.cjs,.ts,.tsx",
     "format": "prettier . --write",
@@ -93,6 +94,7 @@
     "husky": "^9.1.7",
     "jiti": "^2.7.0",
     "prettier": "^3.8.3",
+    "rollup-plugin-dts": "^6.4.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.3",
     "vite": "^8.0.13",
