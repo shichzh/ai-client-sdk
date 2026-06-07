@@ -1,1 +1,1 @@
-pnpm format:check && pnpm lint:check && pnpm license:check
+pn format:check && pn lint:check && pn type:check && pn license:check

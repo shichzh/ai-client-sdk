@@ -40,6 +40,7 @@
     "build": "vite build && rollup -c rollup.config.ts",
     "lint": "eslint . --ext .js,.mjs,.cjs,.ts,.tsx --fix",
     "lint:check": "eslint . --ext .js,.mjs,.cjs,.ts,.tsx",
+    "type:check": "tsc --noEmit",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "test": "vitest",
