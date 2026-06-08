@@ -143,7 +143,7 @@ class ToolManager {
     allowUnionTypes: true,
   });
 
-  private validatorCache: Record<string, ValidateFunction> = Object.create(null);
+  #validatorCache: Record<string, ValidateFunction> = Object.create(null);
 
   register<T extends Definition>(def: T, handler: Handler<T>) {
     if (this.tools[def.function.name]) {
@@ -162,7 +162,7 @@ class ToolManager {
 
   remove(name: string) {
     delete this.tools[name];
-    delete this.validatorCache[name];
+    delete this.#validatorCache[name];
   }
 
   get definitions(): Definition[] {
@@ -176,11 +176,11 @@ class ToolManager {
     return names.map((n) => this.getDefinition(n)).filter((d): d is Definition => Boolean(d));
   }
 
-  private getValidator(name: string, schema: AnySchema): ValidateFunction {
-    if (!this.validatorCache[name]) {
-      this.validatorCache[name] = this.ajv.compile(schema);
+  #getValidator(name: string, schema: AnySchema): ValidateFunction {
+    if (!this.#validatorCache[name]) {
+      this.#validatorCache[name] = this.ajv.compile(schema);
     }
-    return this.validatorCache[name];
+    return this.#validatorCache[name];
   }
 
   validate(name: string, args: unknown) {
@@ -189,7 +189,7 @@ class ToolManager {
       throw new Error(`${name} 未注册`);
     }
     const schema = t.def.function.parameters; // 直接使用完整 schema，支持 additionalProperties 等
-    const validate = this.getValidator(name, schema);
+    const validate = this.#getValidator(name, schema);
     if (!validate(args)) {
       const msg = this.ajv.errorsText(validate.errors, {separator: ', '});
       throw new Error(`参数验证失败: ${msg}`);
@@ -274,12 +274,12 @@ class Agent extends ToolManager {
     tools: [],
     roundsLeft: this.maxRounds,
   };
-  private controller: AbortController | null = null;
+  #controller: AbortController | null = null;
 
   abort(): void {
-    if (this.controller) {
-      this.controller.abort();
-      this.controller = null;
+    if (this.#controller) {
+      this.#controller.abort();
+      this.#controller = null;
     }
   }
 
@@ -319,7 +319,7 @@ class Agent extends ToolManager {
     this.messages = systemMessage ? [systemMessage] : [];
   }
 
-  merge<T extends object, S extends object>(
+  #merge<T extends object, S extends object>(
     target: T | null,
     source: S,
     fieldsToConcat: (keyof (T & S))[] = [],
@@ -341,7 +341,7 @@ class Agent extends ToolManager {
     );
   }
 
-  private async executeTools(tool_calls: ToolCall[]): Promise<void> {
+  async #executeTools(tool_calls: ToolCall[]): Promise<void> {
     const promises = tool_calls.map(async (element) => {
       const {
         function: {name, arguments: args},
@@ -361,7 +361,7 @@ class Agent extends ToolManager {
   async invoke(params = this.defaultParams): Promise<AssistantMessage | undefined> {
     const {tools = [], roundsLeft = this.maxRounds, panel} = params;
     this.abort();
-    this.controller = new AbortController();
+    this.#controller = new AbortController();
     try {
       const response = await fetch(this.url, {
         method: 'POST',
@@ -374,10 +374,10 @@ class Agent extends ToolManager {
           tools: this.getDefinitions(tools),
           stream: false,
         }),
-        signal: this.controller.signal,
+        signal: this.#controller.signal,
       });
 
-      if (this.controller.signal.aborted) {
+      if (this.#controller.signal.aborted) {
         throw new DOMException('对话已停止', 'AbortError');
       }
 
@@ -413,7 +413,7 @@ class Agent extends ToolManager {
         role,
         tool_calls,
       });
-      await this.executeTools(tool_calls);
+      await this.#executeTools(tool_calls);
 
       // 剩余轮次 > 0 时继续回调
       if (roundsLeft - 1 > 0) {
@@ -423,14 +423,14 @@ class Agent extends ToolManager {
         return await this.invoke({tools: [], roundsLeft: roundsLeft - 1, panel});
       }
     } finally {
-      this.controller = null;
+      this.#controller = null;
     }
   }
 
   async *invokeStream(params = this.defaultParams): StreamResult {
     const {tools = [], roundsLeft = this.maxRounds} = params;
     this.abort();
-    this.controller = new AbortController();
+    this.#controller = new AbortController();
     try {
       const response = await fetch(this.url, {
         method: 'POST',
@@ -443,10 +443,10 @@ class Agent extends ToolManager {
           tools: this.getDefinitions(tools),
           stream: true,
         }),
-        signal: this.controller.signal,
+        signal: this.#controller.signal,
       });
 
-      if (this.controller.signal.aborted) {
+      if (this.#controller.signal.aborted) {
         throw new DOMException('对话已停止', 'AbortError');
       }
 
@@ -476,7 +476,7 @@ class Agent extends ToolManager {
           const jsonStr = item.trim().replace(/^data: /, '');
           try {
             const json = JSON.parse(buffer + jsonStr);
-            result = this.merge(result, json, ['content', 'arguments']);
+            result = this.#merge(result, json, ['content', 'arguments']);
             yield json;
             buffer = '';
           } catch (error) {
@@ -511,14 +511,14 @@ class Agent extends ToolManager {
         role,
         tool_calls,
       });
-      await this.executeTools(tool_calls);
+      await this.#executeTools(tool_calls);
 
       // 剩余轮次 > 0 时继续回调
       if (roundsLeft - 1 > 0) {
         return this.invokeStream({tools: [], roundsLeft: roundsLeft - 1});
       }
     } finally {
-      this.controller = null;
+      this.#controller = null;
     }
   }
 }

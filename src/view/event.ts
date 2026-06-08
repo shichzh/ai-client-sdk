@@ -28,7 +28,7 @@ type EventParams = {
 type EventListener<T extends EventType> = (...args: EventParams[T]) => void | Promise<void>;
 
 class EventManager {
-  private events: {
+  #events: {
     [K in EventType]: EventListener<K>[];
   } = {
     send: [],
@@ -37,11 +37,11 @@ class EventManager {
   };
 
   on = <T extends EventType>(type: T, listener: EventListener<T>): void => {
-    this.events[type].push(listener);
+    this.#events[type].push(listener);
   };
 
   emit = async <T extends EventType>(type: T, ...args: EventParams[T]): Promise<void> => {
-    for (const listener of this.events[type]) {
+    for (const listener of this.#events[type]) {
       try {
         await listener(...args);
       } catch (error) {

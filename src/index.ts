@@ -30,51 +30,51 @@ export interface PanelElement extends HTMLElement {
 }
 
 class Panel extends HTMLElement implements PanelElement {
-  private appRef: Result | null = null;
-  private promise: Promise<void>;
-  private resolve: (() => void) | null = null;
+  #appRef: Result | null = null;
+  #promise: Promise<void>;
+  #resolve: (() => void) | null = null;
 
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
-    this.promise = new Promise<void>((resolve) => {
-      this.resolve = resolve;
+    this.#promise = new Promise<void>((resolve) => {
+      this.#resolve = resolve;
     });
   }
 
   connectedCallback() {
     if (this.shadowRoot) {
-      this.appRef = init({domNode: this.shadowRoot, onReady: () => this.resolve?.()});
+      this.#appRef = init({domNode: this.shadowRoot, onReady: () => this.#resolve?.()});
     }
   }
 
   ready(): Promise<void> {
-    return this.promise;
+    return this.#promise;
   }
 
   async pushMessage(message: Message): Promise<void> {
-    await this.promise;
-    this.appRef?.current?.pushMessage(message);
+    await this.#promise;
+    this.#appRef?.current?.pushMessage(message);
   }
 
   async pushMessages(messages: Message[]): Promise<void> {
-    await this.promise;
-    this.appRef?.current?.pushMessages(messages);
+    await this.#promise;
+    this.#appRef?.current?.pushMessages(messages);
   }
 
   async pushLoadingMessage(): Promise<void> {
-    await this.promise;
-    this.appRef?.current?.pushLoadingMessage();
+    await this.#promise;
+    this.#appRef?.current?.pushLoadingMessage();
   }
 
   async updateLoadingMessage(field: 'content' | 'reasoning_content', value: string): Promise<void> {
-    await this.promise;
-    this.appRef?.current?.updateLoadingMessage(field, value);
+    await this.#promise;
+    this.#appRef?.current?.updateLoadingMessage(field, value);
   }
 
   async updateContext(content: string): Promise<void> {
-    await this.promise;
-    this.appRef?.current?.updateContext(content);
+    await this.#promise;
+    this.#appRef?.current?.updateContext(content);
   }
 }
 
@@ -86,39 +86,39 @@ interface AIChatPanelConfig {
 
 export class AIChatPanel {
   on = eventManager.on;
-  private readonly panelElement: PanelElement;
+  readonly #panelElement: PanelElement;
 
   constructor(config: AIChatPanelConfig) {
     const {container} = config;
     if (!container) {
       throw new Error('未提供有效的 container');
     }
-    this.panelElement = document.createElement('ai-chat-panel') as PanelElement;
-    container.appendChild(this.panelElement);
+    this.#panelElement = document.createElement('ai-chat-panel') as PanelElement;
+    container.appendChild(this.#panelElement);
   }
 
   ready(): Promise<void> {
-    return this.panelElement.ready();
+    return this.#panelElement.ready();
   }
 
   pushMessage(message: Message): Promise<void> {
-    return this.panelElement.pushMessage(message);
+    return this.#panelElement.pushMessage(message);
   }
 
   pushMessages(messages: Message[]): Promise<void> {
-    return this.panelElement.pushMessages(messages);
+    return this.#panelElement.pushMessages(messages);
   }
 
   pushLoadingMessage(): Promise<void> {
-    return this.panelElement.pushLoadingMessage();
+    return this.#panelElement.pushLoadingMessage();
   }
 
   updateLoadingMessage(field: 'content' | 'reasoning_content', value: string): Promise<void> {
-    return this.panelElement.updateLoadingMessage(field, value);
+    return this.#panelElement.updateLoadingMessage(field, value);
   }
 
   updateContext(content: string): Promise<void> {
-    return this.panelElement.updateContext(content);
+    return this.#panelElement.updateContext(content);
   }
 }
 
