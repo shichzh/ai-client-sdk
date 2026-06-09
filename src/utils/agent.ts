@@ -233,6 +233,7 @@ interface AssistantMessage {
   content: string;
   reasoning_content?: string;
   tool_calls?: ToolCall[] | null;
+  loading?: boolean;
 }
 
 interface ToolMessage {

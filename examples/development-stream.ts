@@ -38,13 +38,15 @@ const main = async () => {
   }
 
   async function processGenerator(generator: StreamResult): Promise<void> {
-    await panel.pushMessage({id: crypto.randomUUID(), role: 'assistant', content: ''});
+    const id = crypto.randomUUID();
+    await panel.pushMessage({id, role: 'assistant', content: '', loading: true});
     let reasoningContentMarkdownStr = '';
     let contentMarkdownStr = '';
     while (true) {
       const {value, done} = await generator.next();
       if (done) {
         if (value) {
+          await panel.updateMessage(id, 'loading', false);
           if (isAssistantMessage(value)) {
             agent.pushMessage(value);
           } else {
@@ -56,11 +58,11 @@ const main = async () => {
       const delta = value.choices?.[0]?.delta;
       if (delta?.reasoning_content) {
         reasoningContentMarkdownStr += delta.reasoning_content;
-        await panel.updateAssistantMessage('reasoning_content', reasoningContentMarkdownStr);
+        await panel.updateMessage(id, 'reasoning_content', reasoningContentMarkdownStr);
       }
       if (delta?.content) {
         contentMarkdownStr += delta.content;
-        await panel.updateAssistantMessage('content', contentMarkdownStr);
+        await panel.updateMessage(id, 'content', contentMarkdownStr);
       }
     }
   }
@@ -72,7 +74,6 @@ const main = async () => {
       await processGenerator(generator);
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        await panel.updateAssistantMessage('content', '对话已停止');
         return;
       }
       const msg =

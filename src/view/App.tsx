@@ -49,7 +49,11 @@ interface HistoryItem {
 export interface AppRef {
   pushMessage: (message: Message) => void;
   pushMessages: (messages: Message[]) => void;
-  updateAssistantMessage: (field: 'content' | 'reasoning_content', value: string) => void;
+  updateMessage: (
+    id: string,
+    field: 'content' | 'reasoning_content' | 'loading',
+    value: string | boolean,
+  ) => void;
   updateContext: (content: string) => void;
 }
 
@@ -125,7 +129,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     setHistory((prev) =>
       prev.map((item) => (item.id === currentChatId ? {...item, messages} : item)),
     );
-  }, [messages, currentChatId]);
+  }, [messages.length, currentChatId]);
 
   useEffect(() => {
     debouncedSaveHistory();
@@ -162,24 +166,19 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     setMessages((prev) => [...prev, ..._messages]);
   }, []);
 
-  /**
-   * TODO: 改成按 id 更新 message
-   */
-  const updateAssistantMessage = useCallback(
-    (field: 'content' | 'reasoning_content', value: string) => {
+  const updateMessage = useCallback(
+    (id: string, field: 'content' | 'reasoning_content' | 'loading', value: string | boolean) => {
       startTransition(() => {
         setMessages((prev) => {
-          const newMessages = [...prev];
-          if (newMessages.length) {
-            const lastMessage = newMessages.at(-1);
-            if (lastMessage?.role === 'assistant') {
-              newMessages[newMessages.length - 1] = {
-                ...lastMessage,
+          return prev.map((message) => {
+            if (message.id === id) {
+              return {
+                ...message,
                 [field]: value,
               };
             }
-          }
-          return newMessages;
+            return message;
+          });
         });
       });
     },
@@ -199,10 +198,10 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     () => ({
       pushMessage,
       pushMessages,
-      updateAssistantMessage,
+      updateMessage,
       updateContext,
     }),
-    [pushMessage, pushMessages, updateAssistantMessage, updateContext],
+    [pushMessage, pushMessages, updateMessage, updateContext],
   );
 
   const send = useCallback(

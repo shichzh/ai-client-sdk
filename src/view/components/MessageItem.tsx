@@ -99,7 +99,7 @@ const MessageItem = ({message}: MessageItemProps) => {
       });
   };
 
-  const isLoading = !message.content;
+  const isLoading = isAssistantMessage(message) && message.loading;
 
   return (
     <div className={`message ${message.role}`}>
@@ -116,11 +116,14 @@ const MessageItem = ({message}: MessageItemProps) => {
         </div>
       )}
       <div className="body-container">
-        {isLoading ? (
-          <p className="loading-dots"></p>
-        ) : (
-          <div className="content-container" dangerouslySetInnerHTML={{__html: parsedContent}} />
-        )}
+        <div
+          className="content-container"
+          dangerouslySetInnerHTML={{
+            __html: isLoading
+              ? `${parsedContent}<p class="loading-dots"></p>`
+              : parsedContent || '<p>无内容</p>',
+          }}
+        />
       </div>
       <div className="button-container">
         <Tooltip title="复制" placement={message.role === 'user' ? 'bottomRight' : 'bottomLeft'}>
