@@ -102,7 +102,7 @@ const MessageItem = ({message}: MessageItemProps) => {
   const isLoading = !message.content;
 
   return (
-    <div className={`message ${message.role} ${isLoading ? 'loading' : ''}`}>
+    <div className={`message ${message.role}`}>
       {isAssistantMessage(message) && parsedReasoningContent && (
         <div className={`reasoning-container ${isCollapsed ? 'collapsed' : ''}`}>
           <button className="reasoning-header plain" type="button" onClick={handleToggle}>
