@@ -17,7 +17,6 @@
 
 import Ajv, {type ValidateFunction, type AnySchema} from 'ajv';
 import {mergeWith} from 'lodash-es';
-import {type PanelElement} from '../index';
 import {generateId} from './uuid';
 
 interface StringParameter {
@@ -248,18 +247,11 @@ type Message = SimpleMessage | AssistantMessage | ToolMessage;
 interface Params {
   tools?: string[];
   roundsLeft?: number;
-  panel?: Pick<PanelElement, 'pushMessage' | 'updateAssistantMessage'>;
 }
 
 interface Chunk {
   choices: Array<{
     delta: AssistantMessage;
-  }>;
-}
-
-interface Result {
-  choices: Array<{
-    message: AssistantMessage;
   }>;
 }
 
@@ -356,74 +348,6 @@ class Agent extends ToolManager {
       });
     });
     await Promise.all(promises);
-  }
-
-  async invoke(params = this.defaultParams): Promise<AssistantMessage | undefined> {
-    const {tools = [], roundsLeft = this.maxRounds, panel} = params;
-    this.abort();
-    this.#controller = new AbortController();
-    try {
-      const response = await fetch(this.url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: this.model,
-          messages: this.messages,
-          tools: this.getDefinitions(tools),
-          stream: false,
-        }),
-        signal: this.#controller.signal,
-      });
-
-      if (this.#controller.signal.aborted) {
-        throw new DOMException('对话已停止', 'AbortError');
-      }
-
-      const result = (await response.json()) as Result;
-
-      const message = result?.choices?.[0]?.message;
-
-      if (!message) {
-        return;
-      }
-
-      /**
-       * 兼容有的大模型返回的 role 是 null
-       */
-      if (message.role === null) {
-        message.role = 'assistant';
-      }
-
-      const {content, role, tool_calls} = message;
-
-      if (!tool_calls?.length) {
-        return message;
-      }
-
-      if (content && panel) {
-        await panel.pushMessage({id: generateId(), role: 'assistant', content});
-      }
-
-      this.messages.push({
-        id: generateId(),
-        content,
-        role,
-        tool_calls,
-      });
-      await this.#executeTools(tool_calls);
-
-      // 剩余轮次 > 0 时继续回调
-      if (roundsLeft - 1 > 0) {
-        if (panel) {
-          await panel.pushMessage({id: generateId(), role: 'assistant', content: ''});
-        }
-        return await this.invoke({tools: [], roundsLeft: roundsLeft - 1, panel});
-      }
-    } finally {
-      this.#controller = null;
-    }
   }
 
   async *invokeStream(params = this.defaultParams): StreamResult {

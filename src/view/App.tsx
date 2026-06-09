@@ -161,6 +161,9 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     setMessages((prev) => [...prev, ..._messages]);
   }, []);
 
+  /**
+   * TODO: 改成按 id 更新 message
+   */
   const updateAssistantMessage = useCallback(
     (field: 'content' | 'reasoning_content', value: string) => {
       startTransition(() => {
