@@ -38,7 +38,7 @@ const main = async () => {
   }
 
   async function processGenerator(generator: StreamResult): Promise<void> {
-    await panel.pushLoadingMessage();
+    await panel.pushAssistantMessage();
     let reasoningContentMarkdownStr = '';
     let contentMarkdownStr = '';
     while (true) {
@@ -56,11 +56,11 @@ const main = async () => {
       const delta = value.choices?.[0]?.delta;
       if (delta?.reasoning_content) {
         reasoningContentMarkdownStr += delta.reasoning_content;
-        await panel.updateLoadingMessage('reasoning_content', reasoningContentMarkdownStr);
+        await panel.updateAssistantMessage('reasoning_content', reasoningContentMarkdownStr);
       }
       if (delta?.content) {
         contentMarkdownStr += delta.content;
-        await panel.updateLoadingMessage('content', contentMarkdownStr);
+        await panel.updateAssistantMessage('content', contentMarkdownStr);
       }
     }
   }
@@ -72,7 +72,7 @@ const main = async () => {
       await processGenerator(generator);
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        await panel.updateLoadingMessage('content', '对话已停止');
+        await panel.updateAssistantMessage('content', '对话已停止');
         return;
       }
       const msg =

@@ -248,7 +248,7 @@ type Message = SimpleMessage | AssistantMessage | ToolMessage;
 interface Params {
   tools?: string[];
   roundsLeft?: number;
-  panel?: Pick<PanelElement, 'pushLoadingMessage' | 'updateLoadingMessage'>;
+  panel?: Pick<PanelElement, 'pushAssistantMessage' | 'updateAssistantMessage'>;
 }
 
 interface Chunk {
@@ -403,8 +403,8 @@ class Agent extends ToolManager {
       }
 
       if (content && panel) {
-        await panel.pushLoadingMessage();
-        await panel.updateLoadingMessage('content', content);
+        await panel.pushAssistantMessage();
+        await panel.updateAssistantMessage('content', content);
       }
 
       this.messages.push({
@@ -418,7 +418,7 @@ class Agent extends ToolManager {
       // 剩余轮次 > 0 时继续回调
       if (roundsLeft - 1 > 0) {
         if (panel) {
-          await panel.pushLoadingMessage();
+          await panel.pushAssistantMessage();
         }
         return await this.invoke({tools: [], roundsLeft: roundsLeft - 1, panel});
       }

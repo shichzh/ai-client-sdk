@@ -48,8 +48,8 @@ interface HistoryItem {
 export interface AppRef {
   pushMessage: (message: Message) => void;
   pushMessages: (messages: Message[]) => void;
-  pushLoadingMessage: () => void;
-  updateLoadingMessage: (field: 'content' | 'reasoning_content', value: string) => void;
+  pushAssistantMessage: () => void;
+  updateAssistantMessage: (field: 'content' | 'reasoning_content', value: string) => void;
   updateContext: (content: string) => void;
 }
 
@@ -162,7 +162,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     setMessages((prev) => [...prev, ..._messages]);
   }, []);
 
-  const pushLoadingMessage = useCallback(() => {
+  const pushAssistantMessage = useCallback(() => {
     const loadingMessage: Message = {
       id: generateId(),
       role: 'assistant',
@@ -172,7 +172,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     setMessages((prev) => [...prev, loadingMessage]);
   }, []);
 
-  const updateLoadingMessage = useCallback(
+  const updateAssistantMessage = useCallback(
     (field: 'content' | 'reasoning_content', value: string) => {
       startTransition(() => {
         setMessages((prev) => {
@@ -206,11 +206,11 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     () => ({
       pushMessage,
       pushMessages,
-      pushLoadingMessage,
-      updateLoadingMessage,
+      pushAssistantMessage,
+      updateAssistantMessage,
       updateContext,
     }),
-    [pushMessage, pushMessages, pushLoadingMessage, updateLoadingMessage, updateContext],
+    [pushMessage, pushMessages, pushAssistantMessage, updateAssistantMessage, updateContext],
   );
 
   const send = useCallback(

@@ -36,7 +36,7 @@ const main = async () => {
   panel.on('send', async (message: Message) => {
     try {
       agent.pushMessage(message);
-      await panel.pushLoadingMessage();
+      await panel.pushAssistantMessage();
       const response = await agent.invoke({panel});
       if (!response) {
         return;
@@ -44,14 +44,14 @@ const main = async () => {
       agent.pushMessage(response);
       const {reasoning_content, content} = response;
       if (reasoning_content) {
-        await panel.updateLoadingMessage('reasoning_content', reasoning_content);
+        await panel.updateAssistantMessage('reasoning_content', reasoning_content);
       }
       if (content) {
-        await panel.updateLoadingMessage('content', content);
+        await panel.updateAssistantMessage('content', content);
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        await panel.updateLoadingMessage('content', '对话已停止');
+        await panel.updateAssistantMessage('content', '对话已停止');
         return;
       }
       const msg =
