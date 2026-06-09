@@ -37,8 +37,8 @@ import StopIcon from './components/icons/StopIcon';
 import SendIcon from './components/icons/SendIcon';
 import HistoryIcon from './components/icons/HistoryIcon';
 import styles from './css/index.css?inline';
+import dayjs from 'dayjs';
 import {generateId} from '../utils/uuid';
-import {formatDate} from '../utils/time';
 
 interface HistoryItem {
   id: string;
@@ -437,7 +437,9 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
                   >
                     <div className="history-info">
                       <div className="history-content">{item.messages[0]?.content || '无内容'}</div>
-                      <div className="history-time">{formatDate(item.createdAt)}</div>
+                      <div className="history-time">
+                        {dayjs(item.createdAt).format('YYYY-MM-DD HH:mm:ss')}
+                      </div>
                     </div>
                     <button
                       className="history-delete"
