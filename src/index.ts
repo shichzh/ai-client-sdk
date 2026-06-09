@@ -67,7 +67,10 @@ class Panel extends HTMLElement implements PanelElement {
     this.#appRef?.current?.pushAssistantMessage();
   }
 
-  async updateAssistantMessage(field: 'content' | 'reasoning_content', value: string): Promise<void> {
+  async updateAssistantMessage(
+    field: 'content' | 'reasoning_content',
+    value: string,
+  ): Promise<void> {
     await this.#promise;
     this.#appRef?.current?.updateAssistantMessage(field, value);
   }
