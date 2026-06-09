@@ -27,7 +27,7 @@ import {
   type MouseEvent,
 } from 'react';
 import {debounce} from 'lodash-es';
-import {type Message} from '../utils/agent';
+import {type Message, type AssistantMessage} from '../utils/agent';
 import MessageItem from './components/MessageItem';
 import {eventManager} from './event';
 import {notification, Tooltip, Modal} from 'antd';
@@ -163,13 +163,13 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   }, []);
 
   const pushAssistantMessage = useCallback(() => {
-    const loadingMessage: Message = {
+    const assistantMessage: AssistantMessage = {
       id: generateId(),
       role: 'assistant',
       reasoning_content: '',
       content: '',
     };
-    setMessages((prev) => [...prev, loadingMessage]);
+    setMessages((prev) => [...prev, assistantMessage]);
   }, []);
 
   const updateAssistantMessage = useCallback(
