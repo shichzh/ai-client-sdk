@@ -24,7 +24,6 @@ export interface PanelElement extends HTMLElement {
   ready(): Promise<void>;
   pushMessage(message: Message): Promise<void>;
   pushMessages(messages: Message[]): Promise<void>;
-  pushAssistantMessage(): Promise<void>;
   updateAssistantMessage(field: 'content' | 'reasoning_content', value: string): Promise<void>;
   updateContext(content: string): Promise<void>;
 }
@@ -60,11 +59,6 @@ class Panel extends HTMLElement implements PanelElement {
   async pushMessages(messages: Message[]): Promise<void> {
     await this.#promise;
     this.#appRef?.current?.pushMessages(messages);
-  }
-
-  async pushAssistantMessage(): Promise<void> {
-    await this.#promise;
-    this.#appRef?.current?.pushAssistantMessage();
   }
 
   async updateAssistantMessage(
@@ -110,10 +104,6 @@ export class AIChatPanel {
 
   pushMessages(messages: Message[]): Promise<void> {
     return this.#panelElement.pushMessages(messages);
-  }
-
-  pushAssistantMessage(): Promise<void> {
-    return this.#panelElement.pushAssistantMessage();
   }
 
   updateAssistantMessage(field: 'content' | 'reasoning_content', value: string): Promise<void> {

@@ -38,7 +38,7 @@ const main = async () => {
   }
 
   async function processGenerator(generator: StreamResult): Promise<void> {
-    await panel.pushAssistantMessage();
+    await panel.pushMessage({id: crypto.randomUUID(), role: 'assistant', content: ''});
     let reasoningContentMarkdownStr = '';
     let contentMarkdownStr = '';
     while (true) {

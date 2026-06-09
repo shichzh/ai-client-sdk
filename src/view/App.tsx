@@ -27,7 +27,7 @@ import {
   type MouseEvent,
 } from 'react';
 import {debounce} from 'lodash-es';
-import {type Message, type AssistantMessage} from '../utils/agent';
+import {type Message} from '../utils/agent';
 import MessageItem from './components/MessageItem';
 import {eventManager} from './event';
 import {notification, Tooltip, Modal} from 'antd';
@@ -48,7 +48,6 @@ interface HistoryItem {
 export interface AppRef {
   pushMessage: (message: Message) => void;
   pushMessages: (messages: Message[]) => void;
-  pushAssistantMessage: () => void;
   updateAssistantMessage: (field: 'content' | 'reasoning_content', value: string) => void;
   updateContext: (content: string) => void;
 }
@@ -162,22 +161,12 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     setMessages((prev) => [...prev, ..._messages]);
   }, []);
 
-  const pushAssistantMessage = useCallback(() => {
-    const assistantMessage: AssistantMessage = {
-      id: generateId(),
-      role: 'assistant',
-      reasoning_content: '',
-      content: '',
-    };
-    setMessages((prev) => [...prev, assistantMessage]);
-  }, []);
-
   const updateAssistantMessage = useCallback(
     (field: 'content' | 'reasoning_content', value: string) => {
       startTransition(() => {
         setMessages((prev) => {
           const newMessages = [...prev];
-          if (newMessages.length > 0) {
+          if (newMessages.length) {
             const lastMessage = newMessages.at(-1);
             if (lastMessage?.role === 'assistant') {
               newMessages[newMessages.length - 1] = {
@@ -206,11 +195,10 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
     () => ({
       pushMessage,
       pushMessages,
-      pushAssistantMessage,
       updateAssistantMessage,
       updateContext,
     }),
-    [pushMessage, pushMessages, pushAssistantMessage, updateAssistantMessage, updateContext],
+    [pushMessage, pushMessages, updateAssistantMessage, updateContext],
   );
 
   const send = useCallback(

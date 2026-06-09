@@ -36,7 +36,7 @@ const main = async () => {
   panel.on('send', async (message: Message) => {
     try {
       agent.pushMessage(message);
-      await panel.pushAssistantMessage();
+      await panel.pushMessage({id: crypto.randomUUID(), role: 'assistant', content: ''});
       const response = await agent.invoke({panel});
       if (!response) {
         return;
