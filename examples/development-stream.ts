@@ -21,9 +21,13 @@ import {AIChatPanel, Agent, type Message, type StreamResult, type AssistantMessa
 const main = async () => {
   const container = document.getElementById('container');
   const panel = new AIChatPanel({container});
-  const agent = new Agent({
+  /**
+   * agent 必须用工厂模式创建
+   */
+  const agent = await Agent.create({
     model: 'doubao-seed-2-0-pro-260215', // 大模型 ID
     url: 'http://localhost:8080/api/chat/completions', // 大模型 API 的代理接口
+    mcpServerUrl: 'https://learn.microsoft.com/api/mcp',
   });
 
   const init = async () => {

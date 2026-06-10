@@ -27,7 +27,7 @@ import {
   type MouseEvent,
 } from 'react';
 import {debounce} from 'lodash-es';
-import {type Message} from '../utils/agent';
+import type {Message} from '../utils/types';
 import MessageItem from './components/MessageItem';
 import {eventManager} from './event';
 import {notification, Tooltip, Modal} from 'antd';

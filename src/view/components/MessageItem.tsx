@@ -15,7 +15,7 @@
  */
 
 import {memo, useState, useEffect, useRef, type MouseEvent} from 'react';
-import {type Message, type AssistantMessage} from '../../utils/agent';
+import type {Message, AssistantMessage} from '../../utils/types';
 import {Tooltip} from 'antd';
 import ArrowIcon from './icons/ArrowIcon';
 import CopyIcon from './icons/CopyIcon';

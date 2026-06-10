@@ -17,8 +17,8 @@
 
 import {eventManager} from './view/event';
 import {init, type Result} from './view/index';
-import {tools} from './utils/tools';
-import {Agent, type Message, type StreamResult, type AssistantMessage} from './utils/agent';
+import {Agent} from './utils/agent';
+import type {Message, StreamResult, AssistantMessage} from './utils/types';
 
 export interface PanelElement extends HTMLElement {
   ready(): Promise<void>;
@@ -124,4 +124,4 @@ export class AIChatPanel {
   }
 }
 
-export {tools, Agent, type Message, type StreamResult, type AssistantMessage};
+export {Agent, type Message, type StreamResult, type AssistantMessage};

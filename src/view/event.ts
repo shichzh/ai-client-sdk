@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import {type Message} from '../utils/agent';
+import type {Message} from '../utils/types';
 
 type EventType = 'send' | 'create' | 'stop';
 
