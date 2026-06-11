@@ -85,7 +85,12 @@ export interface AgentConfig {
   url: string;
   systemMessageContent?: string;
   maxRounds?: number;
-  mcpServerUrl?: string;
+  mcpClientOptions?: MCPClientOptions;
+}
+
+export interface MCPClientOptions {
+  serverUrl: string;
+  headers?: Record<string, string>;
 }
 
 export type ToolCall = {

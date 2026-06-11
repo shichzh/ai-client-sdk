@@ -16,7 +16,7 @@
 
 import {Client} from '@modelcontextprotocol/sdk/client';
 import {StreamableHTTPClientTransport} from '@modelcontextprotocol/sdk/client/streamableHttp';
-import type {Definition} from './types';
+import type {Definition, MCPClientOptions} from './types';
 
 export class MCPClient {
   readonly #client: Client;
@@ -24,8 +24,10 @@ export class MCPClient {
   #isConnected = false;
   #tools: Definition[] = [];
 
-  constructor(serverUrl: string) {
-    this.#transport = new StreamableHTTPClientTransport(new URL(serverUrl));
+  constructor(options: MCPClientOptions) {
+    this.#transport = new StreamableHTTPClientTransport(new URL(options.serverUrl), {
+      requestInit: {headers: options.headers || {}},
+    });
 
     this.#client = new Client({
       name: 'OpenAI-compatible-mcp-client',

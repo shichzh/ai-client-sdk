@@ -23,6 +23,7 @@ import type {
   Chunk,
   Definition,
   Message,
+  MCPClientOptions,
   Params,
   StreamResult,
   ToolCall,
@@ -38,7 +39,7 @@ export class Agent {
   };
   #controller: AbortController | null = null;
   #mcpClient: MCPClient | null = null;
-  #mcpServerUrl?: string;
+  #mcpClientOptions?: MCPClientOptions;
 
   abort(): void {
     if (this.#controller) {
@@ -48,10 +49,10 @@ export class Agent {
   }
 
   private constructor(config: AgentConfig) {
-    const {model, url, systemMessageContent, maxRounds, mcpServerUrl} = config;
+    const {model, url, systemMessageContent, maxRounds, mcpClientOptions} = config;
     this.model = model;
     this.url = url;
-    this.#mcpServerUrl = mcpServerUrl;
+    this.#mcpClientOptions = mcpClientOptions;
     if (typeof maxRounds === 'number') {
       this.maxRounds = maxRounds;
     }
@@ -71,13 +72,13 @@ export class Agent {
   }
 
   async initMCPClient(): Promise<void> {
-    if (!this.#mcpServerUrl) {
+    if (!this.#mcpClientOptions) {
       return;
     }
     if (this.#mcpClient?.connected) {
       return;
     }
-    this.#mcpClient = new MCPClient(this.#mcpServerUrl);
+    this.#mcpClient = new MCPClient(this.#mcpClientOptions);
     await this.#mcpClient.connect();
   }
 
