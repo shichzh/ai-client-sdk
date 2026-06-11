@@ -30,31 +30,25 @@ import type {
 } from './types';
 
 export class Agent {
-  model = '';
-  url = '';
-  messages: Message[] = [];
-  maxRounds = 4;
-  defaultParams: Params = {
-    roundsLeft: this.maxRounds,
+  #model = '';
+  #url = '';
+  #maxRounds = 4;
+  #defaultParams: Params = {
+    roundsLeft: this.#maxRounds,
   };
   #controller: AbortController | null = null;
   #mcpClient: MCPClient | null = null;
   #mcpClientOptions?: MCPClientOptions;
 
-  abort(): void {
-    if (this.#controller) {
-      this.#controller.abort();
-      this.#controller = null;
-    }
-  }
+  messages: Message[] = [];
 
   private constructor(config: AgentConfig) {
     const {model, url, systemMessageContent, maxRounds, mcpClientOptions} = config;
-    this.model = model;
-    this.url = url;
+    this.#model = model;
+    this.#url = url;
     this.#mcpClientOptions = mcpClientOptions;
     if (typeof maxRounds === 'number') {
-      this.maxRounds = maxRounds;
+      this.#maxRounds = maxRounds;
     }
     if (systemMessageContent) {
       this.messages[0] = {
@@ -67,19 +61,15 @@ export class Agent {
 
   static async create(config: AgentConfig): Promise<Agent> {
     const agent = new Agent(config);
-    await agent.initMCPClient();
+    await agent.#initMCPClient();
     return agent;
   }
 
-  async initMCPClient(): Promise<void> {
-    if (!this.#mcpClientOptions) {
-      return;
+  abort(): void {
+    if (this.#controller) {
+      this.#controller.abort();
+      this.#controller = null;
     }
-    if (this.#mcpClient?.connected) {
-      return;
-    }
-    this.#mcpClient = new MCPClient(this.#mcpClientOptions);
-    await this.#mcpClient.connect();
   }
 
   pushMessage(message: Message) {
@@ -101,55 +91,8 @@ export class Agent {
     this.messages = systemMessage ? [systemMessage] : [];
   }
 
-  #merge<T extends object, S extends object>(
-    target: T | null,
-    source: S,
-    fieldsToConcat: (keyof (T & S))[] = [],
-  ): T & S {
-    return mergeWith(
-      {}, // 避免直接修改原对象
-      target,
-      source,
-      (objValue: unknown, srcValue: unknown, key: keyof (T & S)) => {
-        // 检查当前键是否需要拼接且都是字符串类型
-        if (fieldsToConcat.includes(key)) {
-          const objStr = typeof objValue === 'string' ? objValue : '';
-          const srcStr = typeof srcValue === 'string' ? srcValue : '';
-          return objStr + srcStr;
-        }
-        // 其他情况使用默认合并行为
-        return undefined;
-      },
-    );
-  }
-
-  async #executeTools(tool_calls: ToolCall[]): Promise<void> {
-    if (!this.#mcpClient?.connected) {
-      throw new Error('MCP 客户端未连接');
-    }
-
-    const client = this.#mcpClient;
-    const promises = tool_calls.map(async (element) => {
-      const {
-        function: {name, arguments: args},
-        id,
-      } = element;
-
-      const result = await client.callTool(name, JSON.parse(args));
-      const resp = typeof result === 'string' ? result : JSON.stringify(result);
-
-      this.messages.push({
-        id: generateId(),
-        content: resp,
-        role: 'tool',
-        tool_call_id: id,
-      });
-    });
-    await Promise.all(promises);
-  }
-
-  async *invokeStream(params = this.defaultParams): StreamResult {
-    const {roundsLeft = this.maxRounds} = params;
+  async *invokeStream(params = this.#defaultParams): StreamResult {
+    const {roundsLeft = this.#maxRounds} = params;
     this.abort();
     this.#controller = new AbortController();
     try {
@@ -159,13 +102,13 @@ export class Agent {
         tools = this.#mcpClient.tools;
       }
 
-      const response = await fetch(this.url, {
+      const response = await fetch(this.#url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: this.model,
+          model: this.#model,
           messages: this.messages,
           tools,
           stream: true,
@@ -247,5 +190,63 @@ export class Agent {
     } finally {
       this.#controller = null;
     }
+  }
+
+  async #initMCPClient(): Promise<void> {
+    if (!this.#mcpClientOptions) {
+      return;
+    }
+    if (this.#mcpClient?.connected) {
+      return;
+    }
+    this.#mcpClient = new MCPClient(this.#mcpClientOptions);
+    await this.#mcpClient.connect();
+  }
+
+  #merge<T extends object, S extends object>(
+    target: T | null,
+    source: S,
+    fieldsToConcat: (keyof (T & S))[] = [],
+  ): T & S {
+    return mergeWith(
+      {}, // 避免直接修改原对象
+      target,
+      source,
+      (objValue: unknown, srcValue: unknown, key: keyof (T & S)) => {
+        // 检查当前键是否需要拼接且都是字符串类型
+        if (fieldsToConcat.includes(key)) {
+          const objStr = typeof objValue === 'string' ? objValue : '';
+          const srcStr = typeof srcValue === 'string' ? srcValue : '';
+          return objStr + srcStr;
+        }
+        // 其他情况使用默认合并行为
+        return undefined;
+      },
+    );
+  }
+
+  async #executeTools(tool_calls: ToolCall[]): Promise<void> {
+    if (!this.#mcpClient?.connected) {
+      throw new Error('MCP 客户端未连接');
+    }
+
+    const client = this.#mcpClient;
+    const promises = tool_calls.map(async (element) => {
+      const {
+        function: {name, arguments: args},
+        id,
+      } = element;
+
+      const result = await client.callTool(name, JSON.parse(args));
+      const resp = typeof result === 'string' ? result : JSON.stringify(result);
+
+      this.messages.push({
+        id: generateId(),
+        content: resp,
+        role: 'tool',
+        tool_call_id: id,
+      });
+    });
+    await Promise.all(promises);
   }
 }
