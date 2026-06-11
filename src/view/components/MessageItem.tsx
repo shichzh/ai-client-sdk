@@ -121,7 +121,7 @@ const MessageItem = ({message}: MessageItemProps) => {
           dangerouslySetInnerHTML={{
             __html: isLoading
               ? `${parsedContent}<p class="loading-dots"></p>`
-              : parsedContent || '<p>无内容</p>',
+              : parsedContent || '<p>暂无正文</p>',
           }}
         />
       </div>

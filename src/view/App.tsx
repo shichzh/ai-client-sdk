@@ -436,7 +436,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
                     onClick={() => handleSelectHistory(item)}
                   >
                     <div className="history-info">
-                      <div className="history-content">{item.messages[0]?.content || '无内容'}</div>
+                      <div className="history-content">{item.messages[0]?.content || '无对话'}</div>
                       <div className="history-time">
                         {dayjs(item.createdAt).format('YYYY-MM-DD HH:mm:ss')}
                       </div>
