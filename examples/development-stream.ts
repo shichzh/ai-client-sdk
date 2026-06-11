@@ -16,7 +16,7 @@
  */
 
 // 只能从 src/index.ts 引入
-import {AIChatPanel, Agent, type Message, type StreamResult, type AssistantMessage} from '../src';
+import {AIChatPanel, Agent, type Message, type StreamResult} from '../src';
 
 const main = async () => {
   const container = document.getElementById('container');
@@ -39,7 +39,7 @@ const main = async () => {
   await panel.ready();
   await init();
 
-  function isAssistantMessage(v: AssistantMessage | StreamResult): v is AssistantMessage {
+  function isMessage(v: Message | StreamResult): v is Message {
     return 'role' in v;
   }
 
@@ -53,7 +53,7 @@ const main = async () => {
       if (done) {
         if (value) {
           await panel.updateMessage(id, 'loading', false);
-          if (isAssistantMessage(value)) {
+          if (isMessage(value)) {
             agent.pushMessage(value);
           } else {
             await processGenerator(value);
