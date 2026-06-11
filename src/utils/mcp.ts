@@ -45,8 +45,29 @@ export class MCPClient {
     await this.#fetchTools();
   }
 
+  async callTool(name: string, args: Record<string, unknown>) {
+    return this.#client.callTool({
+      name,
+      arguments: args,
+    });
+  }
+
+  /**
+   * 主动关闭连接
+   */
+  close(): void {
+    if (this.#isConnected) {
+      this.#transport.close();
+      this.#isConnected = false;
+    }
+  }
+
   get tools(): Definition[] {
     return [...this.#tools];
+  }
+
+  get connected(): boolean {
+    return this.#isConnected;
   }
 
   async #fetchTools(): Promise<void> {
@@ -68,26 +89,5 @@ export class MCPClient {
       console.error('Failed to fetch tools:', error);
       this.#tools = [];
     }
-  }
-
-  async callTool(name: string, args: Record<string, unknown>) {
-    return this.#client.callTool({
-      name,
-      arguments: args,
-    });
-  }
-
-  /**
-   * 主动关闭连接
-   */
-  close(): void {
-    if (this.#isConnected) {
-      this.#transport.close();
-      this.#isConnected = false;
-    }
-  }
-
-  get connected(): boolean {
-    return this.#isConnected;
   }
 }
