@@ -76,18 +76,21 @@ export class MCPClient {
   async #fetchTools(): Promise<void> {
     try {
       const result = await this.#client.listTools();
-      this.#tools = (result.tools || []).map((tool) => ({
-        type: 'function',
-        function: {
-          name: tool.name,
-          description: tool.description || '',
-          parameters: {
-            type: 'object',
-            properties: tool.inputSchema?.properties || {},
-            required: tool.inputSchema?.required || [],
+      this.#tools = (result.tools || []).map((tool) => {
+        const {name, description, inputSchema} = tool;
+        return {
+          type: 'function',
+          function: {
+            name,
+            description: description || '',
+            parameters: {
+              type: 'object',
+              properties: inputSchema?.properties || {},
+              required: inputSchema?.required || [],
+            },
           },
-        },
-      }));
+        };
+      });
     } catch (error) {
       console.error('Failed to fetch tools:', error);
       this.#tools = [];
