@@ -70,6 +70,9 @@ export class MCPClient {
     return this.#isConnected;
   }
 
+  /**
+   * TODO: 核对 schema 结构
+   */
   async #fetchTools(): Promise<void> {
     try {
       const result = await this.#client.listTools();
