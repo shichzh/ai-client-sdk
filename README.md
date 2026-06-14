@@ -18,7 +18,7 @@
 ```bash
 npm install ai-client-sdk
 # 或
-pnpm add ai-client-sdk
+pn add ai-client-sdk
 ```
 
 ## 开发
