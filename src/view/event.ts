@@ -51,6 +51,4 @@ class EventManager {
   };
 }
 
-const eventManager = new EventManager();
-
-export {eventManager};
+export const eventManager = new EventManager();
