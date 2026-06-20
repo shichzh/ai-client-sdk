@@ -50,7 +50,7 @@ interface AIChatPanelConfig {
 }
 
 export class AIChatPanel {
-  on = eventBus.subscribe;
+  on = eventBus.subscribe.bind(eventBus);
   readonly #panel: Panel;
 
   constructor(config: AIChatPanelConfig) {
