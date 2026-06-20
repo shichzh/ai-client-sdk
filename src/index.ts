@@ -66,14 +66,14 @@ export class AIChatPanel {
     return this.#panel.ready();
   }
 
-  async pushMessage(message: Message): Promise<void> {
+  async pushMessage(payload: Message): Promise<void> {
     await this.ready();
-    eventBus.publish('pushMessage', message);
+    eventBus.publish('pushMessage', payload);
   }
 
-  async pushMessages(messages: Message[]): Promise<void> {
+  async pushMessages(payload: Message[]): Promise<void> {
     await this.ready();
-    eventBus.publish('pushMessages', messages);
+    eventBus.publish('pushMessages', payload);
   }
 
   async updateMessage(payload: UpdateMessagePayload): Promise<void> {
@@ -81,9 +81,9 @@ export class AIChatPanel {
     eventBus.publish('updateMessage', payload);
   }
 
-  async updateContext(content: string): Promise<void> {
+  async updateContext(payload: string): Promise<void> {
     await this.ready();
-    eventBus.publish('updateContext', content);
+    eventBus.publish('updateContext', payload);
   }
 }
 
