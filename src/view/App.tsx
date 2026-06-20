@@ -17,8 +17,6 @@
 import {
   useState,
   useRef,
-  useImperativeHandle,
-  forwardRef,
   useEffect,
   useCallback,
   startTransition,
@@ -27,9 +25,9 @@ import {
   type MouseEvent,
 } from 'react';
 import {debounce} from 'lodash-es';
-import type {Message} from '../utils/types';
+import type {Message, UpdateMessagePayload} from '../utils/types';
 import MessageItem from './components/MessageItem';
-import {eventManager} from './event';
+import {eventBus} from '../utils/eventBus';
 import {notification, Tooltip, Modal} from 'antd';
 import CreateIcon from './components/icons/CreateIcon';
 import DeleteIcon from './components/icons/DeleteIcon';
@@ -46,22 +44,11 @@ interface HistoryItem {
   messages: Message[];
 }
 
-export interface AppRef {
-  pushMessage: (message: Message) => void;
-  pushMessages: (messages: Message[]) => void;
-  updateMessage: (
-    id: string,
-    field: 'content' | 'reasoning_content' | 'loading',
-    value: string | boolean,
-  ) => void;
-  updateContext: (content: string) => void;
-}
-
 interface AppProps {
   onReady: () => void;
 }
 
-const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
+const App = ({onReady}: AppProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInputValue, setUserInputValue] = useState('');
   const [isChatting, setIsChatting] = useState(false);
@@ -136,38 +123,30 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   }, [history, debouncedSaveHistory]);
 
   useEffect(() => {
-    return () => {
-      debouncedSaveHistory.cancel();
-      saveHistoryToStorage(historyRef.current);
+    /**
+     * 如果开发者会使用 pushMessage 或 pushMessages 添加 user message
+     * 则可能需要像 handleSend 一样，需要添加滚动逻辑
+     * 暂时没有添加滚动逻辑是认为开发者应该只添加 assistant message
+     * 而 user message 只在 user-input 里输入
+     */
+    const pushMessage = (payload: Message) => {
+      const _message = payload.id ? payload : {...payload, id: generateId()};
+      setMessages((prev) => [...prev, _message]);
     };
-  }, [debouncedSaveHistory, saveHistoryToStorage]);
 
-  /**
-   * 如果开发者会使用 pushMessage 或 pushMessages 添加 user message
-   * 则可能需要像 handleSend 一样，需要添加滚动逻辑
-   * 暂时没有添加滚动逻辑是认为开发者应该只添加 assistant message
-   * 而 user message 只在 user-input 里输入
-   */
-  const pushMessage = useCallback((message: Message) => {
-    const _message = message.id ? message : {...message, id: generateId()};
-    setMessages((prev) => [...prev, _message]);
-  }, []);
+    const pushMessages = (payload: Message[]) => {
+      if (!payload.length) {
+        return;
+      }
+      const _messages = payload.map((message) => ({
+        ...message,
+        id: message.id || generateId(),
+      }));
+      setMessages((prev) => [...prev, ..._messages]);
+    };
 
-  const pushMessages = useCallback((messages: Message[]) => {
-    if (!messages.length) {
-      return;
-    }
-
-    const _messages = messages.map((message) => ({
-      ...message,
-      id: message.id || generateId(),
-    }));
-
-    setMessages((prev) => [...prev, ..._messages]);
-  }, []);
-
-  const updateMessage = useCallback(
-    (id: string, field: 'content' | 'reasoning_content' | 'loading', value: string | boolean) => {
+    const updateMessage = (payload: UpdateMessagePayload) => {
+      const {id, field, value} = payload;
       startTransition(() => {
         setMessages((prev) => {
           return prev.map((message) => {
@@ -181,28 +160,29 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
           });
         });
       });
-    },
-    [],
-  );
+    };
 
-  const updateContext = useCallback((content: string) => {
-    setContext(content);
-  }, []);
+    const updateContext = (payload: string) => {
+      setContext(payload);
+    };
+
+    const disposes = [
+      eventBus.subscribe<Message>('pushMessage', pushMessage),
+      eventBus.subscribe<Message[]>('pushMessages', pushMessages),
+      eventBus.subscribe<UpdateMessagePayload>('updateMessage', updateMessage),
+      eventBus.subscribe<string>('updateContext', updateContext),
+    ];
+
+    return () => {
+      debouncedSaveHistory.cancel();
+      saveHistoryToStorage(historyRef.current);
+      disposes.forEach((dispose) => dispose());
+    };
+  }, [debouncedSaveHistory, saveHistoryToStorage]);
 
   const handleDeleteContext = useCallback(() => {
     setContext('');
   }, []);
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      pushMessage,
-      pushMessages,
-      updateMessage,
-      updateContext,
-    }),
-    [pushMessage, pushMessages, updateMessage, updateContext],
-  );
 
   const send = useCallback(
     async (content: string) => {
@@ -225,7 +205,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
           return;
         }
         messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-        await eventManager.emit('send', message);
+        await eventBus.publish('send', message);
       } finally {
         setIsChatting(false);
         userInputRef.current?.focus();
@@ -243,7 +223,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   }, [send]);
 
   const handleStop = useCallback(async () => {
-    await eventManager.emit('stop');
+    await eventBus.publish('stop');
     setIsChatting(false);
     userInputRef.current?.focus();
     api.info({
@@ -264,7 +244,7 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
   const handleCreate = useCallback(async () => {
     create();
     userInputRef.current?.focus();
-    await eventManager.emit('create');
+    await eventBus.publish('create');
     api.success({
       title: '已创建',
       description: '新对话已创建',
@@ -458,6 +438,6 @@ const App = forwardRef<AppRef, AppProps>(({onReady}, ref) => {
       </Modal>
     </div>
   );
-});
+};
 
 export default App;

@@ -15,25 +15,12 @@
  * limitations under the License.
  */
 
-import {eventManager} from './view/event';
-import {init, type Result} from './view/index';
+import {eventBus} from './utils/eventBus';
+import {init} from './view/index';
 import {Agent} from './utils/agent';
-import type {Message, StreamResult, AssistantMessage} from './utils/types';
+import type {Message, StreamResult, AssistantMessage, UpdateMessagePayload} from './utils/types';
 
-export interface PanelElement extends HTMLElement {
-  ready(): Promise<void>;
-  pushMessage(message: Message): Promise<void>;
-  pushMessages(messages: Message[]): Promise<void>;
-  updateMessage(
-    id: string,
-    field: 'content' | 'reasoning_content' | 'loading',
-    value: string | boolean,
-  ): Promise<void>;
-  updateContext(content: string): Promise<void>;
-}
-
-class Panel extends HTMLElement implements PanelElement {
-  #appRef: Result | null = null;
+class Panel extends HTMLElement {
   #promise: Promise<void>;
   #resolve: (() => void) | null = null;
 
@@ -47,36 +34,12 @@ class Panel extends HTMLElement implements PanelElement {
 
   connectedCallback() {
     if (this.shadowRoot) {
-      this.#appRef = init({domNode: this.shadowRoot, onReady: () => this.#resolve?.()});
+      init({domNode: this.shadowRoot, onReady: () => this.#resolve?.()});
     }
   }
 
   ready(): Promise<void> {
     return this.#promise;
-  }
-
-  async pushMessage(message: Message): Promise<void> {
-    await this.#promise;
-    this.#appRef?.current?.pushMessage(message);
-  }
-
-  async pushMessages(messages: Message[]): Promise<void> {
-    await this.#promise;
-    this.#appRef?.current?.pushMessages(messages);
-  }
-
-  async updateMessage(
-    id: string,
-    field: 'content' | 'reasoning_content' | 'loading',
-    value: string | boolean,
-  ): Promise<void> {
-    await this.#promise;
-    this.#appRef?.current?.updateMessage(id, field, value);
-  }
-
-  async updateContext(content: string): Promise<void> {
-    await this.#promise;
-    this.#appRef?.current?.updateContext(content);
   }
 }
 
@@ -87,40 +50,40 @@ interface AIChatPanelConfig {
 }
 
 export class AIChatPanel {
-  on = eventManager.on;
-  readonly #panelElement: PanelElement;
+  on = eventBus.subscribe;
+  readonly #panel: Panel;
 
   constructor(config: AIChatPanelConfig) {
     const {container} = config;
     if (!container) {
       throw new Error('未提供有效的 container');
     }
-    this.#panelElement = document.createElement('ai-chat-panel') as PanelElement;
-    container.appendChild(this.#panelElement);
+    this.#panel = document.createElement('ai-chat-panel') as Panel;
+    container.appendChild(this.#panel);
   }
 
   ready(): Promise<void> {
-    return this.#panelElement.ready();
+    return this.#panel.ready();
   }
 
-  pushMessage(message: Message): Promise<void> {
-    return this.#panelElement.pushMessage(message);
+  async pushMessage(message: Message): Promise<void> {
+    await this.ready();
+    eventBus.publish('pushMessage', message);
   }
 
-  pushMessages(messages: Message[]): Promise<void> {
-    return this.#panelElement.pushMessages(messages);
+  async pushMessages(messages: Message[]): Promise<void> {
+    await this.ready();
+    eventBus.publish('pushMessages', messages);
   }
 
-  updateMessage(
-    id: string,
-    field: 'content' | 'reasoning_content' | 'loading',
-    value: string | boolean,
-  ): Promise<void> {
-    return this.#panelElement.updateMessage(id, field, value);
+  async updateMessage(payload: UpdateMessagePayload): Promise<void> {
+    await this.ready();
+    eventBus.publish('updateMessage', payload);
   }
 
-  updateContext(content: string): Promise<void> {
-    return this.#panelElement.updateContext(content);
+  async updateContext(content: string): Promise<void> {
+    await this.ready();
+    eventBus.publish('updateContext', content);
   }
 }
 

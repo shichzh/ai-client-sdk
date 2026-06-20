@@ -52,7 +52,7 @@ const main = async () => {
       const {value, done} = await generator.next();
       if (done) {
         if (value) {
-          await panel.updateMessage(id, 'loading', false);
+          await panel.updateMessage({id, field: 'loading', value: false});
           if (isMessage(value)) {
             agent.pushMessage(value);
           } else {
@@ -64,11 +64,15 @@ const main = async () => {
       const delta = value.choices?.[0]?.delta;
       if (delta?.reasoning_content) {
         reasoningContentMarkdownStr += delta.reasoning_content;
-        await panel.updateMessage(id, 'reasoning_content', reasoningContentMarkdownStr);
+        await panel.updateMessage({
+          id,
+          field: 'reasoning_content',
+          value: reasoningContentMarkdownStr,
+        });
       }
       if (delta?.content) {
         contentMarkdownStr += delta.content;
-        await panel.updateMessage(id, 'content', contentMarkdownStr);
+        await panel.updateMessage({id, field: 'content', value: contentMarkdownStr});
       }
     }
   }

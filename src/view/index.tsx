@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {createRef, StrictMode, RefObject} from 'react';
+import {StrictMode} from 'react';
 import ReactDOM from 'react-dom/client';
-import App, {AppRef} from './App';
+import App from './App';
 import {ConfigProvider} from 'antd';
 import {StyleProvider, createCache} from '@ant-design/cssinjs';
 
@@ -25,24 +25,17 @@ interface Params {
   onReady: () => void;
 }
 
-type Result = RefObject<AppRef | null>;
-
-const init = ({domNode, onReady}: Params): Result => {
+export const init = ({domNode, onReady}: Params): void => {
   const cache = createCache();
-  const appRef = createRef<AppRef>();
 
   const root = ReactDOM.createRoot(domNode);
   root.render(
     <StrictMode>
       <StyleProvider cache={cache} container={domNode}>
         <ConfigProvider getPopupContainer={() => domNode}>
-          <App ref={appRef} onReady={onReady} />
+          <App onReady={onReady} />
         </ConfigProvider>
       </StyleProvider>
     </StrictMode>,
   );
-
-  return appRef;
 };
-
-export {init, type Result};
