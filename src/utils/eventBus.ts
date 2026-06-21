@@ -14,34 +14,45 @@
  * limitations under the License.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Handler<T = any> = (payload: T) => void | Promise<void>;
+import type {Message, UpdateMessagePayload} from './types';
+
+type Events = {
+  pushMessage: [payload: Message];
+  pushMessages: [payload: Message[]];
+  updateMessage: [payload: UpdateMessagePayload];
+  updateContext: [payload: string];
+  send: [payload: Message];
+  create: [];
+  stop: [];
+};
+
+type Listener<T extends keyof Events> = (...args: Events[T]) => void | Promise<void>;
 
 class EventBus {
-  #handlers = new Map<string, Set<Handler>>();
+  #store: {
+    [K in keyof Events]: Listener<K>[];
+  } = {
+    pushMessage: [],
+    pushMessages: [],
+    updateMessage: [],
+    updateContext: [],
+    send: [],
+    create: [],
+    stop: [],
+  };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async publish<T = any>(type: string, payload?: T): Promise<void> {
-    const handlers = this.#handlers.get(type);
-    if (handlers) {
-      await Promise.all(
-        Array.from(handlers).map(async (handler) => {
-          try {
-            await handler(payload);
-          } catch (error) {
-            console.error(`Error in handler for ${type}:`, error);
-          }
-        }),
-      );
+  async publish<T extends keyof Events>(type: T, ...args: Events[T]): Promise<void> {
+    for (const listener of this.#store[type]) {
+      try {
+        await listener(...args);
+      } catch (error) {
+        console.error(`Error in listener for ${type}:`, error);
+      }
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  subscribe<T = any>(type: string, handler: Handler<T>): () => void {
-    const handlers = this.#handlers.get(type) || new Set<Handler>();
-    handlers.add(handler);
-    this.#handlers.set(type, handlers);
-    return () => handlers.delete(handler);
+  subscribe<T extends keyof Events>(type: T, listener: Listener<T>): void {
+    this.#store[type].push(listener);
   }
 }
 

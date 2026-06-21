@@ -77,9 +77,9 @@ const main = async () => {
     }
   }
 
-  panel.on('send', async (message: Message) => {
+  panel.on('send', async (payload: Message) => {
     try {
-      agent.pushMessage(message);
+      agent.pushMessage(payload);
       const generator = agent.invokeStream();
       await processGenerator(generator);
     } catch (error) {

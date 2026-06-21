@@ -166,17 +166,14 @@ const App = ({onReady}: AppProps) => {
       setContext(payload);
     };
 
-    const disposes = [
-      eventBus.subscribe<Message>('pushMessage', pushMessage),
-      eventBus.subscribe<Message[]>('pushMessages', pushMessages),
-      eventBus.subscribe<UpdateMessagePayload>('updateMessage', updateMessage),
-      eventBus.subscribe<string>('updateContext', updateContext),
-    ];
+    eventBus.subscribe('pushMessage', pushMessage);
+    eventBus.subscribe('pushMessages', pushMessages);
+    eventBus.subscribe('updateMessage', updateMessage);
+    eventBus.subscribe('updateContext', updateContext);
 
     return () => {
       debouncedSaveHistory.cancel();
       saveHistoryToStorage(historyRef.current);
-      disposes.forEach((dispose) => dispose());
     };
   }, [debouncedSaveHistory, saveHistoryToStorage]);
 
