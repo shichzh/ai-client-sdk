@@ -28,10 +28,12 @@ type Events = {
 
 type Listener<T extends keyof Events> = (...args: Events[T]) => void | Promise<void>;
 
+type Store = {
+  [K in keyof Events]: Listener<K>[];
+};
+
 class EventBus {
-  #store: {
-    [K in keyof Events]: Listener<K>[];
-  } = {
+  #store: Store = {
     pushMessage: [],
     pushMessages: [],
     updateMessage: [],
