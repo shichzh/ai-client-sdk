@@ -53,8 +53,14 @@ class EventBus {
     }
   }
 
-  subscribe<T extends keyof Events>(type: T, listener: Listener<T>): void {
+  subscribe<T extends keyof Events>(type: T, listener: Listener<T>): () => void {
     this.#store[type].push(listener);
+    return () => {
+      const index = this.#store[type].indexOf(listener);
+      if (index > -1) {
+        this.#store[type].splice(index, 1);
+      }
+    };
   }
 }
 

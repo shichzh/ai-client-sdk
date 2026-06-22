@@ -122,60 +122,70 @@ const App = ({onReady}: AppProps) => {
     debouncedSaveHistory();
   }, [history, debouncedSaveHistory]);
 
-  useEffect(() => {
-    /**
-     * 如果开发者会使用 pushMessage 或 pushMessages 添加 user message
-     * 则可能需要像 handleSend 一样，需要添加滚动逻辑
-     * 暂时没有添加滚动逻辑是认为开发者应该只添加 assistant message
-     * 而 user message 只在 user-input 里输入
-     */
-    const pushMessage = (payload: Message) => {
-      const _message = payload.id ? payload : {...payload, id: generateId()};
-      setMessages((prev) => [...prev, _message]);
-    };
+  /**
+   * 如果开发者会使用 pushMessage 或 pushMessages 添加 user message
+   * 则可能需要像 handleSend 一样，需要添加滚动逻辑
+   * 暂时没有添加滚动逻辑是认为开发者应该只添加 assistant message
+   * 而 user message 只在 user-input 里输入
+   */
+  const pushMessage = useCallback((payload: Message) => {
+    const _message = payload.id ? payload : {...payload, id: generateId()};
+    setMessages((prev) => [...prev, _message]);
+  }, []);
 
-    const pushMessages = (payload: Message[]) => {
-      if (!payload.length) {
-        return;
-      }
-      const _messages = payload.map((message) => ({
-        ...message,
-        id: message.id || generateId(),
-      }));
-      setMessages((prev) => [...prev, ..._messages]);
-    };
+  const pushMessages = useCallback((payload: Message[]) => {
+    if (!payload.length) {
+      return;
+    }
+    const _messages = payload.map((message) => ({
+      ...message,
+      id: message.id || generateId(),
+    }));
+    setMessages((prev) => [...prev, ..._messages]);
+  }, []);
 
-    const updateMessage = (payload: UpdateMessagePayload) => {
-      const {id, field, value} = payload;
-      startTransition(() => {
-        setMessages((prev) => {
-          return prev.map((message) => {
-            if (message.id === id) {
-              return {
-                ...message,
-                [field]: value,
-              };
-            }
-            return message;
-          });
+  const updateMessage = useCallback((payload: UpdateMessagePayload) => {
+    const {id, field, value} = payload;
+    startTransition(() => {
+      setMessages((prev) => {
+        return prev.map((message) => {
+          if (message.id === id) {
+            return {
+              ...message,
+              [field]: value,
+            };
+          }
+          return message;
         });
       });
-    };
+    });
+  }, []);
 
-    const updateContext = (payload: string) => {
-      setContext(payload);
-    };
+  const updateContext = useCallback((payload: string) => {
+    setContext(payload);
+  }, []);
 
-    eventBus.subscribe('pushMessage', pushMessage);
-    eventBus.subscribe('pushMessages', pushMessages);
-    eventBus.subscribe('updateMessage', updateMessage);
-    eventBus.subscribe('updateContext', updateContext);
+  useEffect(() => {
+    const disposers = [
+      eventBus.subscribe('pushMessage', pushMessage),
+      eventBus.subscribe('pushMessages', pushMessages),
+      eventBus.subscribe('updateMessage', updateMessage),
+      eventBus.subscribe('updateContext', updateContext),
+    ];
 
     return () => {
+      disposers.forEach((disposer) => disposer());
       debouncedSaveHistory.cancel();
       saveHistoryToStorage(historyRef.current);
     };
-  }, [debouncedSaveHistory, saveHistoryToStorage]);
+  }, [
+    pushMessage,
+    pushMessages,
+    updateMessage,
+    updateContext,
+    debouncedSaveHistory,
+    saveHistoryToStorage,
+  ]);
 
   const handleDeleteContext = useCallback(() => {
     setContext('');
