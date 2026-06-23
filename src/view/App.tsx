@@ -175,17 +175,15 @@ const App = ({onReady}: AppProps) => {
 
     return () => {
       disposers.forEach((disposer) => disposer());
+    };
+  }, [pushMessage, pushMessages, updateMessage, updateContext]);
+
+  useEffect(() => {
+    return () => {
       debouncedSaveHistory.cancel();
       saveHistoryToStorage(historyRef.current);
     };
-  }, [
-    pushMessage,
-    pushMessages,
-    updateMessage,
-    updateContext,
-    debouncedSaveHistory,
-    saveHistoryToStorage,
-  ]);
+  }, [debouncedSaveHistory, saveHistoryToStorage]);
 
   const handleDeleteContext = useCallback(() => {
     setContext('');
