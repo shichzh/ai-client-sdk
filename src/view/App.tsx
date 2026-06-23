@@ -392,7 +392,7 @@ const App = ({onReady}: AppProps) => {
                 <button
                   className="icon square plain"
                   type="button"
-                  aria-label="发送"
+                  aria-label="发送 (↵)"
                   onClick={handleSend}
                 >
                   <div className="send-icon">
