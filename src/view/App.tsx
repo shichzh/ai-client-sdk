@@ -123,7 +123,7 @@ const App = ({onReady}: AppProps) => {
   }, [history, debouncedSaveHistory]);
 
   /**
-   * 如果开发者会使用 pushMessage 或 pushMessages 添加 user message
+   * 如果开发者会使用 pushMessage 添加 user message
    * 则可能需要像 handleSend 一样，需要添加滚动逻辑
    * 暂时没有添加滚动逻辑是认为开发者应该只添加 assistant message
    * 而 user message 只在 user-input 里输入
@@ -131,17 +131,6 @@ const App = ({onReady}: AppProps) => {
   const pushMessage = useCallback((payload: Message) => {
     const _message = payload.id ? payload : {...payload, id: generateId()};
     setMessages((prev) => [...prev, _message]);
-  }, []);
-
-  const pushMessages = useCallback((payload: Message[]) => {
-    if (!payload.length) {
-      return;
-    }
-    const _messages = payload.map((message) => ({
-      ...message,
-      id: message.id || generateId(),
-    }));
-    setMessages((prev) => [...prev, ..._messages]);
   }, []);
 
   const updateMessage = useCallback((payload: UpdateMessagePayload) => {
@@ -168,7 +157,6 @@ const App = ({onReady}: AppProps) => {
   useEffect(() => {
     const disposers = [
       eventBus.subscribe('pushMessage', pushMessage),
-      eventBus.subscribe('pushMessages', pushMessages),
       eventBus.subscribe('updateMessage', updateMessage),
       eventBus.subscribe('updateContext', updateContext),
     ];
@@ -176,7 +164,7 @@ const App = ({onReady}: AppProps) => {
     return () => {
       disposers.forEach((disposer) => disposer());
     };
-  }, [pushMessage, pushMessages, updateMessage, updateContext]);
+  }, [pushMessage, updateMessage, updateContext]);
 
   useEffect(() => {
     return () => {

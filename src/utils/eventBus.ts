@@ -18,7 +18,6 @@ import type {Message, UpdateMessagePayload} from './types';
 
 type Events = {
   pushMessage: [payload: Message];
-  pushMessages: [payload: Message[]];
   updateMessage: [payload: UpdateMessagePayload];
   updateContext: [payload: string];
   send: [payload: Message];
@@ -35,7 +34,6 @@ type Store = {
 class EventBus {
   #store: Store = {
     pushMessage: [],
-    pushMessages: [],
     updateMessage: [],
     updateContext: [],
     send: [],

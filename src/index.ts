@@ -71,11 +71,6 @@ export class AIChatPanel {
     eventBus.publish('pushMessage', payload);
   }
 
-  async pushMessages(payload: Message[]): Promise<void> {
-    await this.ready();
-    eventBus.publish('pushMessages', payload);
-  }
-
   async updateMessage(payload: UpdateMessagePayload): Promise<void> {
     await this.ready();
     eventBus.publish('updateMessage', payload);

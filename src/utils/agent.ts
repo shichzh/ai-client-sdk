@@ -77,15 +77,6 @@ export class Agent {
     this.messages.push(_message);
   }
 
-  pushMessages(messages: Message[]) {
-    if (!messages.length) {
-      return;
-    }
-    for (const element of messages) {
-      this.pushMessage(element);
-    }
-  }
-
   resetMessages() {
     const systemMessage = this.messages.find((element) => element.role === 'system');
     this.messages = systemMessage ? [systemMessage] : [];
