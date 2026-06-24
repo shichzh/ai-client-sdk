@@ -36,13 +36,11 @@ const main = async () => {
     await panel.pushMessage({id: crypto.randomUUID(), role: 'assistant', content: 'hello'});
   };
 
-  await init();
-
-  function isMessage(v: Message | StreamResult): v is Message {
+  const isMessage = (v: Message | StreamResult): v is Message => {
     return 'role' in v;
-  }
+  };
 
-  async function processGenerator(generator: StreamResult): Promise<void> {
+  const processGenerator = async (generator: StreamResult): Promise<void> => {
     const id = crypto.randomUUID();
     await panel.pushMessage({id, role: 'assistant', content: '', loading: true});
     let reasoningContentMarkdownStr = '';
@@ -74,7 +72,7 @@ const main = async () => {
         await panel.updateMessage({id, field: 'content', value: contentMarkdownStr});
       }
     }
-  }
+  };
 
   panel.on('send', async (payload: Message) => {
     try {
@@ -104,6 +102,8 @@ const main = async () => {
   panel.on('stop', () => {
     agent.abort();
   });
+
+  await init();
 };
 
 main().catch(console.error);
