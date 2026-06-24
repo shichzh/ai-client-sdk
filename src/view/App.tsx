@@ -244,7 +244,7 @@ const App = ({onReady}: AppProps) => {
       placement: 'top',
       closable: false,
     });
-  }, [api]);
+  }, [api, create]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
