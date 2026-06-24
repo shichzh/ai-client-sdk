@@ -62,22 +62,18 @@ export class AIChatPanel {
     container.appendChild(this.#panel);
   }
 
-  ready(): Promise<void> {
-    return this.#panel.ready();
-  }
-
   async pushMessage(payload: Message): Promise<void> {
-    await this.ready();
+    await this.#panel.ready();
     eventBus.publish('pushMessage', payload);
   }
 
   async updateMessage(payload: UpdateMessagePayload): Promise<void> {
-    await this.ready();
+    await this.#panel.ready();
     eventBus.publish('updateMessage', payload);
   }
 
   async updateContext(payload: string): Promise<void> {
-    await this.ready();
+    await this.#panel.ready();
     eventBus.publish('updateContext', payload);
   }
 }

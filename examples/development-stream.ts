@@ -36,7 +36,6 @@ const main = async () => {
     await panel.pushMessage({id: crypto.randomUUID(), role: 'assistant', content: 'hello'});
   };
 
-  await panel.ready();
   await init();
 
   function isMessage(v: Message | StreamResult): v is Message {
