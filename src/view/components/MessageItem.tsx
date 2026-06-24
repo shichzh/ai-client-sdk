@@ -15,7 +15,7 @@
  */
 
 import {memo, useState, useEffect, useRef, type MouseEvent} from 'react';
-import type {Message, AssistantMessage} from '../../utils/types';
+import {isAssistantMessage, type Message} from '../../utils/types';
 import {Tooltip} from 'antd';
 import ArrowIcon from './icons/ArrowIcon';
 import CopyIcon from './icons/CopyIcon';
@@ -40,10 +40,6 @@ const parseMarkdown = async (content: string): Promise<string> => {
   const file = await markdownProcessor.process(content);
   const dirty = String(file);
   return DOMPurify.sanitize(dirty);
-};
-
-const isAssistantMessage = (message: Message): message is AssistantMessage => {
-  return message.role === 'assistant';
 };
 
 const MessageItem = ({message}: MessageItemProps) => {

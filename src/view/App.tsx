@@ -25,7 +25,7 @@ import {
   type MouseEvent,
 } from 'react';
 import {debounce} from 'lodash-es';
-import type {Message, UpdateMessagePayload} from '../utils/types';
+import {isAssistantMessage, type Message, type UpdateMessagePayload} from '../utils/types';
 import MessageItem from './components/MessageItem';
 import {eventBus} from '../utils/eventBus';
 import {notification, Tooltip, Modal} from 'antd';
@@ -49,9 +49,9 @@ interface AppProps {
 }
 
 const App = ({onReady}: AppProps) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [completedMessages, setCompletedMessages] = useState<Message[]>([]);
+  const [currentMessage, setCurrentMessage] = useState<Message | null>(null);
   const [userInputValue, setUserInputValue] = useState('');
-  const [isChatting, setIsChatting] = useState(false);
   const [context, setContext] = useState('');
   const [api, contextHolder] = notification.useNotification();
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -62,10 +62,10 @@ const App = ({onReady}: AppProps) => {
   const isInitializedRef = useRef(false);
   const historyRef = useRef<HistoryItem[]>([]);
 
-  const createNewHistoryItem = useCallback((): HistoryItem => {
-    const id = generateId();
-    return {id, createdAt: Date.now(), messages: []};
-  }, []);
+  const createNewHistoryItem = useCallback(
+    (): HistoryItem => ({id: generateId(), createdAt: Date.now(), messages: []}),
+    [],
+  );
 
   /**
    * TODO: 多页面场景下 localStorage 数据同步
@@ -108,15 +108,16 @@ const App = ({onReady}: AppProps) => {
     setCurrentChatId(defaultItem.id);
   }, [onReady, createNewHistoryItem]);
 
-  // 监听 messages 变化，更新当前对话
   useEffect(() => {
-    if (messages.length === 0) {
+    if (completedMessages.length === 0) {
       return;
     }
     setHistory((prev) =>
-      prev.map((item) => (item.id === currentChatId ? {...item, messages} : item)),
+      prev.map((item) =>
+        item.id === currentChatId ? {...item, messages: completedMessages} : item,
+      ),
     );
-  }, [messages.length, currentChatId]);
+  }, [completedMessages.length, currentChatId]);
 
   useEffect(() => {
     debouncedSaveHistory();
@@ -130,25 +131,34 @@ const App = ({onReady}: AppProps) => {
    */
   const pushMessage = useCallback((payload: Message) => {
     const _message = payload.id ? payload : {...payload, id: generateId()};
-    setMessages((prev) => [...prev, _message]);
+    if (isAssistantMessage(_message) && _message.loading) {
+      setCurrentMessage(_message);
+    } else {
+      setCompletedMessages((prev) => [...prev, _message]);
+    }
   }, []);
 
   const updateMessage = useCallback((payload: UpdateMessagePayload) => {
     const {id, field, value} = payload;
     startTransition(() => {
-      setMessages((prev) => {
-        return prev.map((message) => {
-          if (message.id === id) {
-            return {
-              ...message,
-              [field]: value,
-            };
-          }
-          return message;
-        });
+      setCurrentMessage((prev) => {
+        if (prev?.id === id) {
+          return {
+            ...prev,
+            [field]: value,
+          };
+        }
+        return prev;
       });
     });
   }, []);
+
+  useEffect(() => {
+    if (currentMessage && isAssistantMessage(currentMessage) && currentMessage.loading === false) {
+      setCompletedMessages((prev) => [...prev, currentMessage]);
+      setCurrentMessage(null);
+    }
+  }, [currentMessage]);
 
   const updateContext = useCallback((payload: string) => {
     setContext(payload);
@@ -185,11 +195,10 @@ const App = ({onReady}: AppProps) => {
       }
 
       try {
-        setIsChatting(true);
         setUserInputValue('');
         const finalContent = context.trim() ? `${context}\n\n${trimmedContent}` : trimmedContent;
         const message: Message = {id: generateId(), role: 'user', content: finalContent};
-        setMessages((prev) => [...prev, message]);
+        setCompletedMessages((prev) => [...prev, message]);
         /**
          * messages-container 滚动到最底部
          * 将最新一轮对话里的 user message 显示在屏幕顶部
@@ -200,7 +209,6 @@ const App = ({onReady}: AppProps) => {
         messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
         await eventBus.publish('send', message);
       } finally {
-        setIsChatting(false);
         userInputRef.current?.focus();
       }
     },
@@ -217,7 +225,11 @@ const App = ({onReady}: AppProps) => {
 
   const handleStop = useCallback(async () => {
     await eventBus.publish('stop');
-    setIsChatting(false);
+    if (currentMessage) {
+      const stoppedMessage = {...currentMessage, loading: false};
+      setCompletedMessages((prev) => [...prev, stoppedMessage]);
+      setCurrentMessage(null);
+    }
     userInputRef.current?.focus();
     api.info({
       title: '已停止',
@@ -225,13 +237,14 @@ const App = ({onReady}: AppProps) => {
       placement: 'top',
       closable: false,
     });
-  }, [api]);
+  }, [api, currentMessage]);
 
   const create = useCallback(() => {
     const newHistoryItem = createNewHistoryItem();
     setHistory((prev) => [...prev, newHistoryItem]);
     setCurrentChatId(newHistoryItem.id);
-    setMessages([]);
+    setCompletedMessages([]);
+    setCurrentMessage(null);
   }, [createNewHistoryItem]);
 
   const handleCreate = useCallback(async () => {
@@ -265,7 +278,8 @@ const App = ({onReady}: AppProps) => {
   }, []);
 
   const handleSelectHistory = useCallback((item: HistoryItem) => {
-    setMessages(item.messages);
+    setCompletedMessages(item.messages);
+    setCurrentMessage(null);
     setCurrentChatId(item.id);
     setIsHistoryModalVisible(false);
   }, []);
@@ -296,16 +310,25 @@ const App = ({onReady}: AppProps) => {
     [currentChatId, create, api],
   );
 
-  const messageItems = useMemo(() => {
-    return messages.map((message) => <MessageItem key={message.id} message={message} />);
-  }, [messages]);
+  const completedMessageItems = useMemo(
+    () => completedMessages.map((message) => <MessageItem key={message.id} message={message} />),
+    [completedMessages],
+  );
+
+  const currentMessageItem = useMemo(() => {
+    if (!currentMessage) {
+      return null;
+    }
+    return <MessageItem key={currentMessage.id} message={currentMessage} />;
+  }, [currentMessage]);
 
   return (
     <div className="app-container">
       <style>{styles}</style>
       {contextHolder}
       <div className="messages-container" ref={messagesContainerRef}>
-        {messageItems}
+        {completedMessageItems}
+        {currentMessageItem}
       </div>
       <div className="bottom-container">
         <div className="action-bar">
@@ -315,6 +338,7 @@ const App = ({onReady}: AppProps) => {
               type="button"
               aria-label="新对话"
               onClick={handleCreate}
+              disabled={!!currentMessage}
             >
               <CreateIcon />
             </button>
@@ -325,6 +349,7 @@ const App = ({onReady}: AppProps) => {
               type="button"
               aria-label="历史对话"
               onClick={handleOpenHistory}
+              disabled={!!currentMessage}
             >
               <HistoryIcon />
             </button>
@@ -360,7 +385,7 @@ const App = ({onReady}: AppProps) => {
             ref={userInputRef}
           />
           <div className="button-wrap">
-            {isChatting ? (
+            {currentMessage ? (
               <Tooltip title="停止" placement="topLeft">
                 <button
                   className="icon square plain"
