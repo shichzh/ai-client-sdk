@@ -21,20 +21,20 @@ import {Agent} from './utils/agent';
 import type {Message, StreamResult, AssistantMessage, UpdateMessagePayload} from './utils/types';
 
 class Panel extends HTMLElement {
-  #promise: Promise<void>;
-  #resolve: (() => void) | null = null;
+  readonly #promise: Promise<void>;
+  readonly #resolve: () => void;
 
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
-    this.#promise = new Promise<void>((resolve) => {
-      this.#resolve = resolve;
-    });
+    const {promise, resolve} = Promise.withResolvers<void>();
+    this.#promise = promise;
+    this.#resolve = resolve;
   }
 
   connectedCallback() {
     if (this.shadowRoot) {
-      init({domNode: this.shadowRoot, onReady: () => this.#resolve?.()});
+      init({domNode: this.shadowRoot, onReady: this.#resolve});
     }
   }
 
