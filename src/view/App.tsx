@@ -377,6 +377,7 @@ const App = ({onReady}: AppProps) => {
         )}
         <div className="user-input-container">
           <textarea
+            name="user-input"
             className="user-input"
             placeholder="发消息..."
             value={userInputValue}
