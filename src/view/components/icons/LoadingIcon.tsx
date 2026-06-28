@@ -1,5 +1,4 @@
-/*
- * Copyright 2025 Hughe5
+/**
  * Copyright 2026 shichzh
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +14,25 @@
  * limitations under the License.
  */
 
-.loading-spinner {
-  display: inline-flex;
-  animation: spin 1s linear infinite;
-  will-change: transform;
-  backface-visibility: hidden;
-  vertical-align: top;
-}
+import {memo, type SVGProps} from 'react';
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
+const LoadingIcon = memo((props: SVGProps<SVGSVGElement>) => {
+  return (
+    <span className="loading-spinner">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="21"
+        height="21"
+        viewBox="0 0 1024 1024"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="80"
+        {...props}
+      >
+        <circle cx="512" cy="512" r="400" strokeDasharray="2506" strokeDashoffset="627" />
+      </svg>
+    </span>
+  );
+});
+
+export default LoadingIcon;

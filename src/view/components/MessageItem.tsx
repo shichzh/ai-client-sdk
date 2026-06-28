@@ -19,6 +19,7 @@ import {isAssistantMessage, type Message} from '../../utils/types';
 import {Tooltip} from 'antd';
 import ArrowIcon from './icons/ArrowIcon';
 import CopyIcon from './icons/CopyIcon';
+import LoadingIcon from './icons/LoadingIcon';
 import {unified} from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
@@ -112,14 +113,19 @@ const MessageItem = ({message}: MessageItemProps) => {
         </div>
       )}
       <div className="body-container">
-        <div
-          className="content-container"
-          dangerouslySetInnerHTML={{
-            __html: isLoading
-              ? `${parsedContent}<p class="loading-dots"></p>`
-              : parsedContent || '<p>暂无正文</p>',
-          }}
-        />
+        <div className="content-container">
+          {isLoading && !parsedContent ? (
+            <p>
+              <LoadingIcon />
+            </p>
+          ) : (
+            <div
+              dangerouslySetInnerHTML={{
+                __html: parsedContent || '<p>暂无正文</p>',
+              }}
+            />
+          )}
+        </div>
       </div>
       <div className="button-container">
         <Tooltip title="复制" placement={message.role === 'user' ? 'bottomRight' : 'bottomLeft'}>
