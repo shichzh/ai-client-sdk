@@ -113,19 +113,17 @@ const MessageItem = ({message}: MessageItemProps) => {
         </div>
       )}
       <div className="body-container">
-        <div className="content-container">
-          {isLoading && !parsedContent ? (
-            <p>
-              <LoadingIcon />
-            </p>
-          ) : (
-            <div
-              dangerouslySetInnerHTML={{
-                __html: parsedContent || '<p>暂无正文</p>',
-              }}
-            />
-          )}
-        </div>
+        {isLoading && !parsedContent ? (
+          <p>
+            <LoadingIcon />
+          </p>
+        ) : (
+          <div
+            dangerouslySetInnerHTML={{
+              __html: parsedContent || '<p>暂无正文</p>',
+            }}
+          />
+        )}
       </div>
       <div className="button-container">
         <Tooltip

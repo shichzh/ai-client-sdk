@@ -71,6 +71,7 @@
   border-radius: 8px;
   overflow-x: auto;
   color: black;
+  word-wrap: break-word;
 }
 .message.user {
   margin-left: auto;
@@ -110,9 +111,7 @@
   border-radius: 50%;
   color: #fff;
 }
-.content-container {
-  word-wrap: break-word;
-}
+
 .message.assistant table {
   border-collapse: collapse;
   margin-block-start: 1em;
