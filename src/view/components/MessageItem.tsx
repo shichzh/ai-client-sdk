@@ -128,7 +128,10 @@ const MessageItem = ({message}: MessageItemProps) => {
         </div>
       </div>
       <div className="button-container">
-        <Tooltip title="复制" placement={message.role === 'user' ? 'bottomRight' : 'bottomLeft'}>
+        <Tooltip
+          title="复制"
+          placement={isAssistantMessage(message) ? 'bottomLeft' : 'bottomRight'}
+        >
           <button
             className="icon square plain"
             type="button"
