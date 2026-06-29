@@ -135,7 +135,7 @@ const MessageItem = ({message}: MessageItemProps) => {
             aria-label="复制"
             onClick={handleCopy}
           >
-            {isCopied ? <span>Copied</span> : <CopyIcon />}
+            {isCopied ? 'Copied' : <CopyIcon />}
           </button>
         </Tooltip>
       </div>
