@@ -1,6 +1,6 @@
 {
   "name": "ai-client-sdk",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "type": "module",
   "description": "用于开发 AI 应用，适配任意前端框架，支持所有 OpenAI-compatible 大模型，提供对话界面、Agent、MCP、工作流等",
   "author": {
