@@ -38,6 +38,8 @@ import styles from './css/index.css?inline';
 import dayjs from 'dayjs';
 import {generateId} from '../utils/uuid';
 
+const STORAGE_KEY = 'chatHistory';
+
 interface HistoryItem {
   id: string;
   createdAt: number;
@@ -71,7 +73,7 @@ const App = ({onReady}: AppProps) => {
    * TODO: 多页面场景下 localStorage 数据同步
    */
   const saveHistoryToStorage = useCallback((historyList: HistoryItem[]) => {
-    localStorage.setItem('chatHistory', JSON.stringify(historyList));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(historyList));
   }, []);
 
   useEffect(() => {
@@ -92,7 +94,7 @@ const App = ({onReady}: AppProps) => {
     isInitializedRef.current = true;
 
     onReady();
-    const savedHistory = localStorage.getItem('chatHistory');
+    const savedHistory = localStorage.getItem(STORAGE_KEY);
     let initialHistory: HistoryItem[] = [];
 
     if (savedHistory) {
