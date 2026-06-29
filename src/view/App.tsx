@@ -56,7 +56,7 @@ const App = ({onReady}: AppProps) => {
   const [api, contextHolder] = notification.useNotification();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
-  const [currentChatId, setCurrentChatId] = useState<string>('');
+  const [currentId, setCurrentId] = useState<string>('');
   const userInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isInitializedRef = useRef(false);
@@ -105,7 +105,7 @@ const App = ({onReady}: AppProps) => {
 
     const defaultItem = createNewHistoryItem();
     setHistory([...initialHistory, defaultItem]);
-    setCurrentChatId(defaultItem.id);
+    setCurrentId(defaultItem.id);
   }, [onReady, createNewHistoryItem]);
 
   useEffect(() => {
@@ -113,11 +113,9 @@ const App = ({onReady}: AppProps) => {
       return;
     }
     setHistory((prev) =>
-      prev.map((item) =>
-        item.id === currentChatId ? {...item, messages: completedMessages} : item,
-      ),
+      prev.map((item) => (item.id === currentId ? {...item, messages: completedMessages} : item)),
     );
-  }, [completedMessages.length, currentChatId]);
+  }, [completedMessages.length, currentId]);
 
   useEffect(() => {
     debouncedSaveHistory();
@@ -242,7 +240,7 @@ const App = ({onReady}: AppProps) => {
   const create = useCallback(() => {
     const newHistoryItem = createNewHistoryItem();
     setHistory((prev) => [...prev, newHistoryItem]);
-    setCurrentChatId(newHistoryItem.id);
+    setCurrentId(newHistoryItem.id);
     setCompletedMessages([]);
     setCurrentMessage(null);
   }, [createNewHistoryItem]);
@@ -280,7 +278,7 @@ const App = ({onReady}: AppProps) => {
   const handleSelectHistory = useCallback((item: HistoryItem) => {
     setCompletedMessages(item.messages);
     setCurrentMessage(null);
-    setCurrentChatId(item.id);
+    setCurrentId(item.id);
     setIsHistoryModalVisible(false);
   }, []);
 
@@ -295,7 +293,7 @@ const App = ({onReady}: AppProps) => {
         cancelText: '取消',
         onOk: () => {
           setHistory((prev) => prev.filter((h) => h.id !== item.id));
-          if (currentChatId === item.id) {
+          if (currentId === item.id) {
             create();
           }
           api.warning({
@@ -307,7 +305,7 @@ const App = ({onReady}: AppProps) => {
         },
       });
     },
-    [currentChatId, create, api],
+    [currentId, create, api],
   );
 
   const completedMessageItems = useMemo(
@@ -431,7 +429,7 @@ const App = ({onReady}: AppProps) => {
                 {history.map((item) => (
                   <li
                     key={item.id}
-                    className={`history-item ${currentChatId === item.id ? 'selected' : ''}`}
+                    className={`history-item ${currentId === item.id ? 'selected' : ''}`}
                     onClick={() => handleSelectHistory(item)}
                   >
                     <div className="history-info">
