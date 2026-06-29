@@ -63,11 +63,7 @@ interface ObjectParameter {
 }
 
 type Parameters =
-  | StringParameter
-  | NumberParameter
-  | BooleanParameter
-  | ArrayParameter
-  | ObjectParameter;
+  StringParameter | NumberParameter | BooleanParameter | ArrayParameter | ObjectParameter;
 
 type DefinitionType = 'function';
 
