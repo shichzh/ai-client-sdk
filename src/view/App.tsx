@@ -105,9 +105,9 @@ const App = ({onReady}: AppProps) => {
       }
     }
 
-    const defaultItem = createNewHistoryItem();
-    setHistory([...initialHistory, defaultItem]);
-    setCurrentId(defaultItem.id);
+    const newHistoryItem = createNewHistoryItem();
+    setHistory([...initialHistory, newHistoryItem]);
+    setCurrentId(newHistoryItem.id);
   }, [onReady, createNewHistoryItem]);
 
   useEffect(() => {
