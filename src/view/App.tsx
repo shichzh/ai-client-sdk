@@ -89,6 +89,9 @@ const App = ({onReady}: AppProps) => {
 
   useEffect(() => {
     onReady();
+  }, [onReady]);
+
+  useEffect(() => {
     const savedHistory = localStorage.getItem(STORAGE_KEY);
     let initialHistory: HistoryItem[] = [];
 
@@ -101,7 +104,7 @@ const App = ({onReady}: AppProps) => {
     }
 
     setHistory(initialHistory);
-  }, [onReady]);
+  }, []);
 
   useEffect(() => {
     if (completedMessages.length === 0) {
