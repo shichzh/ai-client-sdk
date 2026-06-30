@@ -369,7 +369,12 @@ const App = ({onReady}: AppProps) => {
               </button>
             </div>
             <div className="shortcut-bar">
-              <button className="text square plain" type="button" onClick={handleTranslate}>
+              <button
+                className="text square plain"
+                type="button"
+                aria-label="翻译"
+                onClick={handleTranslate}
+              >
                 翻译
               </button>
             </div>
