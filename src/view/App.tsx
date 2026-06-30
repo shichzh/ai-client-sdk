@@ -40,10 +40,16 @@ import {generateId} from '../utils/uuid';
 
 const STORAGE_KEY = 'chatHistory';
 
-interface HistoryItem {
+class HistoryItem {
   id: string;
   createdAt: number;
   messages: Message[];
+
+  constructor(messages: Message[] = []) {
+    this.id = generateId();
+    this.createdAt = Date.now();
+    this.messages = messages;
+  }
 }
 
 interface AppProps {
@@ -61,13 +67,7 @@ const App = ({onReady}: AppProps) => {
   const [currentId, setCurrentId] = useState<string>('');
   const userInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const isInitializedRef = useRef(false);
   const historyRef = useRef<HistoryItem[]>([]);
-
-  const createNewHistoryItem = useCallback(
-    (): HistoryItem => ({id: generateId(), createdAt: Date.now(), messages: []}),
-    [],
-  );
 
   /**
    * TODO: 多页面场景下 localStorage 数据同步
@@ -88,11 +88,6 @@ const App = ({onReady}: AppProps) => {
   );
 
   useEffect(() => {
-    if (isInitializedRef.current) {
-      return;
-    }
-    isInitializedRef.current = true;
-
     onReady();
     const savedHistory = localStorage.getItem(STORAGE_KEY);
     let initialHistory: HistoryItem[] = [];
@@ -101,22 +96,26 @@ const App = ({onReady}: AppProps) => {
       try {
         initialHistory = JSON.parse(savedHistory);
       } catch {
-        initialHistory = [];
+        console.error('Failed to parse saved history:', savedHistory);
       }
     }
 
-    const newHistoryItem = createNewHistoryItem();
-    setHistory([...initialHistory, newHistoryItem]);
-    setCurrentId(newHistoryItem.id);
-  }, [onReady, createNewHistoryItem]);
+    setHistory(initialHistory);
+  }, [onReady]);
 
   useEffect(() => {
     if (completedMessages.length === 0) {
       return;
     }
-    setHistory((prev) =>
-      prev.map((item) => (item.id === currentId ? {...item, messages: completedMessages} : item)),
-    );
+    if (currentId === '') {
+      const newHistoryItem = new HistoryItem(completedMessages);
+      setHistory((prev) => [...prev, newHistoryItem]);
+      setCurrentId(newHistoryItem.id);
+    } else {
+      setHistory((prev) =>
+        prev.map((item) => (item.id === currentId ? {...item, messages: completedMessages} : item)),
+      );
+    }
   }, [completedMessages.length, currentId]);
 
   useEffect(() => {
@@ -240,12 +239,12 @@ const App = ({onReady}: AppProps) => {
   }, [api, currentMessage]);
 
   const create = useCallback(() => {
-    const newHistoryItem = createNewHistoryItem();
+    const newHistoryItem = new HistoryItem();
     setHistory((prev) => [...prev, newHistoryItem]);
     setCurrentId(newHistoryItem.id);
     setCompletedMessages([]);
     setCurrentMessage(null);
-  }, [createNewHistoryItem]);
+  }, []);
 
   const handleCreate = useCallback(async () => {
     create();
