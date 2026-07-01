@@ -50,20 +50,23 @@ const MessageItem = ({message}: MessageItemProps) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const reasoningContent = isAssistantMessage(message) ? message.reasoning_content : '';
+
   useEffect(() => {
     if (message.content) {
       parseMarkdown(message.content).then(setParsedContent);
     } else {
       setParsedContent('');
     }
+  }, [message.content]);
 
-    const reasoningContent = isAssistantMessage(message) ? message.reasoning_content : undefined;
+  useEffect(() => {
     if (reasoningContent) {
       parseMarkdown(reasoningContent).then(setParsedReasoningContent);
     } else {
       setParsedReasoningContent('');
     }
-  }, [message.content, isAssistantMessage(message) ? message.reasoning_content : undefined]);
+  }, [reasoningContent]);
 
   useEffect(() => {
     return () => {
