@@ -21,7 +21,6 @@
 textarea {
   padding: 0;
 }
-textarea:focus-visible,
-select:focus-visible {
+textarea:focus-visible {
   outline: 0;
 }
