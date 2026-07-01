@@ -26,7 +26,8 @@ import {
 } from 'react';
 import {debounce} from 'lodash-es';
 import {isAssistantMessage, type Message, type UpdateMessagePayload} from '../utils/types';
-import MessageItem from './components/MessageItem';
+import AssistantMessageItem from './components/AssistantMessageItem';
+import UserMessageItem from './components/UserMessageItem';
 import {eventBus} from '../utils/eventBus';
 import {notification, Tooltip, Modal} from 'antd';
 import CreateIcon from './components/icons/CreateIcon';
@@ -313,7 +314,14 @@ const App = ({onReady}: AppProps) => {
   );
 
   const completedMessageItems = useMemo(
-    () => completedMessages.map((message) => <MessageItem key={message.id} message={message} />),
+    () =>
+      completedMessages.map((message) =>
+        isAssistantMessage(message) ? (
+          <AssistantMessageItem key={message.id} message={message} />
+        ) : (
+          <UserMessageItem key={message.id} message={message} />
+        ),
+      ),
     [completedMessages],
   );
 
@@ -321,7 +329,11 @@ const App = ({onReady}: AppProps) => {
     if (!currentMessage) {
       return null;
     }
-    return <MessageItem key={currentMessage.id} message={currentMessage} />;
+    return isAssistantMessage(currentMessage) ? (
+      <AssistantMessageItem key={currentMessage.id} message={currentMessage} />
+    ) : (
+      <UserMessageItem key={currentMessage.id} message={currentMessage} />
+    );
   }, [currentMessage]);
 
   return (
