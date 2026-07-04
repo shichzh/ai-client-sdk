@@ -40,7 +40,7 @@ export class Agent {
   #mcpClient: MCPClient | null = null;
   #mcpClientOptions?: MCPClientOptions;
 
-  messages: Message[] = [];
+  #messages: Message[] = [];
 
   private constructor(config: AgentConfig) {
     const {model, url, systemMessageContent, maxRounds, mcpClientOptions} = config;
@@ -51,7 +51,7 @@ export class Agent {
       this.#maxRounds = maxRounds;
     }
     if (systemMessageContent) {
-      this.messages[0] = {
+      this.#messages[0] = {
         id: generateId(),
         role: 'system',
         content: systemMessageContent,
@@ -74,12 +74,12 @@ export class Agent {
 
   pushMessage(message: Message) {
     const _message = message.id ? message : {...message, id: generateId()};
-    this.messages.push(_message);
+    this.#messages.push(_message);
   }
 
   resetMessages() {
-    const systemMessage = this.messages.find((element) => element.role === 'system');
-    this.messages = systemMessage ? [systemMessage] : [];
+    const systemMessage = this.#messages.find((element) => element.role === 'system');
+    this.#messages = systemMessage ? [systemMessage] : [];
   }
 
   async *invokeStream(params = this.#defaultParams): StreamResult {
@@ -100,7 +100,7 @@ export class Agent {
         },
         body: JSON.stringify({
           model: this.#model,
-          messages: this.messages,
+          messages: this.#messages,
           tools,
           stream: true,
         }),
@@ -166,7 +166,7 @@ export class Agent {
         return message;
       }
 
-      this.messages.push({
+      this.#messages.push({
         id: generateId(),
         content,
         role,
@@ -231,7 +231,7 @@ export class Agent {
       const result = await client.callTool(name, JSON.parse(args));
       const resp = typeof result === 'string' ? result : JSON.stringify(result);
 
-      this.messages.push({
+      this.#messages.push({
         id: generateId(),
         content: resp,
         role: 'tool',
