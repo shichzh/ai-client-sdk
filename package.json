@@ -38,8 +38,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && rollup -c rollup.config.ts",
-    "lint": "eslint . --ext .js,.mjs,.cjs,.ts,.tsx --fix",
-    "lint:check": "eslint . --ext .js,.mjs,.cjs,.ts,.tsx",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
     "type:check": "tsc --noEmit",
     "format": "prettier . --write",
     "format:check": "prettier . --check",

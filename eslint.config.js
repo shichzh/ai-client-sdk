@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint';
 export default defineConfig([
   ...tseslint.configs.recommended,
   {
-    files: ['**/*.ts'],
+    files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       globals: globals.browser,
       parserOptions: {
