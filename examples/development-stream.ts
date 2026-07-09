@@ -45,7 +45,7 @@ const main = async () => {
     await panel.pushMessage({id, role: 'assistant', content: '', loading: true});
     let reasoningContentMarkdownStr = '';
     let contentMarkdownStr = '';
-    while (true) {
+    for (;;) {
       const {value, done} = await generator.next();
       if (done) {
         if (value) {

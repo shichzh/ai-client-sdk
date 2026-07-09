@@ -25,7 +25,11 @@ export const useMessageItem = (message: Message) => {
 
   useEffect(() => {
     if (message.content) {
-      parseMarkdown(message.content).then(setParsedContent);
+      parseMarkdown(message.content)
+        .then(setParsedContent)
+        .catch((err: unknown) => {
+          console.error('Failed to parse markdown:', err);
+        });
     } else {
       setParsedContent('');
     }
@@ -44,7 +48,7 @@ export const useMessageItem = (message: Message) => {
     const text = message.content;
     navigator.clipboard
       .writeText(text)
-      .catch((err) => {
+      .catch((err: unknown) => {
         console.error('Failed to copy text: ', err);
       })
       .finally(() => {

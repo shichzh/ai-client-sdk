@@ -34,7 +34,11 @@ const AssistantMessageItem = ({message}: AssistantMessageItemProps) => {
 
   useEffect(() => {
     if (message.reasoning_content) {
-      parseMarkdown(message.reasoning_content).then(setParsedReasoningContent);
+      parseMarkdown(message.reasoning_content)
+        .then(setParsedReasoningContent)
+        .catch((err: unknown) => {
+          console.error('Failed to parse markdown:', err);
+        });
     } else {
       setParsedReasoningContent('');
     }

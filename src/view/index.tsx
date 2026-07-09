@@ -19,10 +19,11 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import {ConfigProvider} from 'antd';
 import {StyleProvider, createCache} from '@ant-design/cssinjs';
+import type {Resolve} from '../utils/types';
 
 interface Params {
   domNode: ShadowRoot;
-  onReady: () => void;
+  onReady: Resolve;
 }
 
 export const init = ({domNode, onReady}: Params): void => {

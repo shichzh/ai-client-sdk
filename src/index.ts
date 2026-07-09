@@ -18,16 +18,22 @@
 import {eventBus} from './utils/eventBus';
 import {init} from './view/index';
 import {Agent} from './utils/agent';
-import type {Message, StreamResult, AssistantMessage, UpdateMessagePayload} from './utils/types';
+import type {
+  Message,
+  StreamResult,
+  AssistantMessage,
+  UpdateMessagePayload,
+  Resolve,
+} from './utils/types';
 
 class Panel extends HTMLElement {
-  readonly #promise: Promise<void>;
-  readonly #resolve: () => void;
+  readonly #promise: Promise<undefined>;
+  readonly #resolve: Resolve;
 
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
-    const {promise, resolve} = Promise.withResolvers<void>();
+    const {promise, resolve} = Promise.withResolvers<undefined>();
     this.#promise = promise;
     this.#resolve = resolve;
   }
@@ -38,7 +44,7 @@ class Panel extends HTMLElement {
     }
   }
 
-  ready(): Promise<void> {
+  ready() {
     return this.#promise;
   }
 }
@@ -64,17 +70,17 @@ export class AIChatPanel {
 
   async pushMessage(payload: Message): Promise<void> {
     await this.#panel.ready();
-    eventBus.publish('pushMessage', payload);
+    await eventBus.publish('pushMessage', payload);
   }
 
   async updateMessage(payload: UpdateMessagePayload): Promise<void> {
     await this.#panel.ready();
-    eventBus.publish('updateMessage', payload);
+    await eventBus.publish('updateMessage', payload);
   }
 
   async updateContext(payload: string): Promise<void> {
     await this.#panel.ready();
-    eventBus.publish('updateContext', payload);
+    await eventBus.publish('updateContext', payload);
   }
 }
 

@@ -26,6 +26,7 @@ import type {
   MCPClientOptions,
   Params,
   StreamResult,
+  Arguments,
   ToolCall,
 } from './types';
 
@@ -123,7 +124,7 @@ export class Agent {
 
       let buffer = '';
 
-      while (true) {
+      for (;;) {
         const {done, value} = await reader.read();
         if (done) {
           break;
@@ -136,7 +137,7 @@ export class Agent {
           }
           const jsonStr = item.trim().replace(/^data: /, '');
           try {
-            const json = JSON.parse(buffer + jsonStr);
+            const json = JSON.parse(buffer + jsonStr) as Chunk;
             result = this.#merge(result, json, ['content', 'arguments']);
             yield json;
             buffer = '';
@@ -151,13 +152,6 @@ export class Agent {
 
       if (!message) {
         return;
-      }
-
-      /**
-       * 兼容有的大模型返回的 role 是 null
-       */
-      if (message.role === null) {
-        message.role = 'assistant';
       }
 
       const {content, role, tool_calls} = message;
@@ -197,13 +191,13 @@ export class Agent {
   #merge<T extends object, S extends object>(
     target: T | null,
     source: S,
-    fieldsToConcat: (keyof (T & S))[] = [],
+    fieldsToConcat: string[] = [],
   ): T & S {
     return mergeWith(
       {}, // 避免直接修改原对象
       target,
       source,
-      (objValue: unknown, srcValue: unknown, key: keyof (T & S)) => {
+      (objValue: unknown, srcValue: unknown, key: string) => {
         // 检查当前键是否需要拼接且都是字符串类型
         if (fieldsToConcat.includes(key)) {
           const objStr = typeof objValue === 'string' ? objValue : '';
@@ -228,7 +222,7 @@ export class Agent {
         id,
       } = element;
 
-      const result = await client.callTool(name, JSON.parse(args));
+      const result = await client.callTool(name, JSON.parse(args) as Arguments);
       const resp = typeof result === 'string' ? result : JSON.stringify(result);
 
       this.#messages.push({

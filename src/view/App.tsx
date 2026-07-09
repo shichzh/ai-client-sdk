@@ -25,7 +25,12 @@ import {
   type MouseEvent,
 } from 'react';
 import {debounce} from 'lodash-es';
-import {isAssistantMessage, type Message, type UpdateMessagePayload} from '../utils/types';
+import {
+  isAssistantMessage,
+  type Message,
+  type UpdateMessagePayload,
+  type Resolve,
+} from '../utils/types';
 import AssistantMessageItem from './components/AssistantMessageItem';
 import UserMessageItem from './components/UserMessageItem';
 import {eventBus} from '../utils/eventBus';
@@ -54,7 +59,7 @@ class HistoryItem {
 }
 
 interface AppProps {
-  onReady: () => void;
+  onReady: Resolve;
 }
 
 const App = ({onReady}: AppProps) => {
@@ -89,22 +94,22 @@ const App = ({onReady}: AppProps) => {
   );
 
   useEffect(() => {
-    onReady();
+    onReady(undefined);
   }, [onReady]);
 
   useEffect(() => {
     const savedHistory = localStorage.getItem(STORAGE_KEY);
-    let initialHistory: HistoryItem[] = [];
+    let history: HistoryItem[] = [];
 
     if (savedHistory) {
       try {
-        initialHistory = JSON.parse(savedHistory);
+        history = JSON.parse(savedHistory) as HistoryItem[];
       } catch {
         console.error('Failed to parse saved history:', savedHistory);
       }
     }
 
-    setHistory(initialHistory);
+    setHistory(history);
   }, []);
 
   useEffect(() => {
@@ -117,7 +122,12 @@ const App = ({onReady}: AppProps) => {
       setCurrentId(newHistoryItem.id);
     } else {
       setHistory((prev) =>
-        prev.map((item) => (item.id === currentId ? {...item, messages: completedMessages} : item)),
+        prev.map((item) => {
+          if (item.id === currentId) {
+            item.messages = completedMessages;
+          }
+          return item;
+        }),
       );
     }
   }, [completedMessages.length, currentId]);
@@ -175,7 +185,9 @@ const App = ({onReady}: AppProps) => {
     ];
 
     return () => {
-      disposers.forEach((disposer) => disposer());
+      disposers.forEach((disposer) => {
+        disposer();
+      });
     };
   }, [pushMessage, updateMessage, updateContext]);
 
@@ -266,7 +278,7 @@ const App = ({onReady}: AppProps) => {
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        handleSend();
+        void handleSend();
       }
     },
     [handleSend],
@@ -351,7 +363,9 @@ const App = ({onReady}: AppProps) => {
               className="icon square plain"
               type="button"
               aria-label="新对话"
-              onClick={handleCreate}
+              onClick={() => {
+                void handleCreate();
+              }}
               disabled={!!currentMessage}
             >
               <CreateIcon />
@@ -387,7 +401,9 @@ const App = ({onReady}: AppProps) => {
                 className="text square plain"
                 type="button"
                 aria-label="翻译"
-                onClick={handleTranslate}
+                onClick={() => {
+                  void handleTranslate();
+                }}
               >
                 翻译
               </button>
@@ -400,7 +416,9 @@ const App = ({onReady}: AppProps) => {
             className="user-input"
             placeholder="发消息..."
             value={userInputValue}
-            onChange={(e) => setUserInputValue(e.target.value)}
+            onChange={(e) => {
+              setUserInputValue(e.target.value);
+            }}
             onKeyDown={handleKeyDown}
             ref={userInputRef}
           />
@@ -411,7 +429,9 @@ const App = ({onReady}: AppProps) => {
                   className="icon square plain"
                   type="button"
                   aria-label="停止"
-                  onClick={handleStop}
+                  onClick={() => {
+                    void handleStop();
+                  }}
                 >
                   <div className="stop-icon">
                     <StopIcon />
@@ -424,7 +444,9 @@ const App = ({onReady}: AppProps) => {
                   className="icon square plain"
                   type="button"
                   aria-label="发送 (↵)"
-                  onClick={handleSend}
+                  onClick={() => {
+                    void handleSend();
+                  }}
                 >
                   <div className="send-icon">
                     <SendIcon />
@@ -451,7 +473,9 @@ const App = ({onReady}: AppProps) => {
                   <li
                     key={item.id}
                     className={`history-item ${currentId === item.id ? 'selected' : ''}`}
-                    onClick={() => handleSelectHistory(item)}
+                    onClick={() => {
+                      handleSelectHistory(item);
+                    }}
                   >
                     <div className="history-info">
                       <div className="history-content">{item.messages[0]?.content || '无对话'}</div>
@@ -463,7 +487,9 @@ const App = ({onReady}: AppProps) => {
                       className="history-delete"
                       type="button"
                       aria-label="删除历史对话"
-                      onClick={(e) => handleDeleteHistory(item, e)}
+                      onClick={(e) => {
+                        handleDeleteHistory(item, e);
+                      }}
                     >
                       <DeleteIcon />
                     </button>

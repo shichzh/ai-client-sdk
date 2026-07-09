@@ -89,6 +89,8 @@ export interface MCPClientOptions {
   headers?: Record<string, string>;
 }
 
+export type Arguments = Record<string, unknown>;
+
 export type ToolCall = {
   id: string;
   function: {
@@ -105,7 +107,7 @@ export interface SimpleMessage {
 
 export interface AssistantMessage {
   id: string;
-  role: 'assistant';
+  role: 'assistant' | null;
   content: string;
   reasoning_content?: string;
   tool_calls?: ToolCall[] | null;
@@ -122,7 +124,7 @@ export interface ToolMessage {
 export type Message = SimpleMessage | AssistantMessage | ToolMessage;
 
 export const isAssistantMessage = (message: Message): message is AssistantMessage => {
-  return message.role === 'assistant';
+  return message.role === 'assistant' || message.role === null;
 };
 
 export interface Params {
@@ -130,8 +132,8 @@ export interface Params {
 }
 
 export interface Chunk {
-  choices: Array<{
-    delta: AssistantMessage;
+  choices?: Array<{
+    delta?: AssistantMessage;
   }>;
 }
 
@@ -142,3 +144,5 @@ export interface UpdateMessagePayload {
   field: 'content' | 'reasoning_content' | 'loading';
   value: string | boolean;
 }
+
+export type Resolve = (value: PromiseLike<undefined> | undefined) => void;

@@ -6,13 +6,13 @@ export default defineConfig([
   {
     ignores: ['node_modules/', 'dist/', 'coverage/'],
   },
-  ...tseslint.configs.recommended,
   {
     files: ['**/*.ts', '**/*.tsx'],
+    extends: [tseslint.configs.strictTypeChecked],
     languageOptions: {
       globals: globals.browser,
       parserOptions: {
-        project: true,
+        projectService: true,
       },
     },
   },

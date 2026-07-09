@@ -16,7 +16,7 @@
 
 import {Client} from '@modelcontextprotocol/sdk/client';
 import {StreamableHTTPClientTransport} from '@modelcontextprotocol/sdk/client/streamableHttp';
-import type {Definition, MCPClientOptions} from './types';
+import type {Arguments, Definition, MCPClientOptions} from './types';
 
 export class MCPClient {
   readonly #client: Client;
@@ -45,7 +45,7 @@ export class MCPClient {
     await this.#fetchTools();
   }
 
-  async callTool(name: string, args: Record<string, unknown>) {
+  async callTool(name: string, args: Arguments) {
     return this.#client.callTool({
       name,
       arguments: args,
@@ -55,9 +55,9 @@ export class MCPClient {
   /**
    * 主动关闭连接
    */
-  close(): void {
+  async close(): Promise<void> {
     if (this.#isConnected) {
-      this.#transport.close();
+      await this.#transport.close();
       this.#isConnected = false;
     }
   }
@@ -76,7 +76,7 @@ export class MCPClient {
   async #fetchTools(): Promise<void> {
     try {
       const result = await this.#client.listTools();
-      this.#tools = (result.tools || []).map((tool) => {
+      this.#tools = result.tools.map((tool) => {
         const {name, description, inputSchema} = tool;
         return {
           type: 'function',
@@ -85,8 +85,8 @@ export class MCPClient {
             description: description || '',
             parameters: {
               type: 'object',
-              properties: inputSchema?.properties || {},
-              required: inputSchema?.required || [],
+              properties: inputSchema.properties || {},
+              required: inputSchema.required || [],
             },
           },
         };
