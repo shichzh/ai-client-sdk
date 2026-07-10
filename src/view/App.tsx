@@ -49,7 +49,7 @@ const STORAGE_KEY = 'chatHistory';
 
 interface State {
   completedMessages: Message[];
-  currentMessage: Message | null;
+  streamingMessage: Message | null;
   historyList: HistoryItem[];
   currentId: string;
 }
@@ -57,7 +57,6 @@ interface State {
 type Action =
   | {type: 'UPDATE_MESSAGE'; payload: UpdateMessagePayload}
   | {type: 'PUSH_MESSAGE'; payload: Message}
-  | {type: 'SET_CURRENT_MESSAGE'; payload: Message | null}
   | {type: 'SET_COMPLETED_MESSAGES'; payload: Message[]}
   | {type: 'ADD_COMPLETED_MESSAGE'; payload: Message}
   | {type: 'STOP'}
@@ -81,7 +80,7 @@ const createHistory = (historyList: HistoryItem[]): State => {
   const newHistoryItem = new HistoryItem();
   return {
     completedMessages: [],
-    currentMessage: null,
+    streamingMessage: null,
     historyList: [...historyList, newHistoryItem],
     currentId: newHistoryItem.id,
   };
@@ -93,7 +92,7 @@ const addCompletedMessage = (state: State, message: Message): State => {
     const newHistoryItem = new HistoryItem(newCompletedMessages);
     return {
       completedMessages: newCompletedMessages,
-      currentMessage: null,
+      streamingMessage: null,
       historyList: [...state.historyList, newHistoryItem],
       currentId: newHistoryItem.id,
     };
@@ -101,7 +100,7 @@ const addCompletedMessage = (state: State, message: Message): State => {
   return {
     ...state,
     completedMessages: newCompletedMessages,
-    currentMessage: null,
+    streamingMessage: null,
     historyList: state.historyList.map((item) => {
       if (item.id === state.currentId) {
         item.messages = newCompletedMessages;
@@ -115,11 +114,11 @@ const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'UPDATE_MESSAGE': {
       const {id, field, value} = action.payload;
-      if (state.currentMessage?.id !== id) {
+      if (state.streamingMessage?.id !== id) {
         return state;
       }
       const message = {
-        ...state.currentMessage,
+        ...state.streamingMessage,
         [field]: value,
       };
       if (isAssistantMessage(message) && message.loading === false) {
@@ -127,7 +126,7 @@ const reducer = (state: State, action: Action): State => {
       }
       return {
         ...state,
-        currentMessage: message,
+        streamingMessage: message,
       };
     }
     case 'PUSH_MESSAGE': {
@@ -136,16 +135,10 @@ const reducer = (state: State, action: Action): State => {
       if (isAssistantMessage(message) && message.loading) {
         return {
           ...state,
-          currentMessage: message,
+          streamingMessage: message,
         };
       }
       return addCompletedMessage(state, message);
-    }
-    case 'SET_CURRENT_MESSAGE': {
-      return {
-        ...state,
-        currentMessage: action.payload,
-      };
     }
     case 'SET_COMPLETED_MESSAGES': {
       return {
@@ -157,10 +150,10 @@ const reducer = (state: State, action: Action): State => {
       return addCompletedMessage(state, action.payload);
     }
     case 'STOP': {
-      if (!state.currentMessage || !isAssistantMessage(state.currentMessage)) {
+      if (!state.streamingMessage || !isAssistantMessage(state.streamingMessage)) {
         return state;
       }
-      const message = {...state.currentMessage, loading: false};
+      const message = {...state.streamingMessage, loading: false};
       return addCompletedMessage(state, message);
     }
     case 'CREATE': {
@@ -171,7 +164,7 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         completedMessages: messages,
-        currentMessage: null,
+        streamingMessage: null,
         currentId: id,
       };
     }
@@ -207,11 +200,11 @@ interface AppProps {
 }
 
 const App = ({onReady}: AppProps) => {
-  const [{completedMessages, currentMessage, historyList, currentId}, dispatch] = useReducer(
+  const [{completedMessages, streamingMessage, historyList, currentId}, dispatch] = useReducer(
     reducer,
     {
       completedMessages: [],
-      currentMessage: null,
+      streamingMessage: null,
       historyList: getHistoryList(),
       currentId: '',
     },
@@ -393,36 +386,32 @@ const App = ({onReady}: AppProps) => {
     [api],
   );
 
+  const getMessageItem = (message: Message) =>
+    isAssistantMessage(message) ? (
+      <AssistantMessageItem key={message.id} message={message} />
+    ) : (
+      <UserMessageItem key={message.id} message={message} />
+    );
+
   const completedMessageItems = useMemo(
-    () =>
-      completedMessages.map((message) =>
-        isAssistantMessage(message) ? (
-          <AssistantMessageItem key={message.id} message={message} />
-        ) : (
-          <UserMessageItem key={message.id} message={message} />
-        ),
-      ),
+    () => completedMessages.map(getMessageItem),
     [completedMessages],
   );
 
-  const currentMessageItem = useMemo(() => {
-    if (!currentMessage) {
-      return null;
-    }
-    return isAssistantMessage(currentMessage) ? (
-      <AssistantMessageItem key={currentMessage.id} message={currentMessage} />
-    ) : (
-      <UserMessageItem key={currentMessage.id} message={currentMessage} />
-    );
-  }, [currentMessage]);
+  const messageItems = useMemo(
+    () =>
+      streamingMessage
+        ? [...completedMessageItems, getMessageItem(streamingMessage)]
+        : completedMessageItems,
+    [completedMessageItems, streamingMessage],
+  );
 
   return (
     <div className="app-container">
       <style>{styles}</style>
       {contextHolder}
       <div className="messages-container" ref={messagesContainerRef}>
-        {completedMessageItems}
-        {currentMessageItem}
+        {messageItems}
       </div>
       <div className="bottom-container">
         <div className="action-bar">
@@ -434,7 +423,7 @@ const App = ({onReady}: AppProps) => {
               onClick={() => {
                 void handleCreate();
               }}
-              disabled={!!currentMessage}
+              disabled={!!streamingMessage}
             >
               <CreateIcon />
             </button>
@@ -445,7 +434,7 @@ const App = ({onReady}: AppProps) => {
               type="button"
               aria-label="历史对话"
               onClick={handleOpenHistoryModal}
-              disabled={!!currentMessage}
+              disabled={!!streamingMessage}
             >
               <HistoryIcon />
             </button>
@@ -491,7 +480,7 @@ const App = ({onReady}: AppProps) => {
             ref={userInputRef}
           />
           <div className="button-wrap">
-            {currentMessage ? (
+            {streamingMessage ? (
               <Tooltip title="停止" placement="topLeft">
                 <button
                   className="icon square plain"
