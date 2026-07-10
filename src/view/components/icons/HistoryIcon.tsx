@@ -31,4 +31,6 @@ const HistoryIcon = memo((props: SVGProps<SVGSVGElement>) => {
   );
 });
 
+HistoryIcon.displayName = 'HistoryIcon';
+
 export default HistoryIcon;

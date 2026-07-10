@@ -31,4 +31,6 @@ const CopyIcon = memo((props: SVGProps<SVGSVGElement>) => {
   );
 });
 
+CopyIcon.displayName = 'CopyIcon';
+
 export default CopyIcon;

@@ -19,6 +19,7 @@ import {
   useRef,
   useEffect,
   useCallback,
+  useReducer,
   startTransition,
   useMemo,
   type KeyboardEvent,
@@ -46,6 +47,149 @@ import {generateId} from '../utils/uuid';
 
 const STORAGE_KEY = 'chatHistory';
 
+interface State {
+  completedMessages: Message[];
+  currentMessage: Message | null;
+  historyList: HistoryItem[];
+  currentId: string;
+}
+
+type Action =
+  | {type: 'UPDATE_MESSAGE'; payload: UpdateMessagePayload}
+  | {type: 'PUSH_MESSAGE'; payload: Message}
+  | {type: 'SET_CURRENT_MESSAGE'; payload: Message | null}
+  | {type: 'SET_COMPLETED_MESSAGES'; payload: Message[]}
+  | {type: 'ADD_COMPLETED_MESSAGE'; payload: Message}
+  | {type: 'STOP'}
+  | {type: 'CREATE'}
+  | {type: 'SELECT_HISTORY'; payload: HistoryItem}
+  | {type: 'DELETE_HISTORY'; payload: string};
+
+const getHistoryList = (): HistoryItem[] => {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      return JSON.parse(saved) as HistoryItem[];
+    } catch {
+      console.error('Failed to parse saved history:', saved);
+    }
+  }
+  return [];
+};
+
+const createHistory = (historyList: HistoryItem[]): State => {
+  const newHistoryItem = new HistoryItem();
+  return {
+    completedMessages: [],
+    currentMessage: null,
+    historyList: [...historyList, newHistoryItem],
+    currentId: newHistoryItem.id,
+  };
+};
+
+const addCompletedMessage = (state: State, message: Message): State => {
+  const newCompletedMessages = [...state.completedMessages, message];
+  if (state.currentId === '') {
+    const newHistoryItem = new HistoryItem(newCompletedMessages);
+    return {
+      completedMessages: newCompletedMessages,
+      currentMessage: null,
+      historyList: [...state.historyList, newHistoryItem],
+      currentId: newHistoryItem.id,
+    };
+  }
+  return {
+    ...state,
+    completedMessages: newCompletedMessages,
+    currentMessage: null,
+    historyList: state.historyList.map((item) => {
+      if (item.id === state.currentId) {
+        item.messages = newCompletedMessages;
+      }
+      return item;
+    }),
+  };
+};
+
+const reducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case 'UPDATE_MESSAGE': {
+      const {id, field, value} = action.payload;
+      if (state.currentMessage?.id !== id) {
+        return state;
+      }
+      const message = {
+        ...state.currentMessage,
+        [field]: value,
+      };
+      if (isAssistantMessage(message) && message.loading === false) {
+        return addCompletedMessage(state, message);
+      }
+      return {
+        ...state,
+        currentMessage: message,
+      };
+    }
+    case 'PUSH_MESSAGE': {
+      const payload = action.payload;
+      const message = payload.id ? payload : {...payload, id: generateId()};
+      if (isAssistantMessage(message) && message.loading) {
+        return {
+          ...state,
+          currentMessage: message,
+        };
+      }
+      return addCompletedMessage(state, message);
+    }
+    case 'SET_CURRENT_MESSAGE': {
+      return {
+        ...state,
+        currentMessage: action.payload,
+      };
+    }
+    case 'SET_COMPLETED_MESSAGES': {
+      return {
+        ...state,
+        completedMessages: action.payload,
+      };
+    }
+    case 'ADD_COMPLETED_MESSAGE': {
+      return addCompletedMessage(state, action.payload);
+    }
+    case 'STOP': {
+      if (!state.currentMessage || !isAssistantMessage(state.currentMessage)) {
+        return state;
+      }
+      const message = {...state.currentMessage, loading: false};
+      return addCompletedMessage(state, message);
+    }
+    case 'CREATE': {
+      return createHistory(state.historyList);
+    }
+    case 'SELECT_HISTORY': {
+      const {messages, id} = action.payload;
+      return {
+        ...state,
+        completedMessages: messages,
+        currentMessage: null,
+        currentId: id,
+      };
+    }
+    case 'DELETE_HISTORY': {
+      const newHistoryList = state.historyList.filter((item) => item.id !== action.payload);
+      if (state.currentId === action.payload) {
+        return createHistory(newHistoryList);
+      }
+      return {
+        ...state,
+        historyList: newHistoryList,
+      };
+    }
+    default:
+      throw Error('Unknown action');
+  }
+};
+
 class HistoryItem {
   id: string;
   createdAt: number;
@@ -63,34 +207,30 @@ interface AppProps {
 }
 
 const App = ({onReady}: AppProps) => {
-  const [completedMessages, setCompletedMessages] = useState<Message[]>([]);
-  const [currentMessage, setCurrentMessage] = useState<Message | null>(null);
+  const [{completedMessages, currentMessage, historyList, currentId}, dispatch] = useReducer(
+    reducer,
+    {
+      completedMessages: [],
+      currentMessage: null,
+      historyList: getHistoryList(),
+      currentId: '',
+    },
+  );
   const [userInputValue, setUserInputValue] = useState('');
   const [context, setContext] = useState('');
   const [api, contextHolder] = notification.useNotification();
-  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
-  const [currentId, setCurrentId] = useState<string>('');
   const userInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const historyRef = useRef<HistoryItem[]>([]);
-
   /**
    * TODO: 多页面场景下 localStorage 数据同步
    */
-  const saveHistoryToStorage = useCallback((historyList: HistoryItem[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(historyList));
-  }, []);
-
-  useEffect(() => {
-    historyRef.current = history;
-  }, [history]);
-
-  const debouncedSaveHistory = useCallback(
-    debounce(() => {
-      saveHistoryToStorage(historyRef.current);
-    }, 500),
-    [saveHistoryToStorage],
+  const debouncedSaveHistory = useMemo(
+    () =>
+      debounce((historyList: HistoryItem[]) => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(historyList));
+      }, 500),
+    [],
   );
 
   useEffect(() => {
@@ -98,43 +238,12 @@ const App = ({onReady}: AppProps) => {
   }, [onReady]);
 
   useEffect(() => {
-    const savedHistory = localStorage.getItem(STORAGE_KEY);
-    let history: HistoryItem[] = [];
-
-    if (savedHistory) {
-      try {
-        history = JSON.parse(savedHistory) as HistoryItem[];
-      } catch {
-        console.error('Failed to parse saved history:', savedHistory);
-      }
-    }
-
-    setHistory(history);
-  }, []);
-
-  useEffect(() => {
-    if (completedMessages.length === 0) {
-      return;
-    }
-    if (currentId === '') {
-      const newHistoryItem = new HistoryItem(completedMessages);
-      setHistory((prev) => [...prev, newHistoryItem]);
-      setCurrentId(newHistoryItem.id);
-    } else {
-      setHistory((prev) =>
-        prev.map((item) => {
-          if (item.id === currentId) {
-            item.messages = completedMessages;
-          }
-          return item;
-        }),
-      );
-    }
-  }, [completedMessages.length, currentId]);
-
-  useEffect(() => {
-    debouncedSaveHistory();
-  }, [history, debouncedSaveHistory]);
+    debouncedSaveHistory(historyList);
+    return () => {
+      debouncedSaveHistory.flush();
+      debouncedSaveHistory.cancel();
+    };
+  }, [historyList, debouncedSaveHistory]);
 
   /**
    * 如果开发者会使用 pushMessage 添加 user message
@@ -143,35 +252,14 @@ const App = ({onReady}: AppProps) => {
    * 而 user message 只在 user-input 里输入
    */
   const pushMessage = useCallback((payload: Message) => {
-    const _message = payload.id ? payload : {...payload, id: generateId()};
-    if (isAssistantMessage(_message) && _message.loading) {
-      setCurrentMessage(_message);
-    } else {
-      setCompletedMessages((prev) => [...prev, _message]);
-    }
+    dispatch({type: 'PUSH_MESSAGE', payload});
   }, []);
 
   const updateMessage = useCallback((payload: UpdateMessagePayload) => {
-    const {id, field, value} = payload;
     startTransition(() => {
-      setCurrentMessage((prev) => {
-        if (prev?.id === id) {
-          return {
-            ...prev,
-            [field]: value,
-          };
-        }
-        return prev;
-      });
+      dispatch({type: 'UPDATE_MESSAGE', payload});
     });
   }, []);
-
-  useEffect(() => {
-    if (currentMessage && isAssistantMessage(currentMessage) && currentMessage.loading === false) {
-      setCompletedMessages((prev) => [...prev, currentMessage]);
-      setCurrentMessage(null);
-    }
-  }, [currentMessage]);
 
   const updateContext = useCallback((payload: string) => {
     setContext(payload);
@@ -191,13 +279,6 @@ const App = ({onReady}: AppProps) => {
     };
   }, [pushMessage, updateMessage, updateContext]);
 
-  useEffect(() => {
-    return () => {
-      debouncedSaveHistory.cancel();
-      saveHistoryToStorage(historyRef.current);
-    };
-  }, [debouncedSaveHistory, saveHistoryToStorage]);
-
   const handleDeleteContext = useCallback(() => {
     setContext('');
   }, []);
@@ -213,7 +294,7 @@ const App = ({onReady}: AppProps) => {
         setUserInputValue('');
         const finalContent = context.trim() ? `${context}\n\n${trimmedContent}` : trimmedContent;
         const message: Message = {id: generateId(), role: 'user', content: finalContent};
-        setCompletedMessages((prev) => [...prev, message]);
+        dispatch({type: 'ADD_COMPLETED_MESSAGE', payload: message});
         /**
          * messages-container 滚动到最底部
          * 将最新一轮对话里的 user message 显示在屏幕顶部
@@ -240,11 +321,7 @@ const App = ({onReady}: AppProps) => {
 
   const handleStop = useCallback(async () => {
     await eventBus.publish('stop');
-    if (currentMessage) {
-      const stoppedMessage = {...currentMessage, loading: false};
-      setCompletedMessages((prev) => [...prev, stoppedMessage]);
-      setCurrentMessage(null);
-    }
+    dispatch({type: 'STOP'});
     userInputRef.current?.focus();
     api.info({
       title: '已停止',
@@ -252,14 +329,10 @@ const App = ({onReady}: AppProps) => {
       placement: 'top',
       closable: false,
     });
-  }, [api, currentMessage]);
+  }, [api]);
 
   const create = useCallback(() => {
-    const newHistoryItem = new HistoryItem();
-    setHistory((prev) => [...prev, newHistoryItem]);
-    setCurrentId(newHistoryItem.id);
-    setCompletedMessages([]);
-    setCurrentMessage(null);
+    dispatch({type: 'CREATE'});
   }, []);
 
   const handleCreate = useCallback(async () => {
@@ -284,18 +357,16 @@ const App = ({onReady}: AppProps) => {
     [handleSend],
   );
 
-  const handleOpenHistory = useCallback(() => {
+  const handleOpenHistoryModal = useCallback(() => {
     setIsHistoryModalVisible(true);
   }, []);
 
-  const handleCloseHistory = useCallback(() => {
+  const handleCloseHistoryModal = useCallback(() => {
     setIsHistoryModalVisible(false);
   }, []);
 
   const handleSelectHistory = useCallback((item: HistoryItem) => {
-    setCompletedMessages(item.messages);
-    setCurrentMessage(null);
-    setCurrentId(item.id);
+    dispatch({type: 'SELECT_HISTORY', payload: item});
     setIsHistoryModalVisible(false);
   }, []);
 
@@ -309,10 +380,7 @@ const App = ({onReady}: AppProps) => {
         okType: 'danger',
         cancelText: '取消',
         onOk: () => {
-          setHistory((prev) => prev.filter((h) => h.id !== item.id));
-          if (currentId === item.id) {
-            create();
-          }
+          dispatch({type: 'DELETE_HISTORY', payload: item.id});
           api.warning({
             title: '已删除',
             description: '历史对话已删除',
@@ -322,7 +390,7 @@ const App = ({onReady}: AppProps) => {
         },
       });
     },
-    [currentId, create, api],
+    [api],
   );
 
   const completedMessageItems = useMemo(
@@ -376,7 +444,7 @@ const App = ({onReady}: AppProps) => {
               className="icon square plain"
               type="button"
               aria-label="历史对话"
-              onClick={handleOpenHistory}
+              onClick={handleOpenHistoryModal}
               disabled={!!currentMessage}
             >
               <HistoryIcon />
@@ -460,16 +528,16 @@ const App = ({onReady}: AppProps) => {
       <Modal
         title="历史对话"
         open={isHistoryModalVisible}
-        onCancel={handleCloseHistory}
+        onCancel={handleCloseHistoryModal}
         footer={null}
       >
         {isHistoryModalVisible && (
           <div className="history-list">
-            {history.length === 0 ? (
+            {historyList.length === 0 ? (
               <div className="history-empty">暂无历史对话</div>
             ) : (
               <ul className="history-items">
-                {history.map((item) => (
+                {historyList.map((item) => (
                   <li
                     key={item.id}
                     className={`history-item ${currentId === item.id ? 'selected' : ''}`}

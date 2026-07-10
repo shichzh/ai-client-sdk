@@ -24,4 +24,6 @@ const SendIcon = memo((props: SVGProps<SVGSVGElement>) => {
   );
 });
 
+SendIcon.displayName = 'SendIcon';
+
 export default SendIcon;

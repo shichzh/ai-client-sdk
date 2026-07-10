@@ -24,4 +24,6 @@ const StopIcon = memo((props: SVGProps<SVGSVGElement>) => {
   );
 });
 
+StopIcon.displayName = 'StopIcon';
+
 export default StopIcon;

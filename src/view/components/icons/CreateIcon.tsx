@@ -31,4 +31,6 @@ const CreateIcon = memo((props: SVGProps<SVGSVGElement>) => {
   );
 });
 
+CreateIcon.displayName = 'CreateIcon';
+
 export default CreateIcon;

@@ -30,8 +30,6 @@ export const useMessageItem = (message: Message) => {
         .catch((err: unknown) => {
           console.error('Failed to parse markdown:', err);
         });
-    } else {
-      setParsedContent('');
     }
   }, [message.content]);
 

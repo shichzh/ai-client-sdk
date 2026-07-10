@@ -35,4 +35,6 @@ const LoadingIcon = memo((props: SVGProps<SVGSVGElement>) => {
   );
 });
 
+LoadingIcon.displayName = 'LoadingIcon';
+
 export default LoadingIcon;

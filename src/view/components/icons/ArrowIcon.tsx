@@ -31,4 +31,6 @@ const ArrowIcon = memo((props: SVGProps<SVGSVGElement>) => {
   );
 });
 
+ArrowIcon.displayName = 'ArrowIcon';
+
 export default ArrowIcon;

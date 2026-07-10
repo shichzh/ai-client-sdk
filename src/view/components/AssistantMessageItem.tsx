@@ -39,8 +39,6 @@ const AssistantMessageItem = ({message}: AssistantMessageItemProps) => {
         .catch((err: unknown) => {
           console.error('Failed to parse markdown:', err);
         });
-    } else {
-      setParsedReasoningContent('');
     }
   }, [message.reasoning_content]);
 

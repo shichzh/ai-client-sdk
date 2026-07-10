@@ -24,4 +24,6 @@ const DeleteIcon = memo((props: SVGProps<SVGSVGElement>) => {
   );
 });
 
+DeleteIcon.displayName = 'DeleteIcon';
+
 export default DeleteIcon;
