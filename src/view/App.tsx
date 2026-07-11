@@ -23,23 +23,23 @@ import {
   startTransition,
   useMemo,
   type KeyboardEvent,
-  type MouseEvent,
 } from 'react';
 import {debounce} from 'lodash-es';
 import {isAssistantMessage} from '../utils/guard';
 import type {Message, UpdateMessagePayload, Resolve} from '../types';
 import AssistantMessageItem from './components/AssistantMessageItem';
 import UserMessageItem from './components/UserMessageItem';
+import HistoryModal from './components/HistoryModal';
 import {eventBus} from '../utils/eventBus';
-import {notification, Tooltip, Modal} from 'antd';
+import {notification, Tooltip} from 'antd';
 import CreateIcon from './components/icons/CreateIcon';
 import DeleteIcon from './components/icons/DeleteIcon';
 import StopIcon from './components/icons/StopIcon';
 import SendIcon from './components/icons/SendIcon';
 import HistoryIcon from './components/icons/HistoryIcon';
 import styles from './css/index.css?inline';
-import dayjs from 'dayjs';
 import {generateId} from '../utils/uuid';
+import {HistoryItem} from '../models/HistoryItem';
 
 const STORAGE_KEY = 'chatHistory';
 
@@ -178,18 +178,6 @@ const reducer = (state: State, action: Action): State => {
       throw Error('Unknown action');
   }
 };
-
-class HistoryItem {
-  id: string;
-  createdAt: number;
-  messages: Message[];
-
-  constructor(messages: Message[] = []) {
-    this.id = generateId();
-    this.createdAt = Date.now();
-    this.messages = messages;
-  }
-}
 
 interface AppProps {
   onReady: Resolve;
@@ -360,23 +348,13 @@ const App = ({onReady}: AppProps) => {
   }, []);
 
   const handleDeleteHistory = useCallback(
-    (item: HistoryItem, e: MouseEvent) => {
-      e.stopPropagation();
-      Modal.confirm({
-        title: '确认删除',
-        content: '确定要删除这条历史对话吗？此操作无法撤销。',
-        okText: '删除',
-        okType: 'danger',
-        cancelText: '取消',
-        onOk: () => {
-          dispatch({type: 'DELETE_HISTORY', payload: item.id});
-          api.warning({
-            title: '已删除',
-            description: '历史对话已删除',
-            placement: 'top',
-            closable: false,
-          });
-        },
+    (item: HistoryItem) => {
+      dispatch({type: 'DELETE_HISTORY', payload: item.id});
+      api.warning({
+        title: '已删除',
+        description: '历史对话已删除',
+        placement: 'top',
+        closable: false,
       });
     },
     [api],
@@ -513,49 +491,14 @@ const App = ({onReady}: AppProps) => {
           </div>
         </div>
       </div>
-      <Modal
-        title="历史对话"
+      <HistoryModal
         open={isHistoryModalVisible}
+        historyList={historyList}
+        currentId={currentId}
         onCancel={handleCloseHistoryModal}
-        footer={null}
-      >
-        {isHistoryModalVisible && (
-          <div className="history-list">
-            {historyList.length === 0 ? (
-              <div className="history-empty">暂无历史对话</div>
-            ) : (
-              <ul className="history-items">
-                {historyList.map((item) => (
-                  <li
-                    key={item.id}
-                    className={`history-item ${currentId === item.id ? 'selected' : ''}`}
-                    onClick={() => {
-                      handleSelectHistory(item);
-                    }}
-                  >
-                    <div className="history-info">
-                      <div className="history-content">{item.messages[0]?.content || '无对话'}</div>
-                      <div className="history-time">
-                        {dayjs(item.createdAt).format('YYYY-MM-DD HH:mm:ss')}
-                      </div>
-                    </div>
-                    <button
-                      className="history-delete"
-                      type="button"
-                      aria-label="删除历史对话"
-                      onClick={(e) => {
-                        handleDeleteHistory(item, e);
-                      }}
-                    >
-                      <DeleteIcon />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-      </Modal>
+        onSelect={handleSelectHistory}
+        onDelete={handleDeleteHistory}
+      />
     </div>
   );
 };
