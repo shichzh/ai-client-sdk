@@ -386,16 +386,19 @@ const App = ({onReady}: AppProps) => {
     [api],
   );
 
-  const getMessageItem = (message: Message) =>
-    isAssistantMessage(message) ? (
-      <AssistantMessageItem key={message.id} message={message} />
-    ) : (
-      <UserMessageItem key={message.id} message={message} />
-    );
+  const getMessageItem = useCallback(
+    (message: Message) =>
+      isAssistantMessage(message) ? (
+        <AssistantMessageItem key={message.id} message={message} />
+      ) : (
+        <UserMessageItem key={message.id} message={message} />
+      ),
+    [],
+  );
 
   const completedMessageItems = useMemo(
     () => completedMessages.map(getMessageItem),
-    [completedMessages],
+    [completedMessages, getMessageItem],
   );
 
   const messageItems = useMemo(
@@ -403,7 +406,7 @@ const App = ({onReady}: AppProps) => {
       streamingMessage
         ? [...completedMessageItems, getMessageItem(streamingMessage)]
         : completedMessageItems,
-    [completedMessageItems, streamingMessage],
+    [completedMessageItems, streamingMessage, getMessageItem],
   );
 
   return (
