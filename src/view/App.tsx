@@ -26,12 +26,8 @@ import {
   type MouseEvent,
 } from 'react';
 import {debounce} from 'lodash-es';
-import {
-  isAssistantMessage,
-  type Message,
-  type UpdateMessagePayload,
-  type Resolve,
-} from '../utils/types';
+import {isAssistantMessage} from '../utils/guard';
+import type {Message, UpdateMessagePayload, Resolve} from '../types';
 import AssistantMessageItem from './components/AssistantMessageItem';
 import UserMessageItem from './components/UserMessageItem';
 import {eventBus} from '../utils/eventBus';

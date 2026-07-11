@@ -19,7 +19,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import {ConfigProvider} from 'antd';
 import {StyleProvider, createCache} from '@ant-design/cssinjs';
-import type {Resolve} from '../utils/types';
+import type {Resolve} from '../types';
 
 interface Params {
   domNode: ShadowRoot;

@@ -123,10 +123,6 @@ export interface ToolMessage {
 
 export type Message = SimpleMessage | AssistantMessage | ToolMessage;
 
-export const isAssistantMessage = (message: Message): message is AssistantMessage => {
-  return message.role === 'assistant' || message.role === null;
-};
-
 export interface Params {
   roundsLeft?: number;
 }

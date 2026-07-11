@@ -16,7 +16,7 @@
 
 import {useState, useEffect, useRef, type MouseEvent} from 'react';
 import {parseMarkdown} from '../../utils/markdown';
-import type {Message} from '../../utils/types';
+import type {Message} from '../../types';
 
 export const useMessageItem = (message: Message) => {
   const [isCopied, setIsCopied] = useState(false);

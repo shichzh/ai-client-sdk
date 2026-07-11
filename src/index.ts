@@ -18,13 +18,7 @@
 import {eventBus} from './utils/eventBus';
 import {init} from './view/index';
 import {Agent} from './utils/agent';
-import type {
-  Message,
-  StreamResult,
-  AssistantMessage,
-  UpdateMessagePayload,
-  Resolve,
-} from './utils/types';
+import type {Message, StreamResult, AssistantMessage, UpdateMessagePayload, Resolve} from './types';
 
 class Panel extends HTMLElement {
   readonly #promise: Promise<undefined>;

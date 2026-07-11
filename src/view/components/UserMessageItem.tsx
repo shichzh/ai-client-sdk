@@ -15,7 +15,7 @@
  */
 
 import {memo} from 'react';
-import type {Message} from '../../utils/types';
+import type {Message} from '../../types';
 import {Tooltip} from 'antd';
 import CopyIcon from './icons/CopyIcon';
 import {useMessageItem} from '../hooks/useMessageItem';

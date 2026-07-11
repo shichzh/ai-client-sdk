@@ -16,7 +16,7 @@
 
 import {Client} from '@modelcontextprotocol/sdk/client';
 import {StreamableHTTPClientTransport} from '@modelcontextprotocol/sdk/client/streamableHttp';
-import type {Arguments, Definition, MCPClientOptions} from './types';
+import type {Arguments, Definition, MCPClientOptions} from '../types';
 
 export class MCPClient {
   readonly #client: Client;

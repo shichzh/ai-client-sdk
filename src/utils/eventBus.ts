@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type {Message, UpdateMessagePayload} from './types';
+import type {Message, UpdateMessagePayload} from '../types';
 
 type Events = {
   pushMessage: [payload: Message];

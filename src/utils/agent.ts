@@ -28,7 +28,7 @@ import type {
   StreamResult,
   Arguments,
   ToolCall,
-} from './types';
+} from '../types';
 
 export class Agent {
   #model = '';
