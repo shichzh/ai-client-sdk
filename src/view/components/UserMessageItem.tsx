@@ -18,14 +18,14 @@ import {memo} from 'react';
 import type {Message} from '../../types';
 import {Tooltip} from 'antd';
 import CopyIcon from './icons/CopyIcon';
-import {useMessageItem} from '../hooks/useMessageItem';
+import {useMessage} from '../hooks/useMessage';
 
 interface UserMessageItemProps {
   message: Message;
 }
 
 const UserMessageItem = ({message}: UserMessageItemProps) => {
-  const {isCopied, parsedContent, handleCopy} = useMessageItem(message);
+  const {parsedContent, handleCopy, isCopied} = useMessage(message);
 
   return (
     <div className="message user">

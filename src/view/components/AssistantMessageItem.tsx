@@ -21,16 +21,16 @@ import {Tooltip} from 'antd';
 import ArrowIcon from './icons/ArrowIcon';
 import CopyIcon from './icons/CopyIcon';
 import LoadingIcon from './icons/LoadingIcon';
-import {useMessageItem} from '../hooks/useMessageItem';
+import {useMessage} from '../hooks/useMessage';
 
 interface AssistantMessageItemProps {
   message: AssistantMessage;
 }
 
 const AssistantMessageItem = ({message}: AssistantMessageItemProps) => {
+  const {parsedContent, handleCopy, isCopied} = useMessage(message);
   const [parsedReasoningContent, setParsedReasoningContent] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(true);
-  const {isCopied, parsedContent, handleCopy} = useMessageItem(message);
 
   useEffect(() => {
     if (message.reasoning_content) {

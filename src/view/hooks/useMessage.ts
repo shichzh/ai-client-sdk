@@ -18,9 +18,9 @@ import {useState, useEffect, useRef, type MouseEvent} from 'react';
 import {parseMarkdown} from '../../utils/markdown';
 import type {Message} from '../../types';
 
-export const useMessageItem = (message: Message) => {
-  const [isCopied, setIsCopied] = useState(false);
+export const useMessage = (message: Message) => {
   const [parsedContent, setParsedContent] = useState('');
+  const [isCopied, setIsCopied] = useState(false);
   const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -61,8 +61,8 @@ export const useMessageItem = (message: Message) => {
   };
 
   return {
-    isCopied,
     parsedContent,
     handleCopy,
+    isCopied,
   };
 };
