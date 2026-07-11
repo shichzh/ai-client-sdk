@@ -43,7 +43,7 @@ const AssistantMessageItem = ({message}: AssistantMessageItemProps) => {
   }, [message.reasoning_content]);
 
   const handleToggle = () => {
-    setIsCollapsed(!isCollapsed);
+    setIsCollapsed((prev) => !prev);
   };
 
   return (
