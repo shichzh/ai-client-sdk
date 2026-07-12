@@ -30,7 +30,7 @@ import type {Message, UpdateMessagePayload, Resolve} from '../types';
 import AssistantMessageItem from './components/AssistantMessageItem';
 import UserMessageItem from './components/UserMessageItem';
 import HistoryModal from './components/HistoryModal';
-import {eventBus} from '../utils/eventBus';
+import type {EventBus} from '../utils/eventBus';
 import {notification, Tooltip} from 'antd';
 import CreateIcon from './components/icons/CreateIcon';
 import DeleteIcon from './components/icons/DeleteIcon';
@@ -181,9 +181,10 @@ const reducer = (state: State, action: Action): State => {
 
 interface AppProps {
   onReady: Resolve;
+  eventBus: EventBus;
 }
 
-const App = ({onReady}: AppProps) => {
+const App = ({onReady, eventBus}: AppProps) => {
   const [{completedMessages, streamingMessage, historyList, currentId}, dispatch] = useReducer(
     reducer,
     {

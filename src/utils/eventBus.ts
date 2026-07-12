@@ -31,7 +31,7 @@ type Store = {
   [K in keyof Events]: Listener<K>[];
 };
 
-class EventBus {
+export class EventBus {
   #store: Store = {
     pushMessage: [],
     updateMessage: [],
@@ -61,5 +61,3 @@ class EventBus {
     };
   }
 }
-
-export const eventBus = new EventBus();

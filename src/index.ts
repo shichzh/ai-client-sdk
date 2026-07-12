@@ -15,66 +15,46 @@
  * limitations under the License.
  */
 
-import {eventBus} from './utils/eventBus';
+import {EventBus} from './utils/eventBus';
 import {init} from './view/index';
 import {Agent} from './utils/agent';
-import type {Message, StreamResult, AssistantMessage, UpdateMessagePayload, Resolve} from './types';
-
-class Panel extends HTMLElement {
-  readonly #promise: Promise<undefined>;
-  readonly #resolve: Resolve;
-
-  constructor() {
-    super();
-    this.attachShadow({mode: 'open'});
-    const {promise, resolve} = Promise.withResolvers<undefined>();
-    this.#promise = promise;
-    this.#resolve = resolve;
-  }
-
-  connectedCallback() {
-    if (this.shadowRoot) {
-      init({domNode: this.shadowRoot, onReady: this.#resolve});
-    }
-  }
-
-  ready() {
-    return this.#promise;
-  }
-}
-
-customElements.define('ai-chat-panel', Panel);
+import type {Message, StreamResult, AssistantMessage, UpdateMessagePayload} from './types';
 
 interface AIChatPanelConfig {
   container: HTMLElement | null;
 }
 
 export class AIChatPanel {
-  on = eventBus.subscribe.bind(eventBus);
-  readonly #panel: Panel;
+  readonly #eventBus: EventBus;
+  readonly #promise: Promise<undefined>;
+  readonly on: EventBus['subscribe'];
 
   constructor(config: AIChatPanelConfig) {
     const {container} = config;
     if (!container) {
       throw new Error('未提供有效的 container');
     }
-    this.#panel = document.createElement('ai-chat-panel') as Panel;
-    container.appendChild(this.#panel);
+    this.#eventBus = new EventBus();
+    this.on = this.#eventBus.subscribe.bind(this.#eventBus);
+    const {promise, resolve} = Promise.withResolvers<undefined>();
+    this.#promise = promise;
+    const shadowRoot = container.attachShadow({mode: 'open'});
+    init({domNode: shadowRoot, onReady: resolve, eventBus: this.#eventBus});
   }
 
   async pushMessage(payload: Message): Promise<void> {
-    await this.#panel.ready();
-    await eventBus.publish('pushMessage', payload);
+    await this.#promise;
+    await this.#eventBus.publish('pushMessage', payload);
   }
 
   async updateMessage(payload: UpdateMessagePayload): Promise<void> {
-    await this.#panel.ready();
-    await eventBus.publish('updateMessage', payload);
+    await this.#promise;
+    await this.#eventBus.publish('updateMessage', payload);
   }
 
   async updateContext(payload: string): Promise<void> {
-    await this.#panel.ready();
-    await eventBus.publish('updateContext', payload);
+    await this.#promise;
+    await this.#eventBus.publish('updateContext', payload);
   }
 }
 

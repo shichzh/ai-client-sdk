@@ -20,13 +20,15 @@ import App from './App';
 import {ConfigProvider} from 'antd';
 import {StyleProvider, createCache} from '@ant-design/cssinjs';
 import type {Resolve} from '../types';
+import type {EventBus} from '../utils/eventBus';
 
 interface Params {
   domNode: ShadowRoot;
   onReady: Resolve;
+  eventBus: EventBus;
 }
 
-export const init = ({domNode, onReady}: Params): void => {
+export const init = ({domNode, onReady, eventBus}: Params): void => {
   const cache = createCache();
 
   const root = ReactDOM.createRoot(domNode);
@@ -34,7 +36,7 @@ export const init = ({domNode, onReady}: Params): void => {
     <StrictMode>
       <StyleProvider cache={cache} container={domNode}>
         <ConfigProvider getPopupContainer={() => domNode}>
-          <App onReady={onReady} />
+          <App onReady={onReady} eventBus={eventBus} />
         </ConfigProvider>
       </StyleProvider>
     </StrictMode>,
