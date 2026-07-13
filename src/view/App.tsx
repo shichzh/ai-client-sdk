@@ -30,13 +30,9 @@ import type {Message, UpdateMessagePayload, Resolve} from '../types';
 import AssistantMessageItem from './components/AssistantMessageItem';
 import UserMessageItem from './components/UserMessageItem';
 import HistoryModal from './components/HistoryModal';
+import Footer from './components/Footer';
 import type {EventBus} from '../utils/eventBus';
-import {notification, Tooltip} from 'antd';
-import CreateIcon from './components/icons/CreateIcon';
-import DeleteIcon from './components/icons/DeleteIcon';
-import StopIcon from './components/icons/StopIcon';
-import SendIcon from './components/icons/SendIcon';
-import HistoryIcon from './components/icons/HistoryIcon';
+import {notification} from 'antd';
 import styles from './css/index.css?inline';
 import {generateId} from '../utils/uuid';
 import {type HistoryItem, createHistoryItem} from '../models/HistoryItem';
@@ -391,107 +387,20 @@ const App = ({onReady, eventBus}: AppProps) => {
       <div className="messages-container" ref={messagesContainerRef}>
         {messageItems}
       </div>
-      <div className="bottom-container">
-        <div className="action-bar">
-          <Tooltip title="新对话" placement="bottomLeft">
-            <button
-              className="icon square plain"
-              type="button"
-              aria-label="新对话"
-              onClick={() => {
-                void handleCreate();
-              }}
-              disabled={!!streamingMessage}
-            >
-              <CreateIcon />
-            </button>
-          </Tooltip>
-          <Tooltip title="历史对话" placement="bottomLeft">
-            <button
-              className="icon square plain"
-              type="button"
-              aria-label="历史对话"
-              onClick={handleOpenHistoryModal}
-              disabled={!!streamingMessage}
-            >
-              <HistoryIcon />
-            </button>
-          </Tooltip>
-        </div>
-        {context && (
-          <>
-            <div className="context-container">
-              <p className="context-text">{context}</p>
-              <button
-                className="context-delete"
-                type="button"
-                aria-label="删除上下文"
-                onClick={handleDeleteContext}
-              >
-                <DeleteIcon />
-              </button>
-            </div>
-            <div className="shortcut-bar">
-              <button
-                className="text square plain"
-                type="button"
-                aria-label="翻译"
-                onClick={() => {
-                  void handleTranslate();
-                }}
-              >
-                翻译
-              </button>
-            </div>
-          </>
-        )}
-        <div className="user-input-container">
-          <textarea
-            name="user-input"
-            className="user-input"
-            placeholder="发消息..."
-            value={userInputValue}
-            onChange={(e) => {
-              setUserInputValue(e.target.value);
-            }}
-            onKeyDown={handleKeyDown}
-            ref={userInputRef}
-          />
-          <div className="button-wrap">
-            {streamingMessage ? (
-              <Tooltip title="停止" placement="topLeft">
-                <button
-                  className="icon square plain"
-                  type="button"
-                  aria-label="停止"
-                  onClick={() => {
-                    void handleStop();
-                  }}
-                >
-                  <div className="stop-icon">
-                    <StopIcon />
-                  </div>
-                </button>
-              </Tooltip>
-            ) : (
-              <Tooltip title="发送 (↵)" placement="topLeft">
-                <button
-                  className="icon square plain"
-                  type="button"
-                  aria-label="发送 (↵)"
-                  onClick={() => {
-                    void handleSend();
-                  }}
-                >
-                  <div className="send-icon">
-                    <SendIcon />
-                  </div>
-                </button>
-              </Tooltip>
-            )}
-          </div>
-        </div>
-      </div>
+      <Footer
+        context={context}
+        streamingMessage={streamingMessage}
+        userInputValue={userInputValue}
+        userInputRef={userInputRef}
+        handleCreate={handleCreate}
+        handleOpenHistoryModal={handleOpenHistoryModal}
+        handleDeleteContext={handleDeleteContext}
+        handleTranslate={handleTranslate}
+        handleSend={handleSend}
+        handleStop={handleStop}
+        handleKeyDown={handleKeyDown}
+        onChange={setUserInputValue}
+      />
       <HistoryModal
         open={isHistoryModalVisible}
         historyList={historyList}
