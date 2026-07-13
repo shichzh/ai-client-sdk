@@ -39,7 +39,7 @@ import SendIcon from './components/icons/SendIcon';
 import HistoryIcon from './components/icons/HistoryIcon';
 import styles from './css/index.css?inline';
 import {generateId} from '../utils/uuid';
-import {HistoryItem} from '../models/HistoryItem';
+import {type HistoryItem, createHistoryItem} from '../models/HistoryItem';
 
 const STORAGE_KEY = 'chatHistory';
 
@@ -73,7 +73,7 @@ const getHistoryList = (): HistoryItem[] => {
 };
 
 const createHistory = (historyList: HistoryItem[]): State => {
-  const newHistoryItem = new HistoryItem();
+  const newHistoryItem = createHistoryItem();
   return {
     completedMessages: [],
     streamingMessage: null,
@@ -85,7 +85,7 @@ const createHistory = (historyList: HistoryItem[]): State => {
 const addCompletedMessage = (state: State, message: Message): State => {
   const newCompletedMessages = [...state.completedMessages, message];
   if (state.currentId === '') {
-    const newHistoryItem = new HistoryItem(newCompletedMessages);
+    const newHistoryItem = createHistoryItem(newCompletedMessages);
     return {
       completedMessages: newCompletedMessages,
       streamingMessage: null,
@@ -99,7 +99,7 @@ const addCompletedMessage = (state: State, message: Message): State => {
     streamingMessage: null,
     historyList: state.historyList.map((item) => {
       if (item.id === state.currentId) {
-        item.messages = newCompletedMessages;
+        return {...item, messages: newCompletedMessages};
       }
       return item;
     }),

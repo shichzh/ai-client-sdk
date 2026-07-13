@@ -17,14 +17,14 @@
 import type {Message} from '../types';
 import {generateId} from '../utils/uuid';
 
-export class HistoryItem {
+export interface HistoryItem {
   id: string;
   createdAt: number;
   messages: Message[];
-
-  constructor(messages: Message[] = []) {
-    this.id = generateId();
-    this.createdAt = Date.now();
-    this.messages = messages;
-  }
 }
+
+export const createHistoryItem = (messages: Message[] = []): HistoryItem => ({
+  id: generateId(),
+  createdAt: Date.now(),
+  messages,
+});
