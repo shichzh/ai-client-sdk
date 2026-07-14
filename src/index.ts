@@ -20,7 +20,7 @@ import {init} from './view/index';
 import {Agent} from './utils/agent';
 import type {Message, StreamResult, AssistantMessage, UpdateMessagePayload} from './types';
 
-interface AIChatPanelConfig {
+interface AIChatPanelOptions {
   container: HTMLElement | null;
 }
 
@@ -29,8 +29,8 @@ export class AIChatPanel {
   readonly #promise: Promise<undefined>;
   readonly on: EventBus['subscribe'];
 
-  constructor(config: AIChatPanelConfig) {
-    const {container} = config;
+  constructor(options: AIChatPanelOptions) {
+    const {container} = options;
     if (!container) {
       throw new Error('未提供有效的 container');
     }
@@ -58,4 +58,11 @@ export class AIChatPanel {
   }
 }
 
-export {Agent, type Message, type StreamResult, type AssistantMessage};
+export {
+  Agent,
+  type AIChatPanelOptions,
+  type Message,
+  type UpdateMessagePayload,
+  type StreamResult,
+  type AssistantMessage,
+};
