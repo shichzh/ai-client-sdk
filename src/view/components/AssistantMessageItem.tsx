@@ -71,11 +71,7 @@ const AssistantMessageItem = ({message}: AssistantMessageItemProps) => {
             <LoadingIcon />
           </p>
         ) : (
-          <div
-            dangerouslySetInnerHTML={{
-              __html: parsedContent || '<p>暂无正文</p>',
-            }}
-          />
+          <div dangerouslySetInnerHTML={{__html: parsedContent || '<p>暂无正文</p>'}} />
         )}
       </div>
       <div className="button-container">

@@ -29,13 +29,7 @@ const UserMessageItem = ({message}: UserMessageItemProps) => {
 
   return (
     <div className="message user">
-      <div className="body-container">
-        <div
-          dangerouslySetInnerHTML={{
-            __html: parsedContent,
-          }}
-        />
-      </div>
+      <div className="body-container" dangerouslySetInnerHTML={{__html: parsedContent}} />
       <div className="button-container">
         <Tooltip title="复制" placement="bottomRight">
           <button
