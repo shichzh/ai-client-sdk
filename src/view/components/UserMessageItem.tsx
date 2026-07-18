@@ -16,9 +16,8 @@
 
 import {memo} from 'react';
 import type {Message} from '../../types';
-import {Tooltip} from 'antd';
-import CopyIcon from './icons/CopyIcon';
 import {useMessage} from '../hooks/useMessage';
+import ActionBar from './ActionBar';
 
 interface UserMessageItemProps {
   message: Message;
@@ -30,18 +29,7 @@ const UserMessageItem = ({message}: UserMessageItemProps) => {
   return (
     <div className="message user">
       <div className="body-container" dangerouslySetInnerHTML={{__html: parsedContent}} />
-      <div className="button-container">
-        <Tooltip title="复制" placement="bottomRight">
-          <button
-            className="icon square plain"
-            type="button"
-            aria-label="复制"
-            onClick={handleCopy}
-          >
-            {isCopied ? 'Copied' : <CopyIcon />}
-          </button>
-        </Tooltip>
-      </div>
+      <ActionBar onCopy={handleCopy} isCopied={isCopied} placement="bottomRight" />
     </div>
   );
 };

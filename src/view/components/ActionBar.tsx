@@ -1,0 +1,39 @@
+/**
+ * Copyright 2026 shichzh
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {memo, type MouseEvent} from 'react';
+import {Tooltip, type TooltipProps} from 'antd';
+import CopyIcon from './icons/CopyIcon';
+
+interface ActionBarProps {
+  onCopy: (e: MouseEvent) => void;
+  isCopied: boolean;
+  placement?: TooltipProps['placement'];
+}
+
+const ActionBar = ({onCopy, isCopied, placement = 'bottomLeft'}: ActionBarProps) => {
+  return (
+    <div className="button-container">
+      <Tooltip title="复制" placement={placement}>
+        <button className="icon square plain" type="button" aria-label="复制" onClick={onCopy}>
+          {isCopied ? 'Copied' : <CopyIcon />}
+        </button>
+      </Tooltip>
+    </div>
+  );
+};
+
+export default memo(ActionBar);

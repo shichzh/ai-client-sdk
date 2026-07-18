@@ -17,11 +17,10 @@
 import {memo, useState, useEffect} from 'react';
 import type {AssistantMessage} from '../../types';
 import {parseMarkdown} from '../../utils/markdown';
-import {Tooltip} from 'antd';
 import ArrowIcon from './icons/ArrowIcon';
-import CopyIcon from './icons/CopyIcon';
 import LoadingIcon from './icons/LoadingIcon';
 import {useMessage} from '../hooks/useMessage';
+import ActionBar from './ActionBar';
 
 interface AssistantMessageItemProps {
   message: AssistantMessage;
@@ -74,18 +73,7 @@ const AssistantMessageItem = ({message}: AssistantMessageItemProps) => {
           <div dangerouslySetInnerHTML={{__html: parsedContent || '<p>暂无正文</p>'}} />
         )}
       </div>
-      <div className="button-container">
-        <Tooltip title="复制" placement="bottomLeft">
-          <button
-            className="icon square plain"
-            type="button"
-            aria-label="复制"
-            onClick={handleCopy}
-          >
-            {isCopied ? 'Copied' : <CopyIcon />}
-          </button>
-        </Tooltip>
-      </div>
+      <ActionBar onCopy={handleCopy} isCopied={isCopied} />
     </div>
   );
 };
