@@ -135,10 +135,9 @@ export interface Chunk {
 
 export type StreamResult = AsyncGenerator<Chunk, AssistantMessage | StreamResult | undefined, void>;
 
-export interface UpdateMessagePayload {
-  id: string;
-  field: 'content' | 'reasoning_content' | 'loading';
-  value: string | boolean;
-}
+export type UpdateMessagePayload =
+  | {id: string; field: 'content'; value: string}
+  | {id: string; field: 'reasoning_content'; value: string}
+  | {id: string; field: 'loading'; value: boolean};
 
 export type Resolve = (value: PromiseLike<undefined> | undefined) => void;
