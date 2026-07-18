@@ -21,7 +21,7 @@ import type {Message} from '../../types';
 export const useMessage = (message: Message) => {
   const [parsedContent, setParsedContent] = useState('');
   const [isCopied, setIsCopied] = useState(false);
-  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (message.content) {
@@ -35,8 +35,8 @@ export const useMessage = (message: Message) => {
 
   useEffect(() => {
     return () => {
-      if (copiedTimerRef.current) {
-        clearTimeout(copiedTimerRef.current);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
       }
     };
   }, []);
@@ -50,11 +50,11 @@ export const useMessage = (message: Message) => {
         console.error('Failed to copy text: ', err);
       })
       .finally(() => {
-        if (copiedTimerRef.current) {
-          clearTimeout(copiedTimerRef.current);
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
         }
         setIsCopied(true);
-        copiedTimerRef.current = setTimeout(() => {
+        timerRef.current = setTimeout(() => {
           setIsCopied(false);
         }, 1500);
       });
