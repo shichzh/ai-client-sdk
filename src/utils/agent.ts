@@ -40,7 +40,6 @@ export class Agent {
   #controller: AbortController | null = null;
   #mcpClient: MCPClient | null = null;
   #mcpClientOptions?: MCPClientOptions;
-
   #messages: Message[] = [];
 
   private constructor(config: AgentConfig) {
