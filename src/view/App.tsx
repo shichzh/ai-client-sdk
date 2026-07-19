@@ -32,7 +32,7 @@ import UserMessageItem from './components/UserMessageItem';
 import HistoryModal from './components/HistoryModal';
 import Footer from './components/Footer';
 import type {EventBus} from '../utils/eventBus';
-import {notification} from 'antd';
+import {Modal, notification} from 'antd';
 import styles from './css/index.css?inline';
 import {generateId} from '../utils/uuid';
 import type {HistoryItem} from '../models/HistoryItem';
@@ -209,12 +209,21 @@ const App = ({onReady, eventBus}: AppProps) => {
 
   const handleDeleteHistory = useCallback(
     (item: HistoryItem) => {
-      dispatch({type: 'DELETE_HISTORY', payload: item.id});
-      api.warning({
-        title: '已删除',
-        description: '历史对话已删除',
-        placement: 'top',
-        closable: false,
+      Modal.confirm({
+        title: '确认删除',
+        content: '确定要删除这条历史对话吗？此操作无法撤销。',
+        okText: '删除',
+        okType: 'danger',
+        cancelText: '取消',
+        onOk: () => {
+          dispatch({type: 'DELETE_HISTORY', payload: item.id});
+          api.warning({
+            title: '已删除',
+            description: '历史对话已删除',
+            placement: 'top',
+            closable: false,
+          });
+        },
       });
     },
     [api],
@@ -262,15 +271,15 @@ const App = ({onReady, eventBus}: AppProps) => {
         handleSend={handleSend}
         handleStop={handleStop}
         handleKeyDown={handleKeyDown}
-        onChange={setUserInputValue}
+        setUserInputValue={setUserInputValue}
       />
       <HistoryModal
-        open={isHistoryModalVisible}
+        isHistoryModalVisible={isHistoryModalVisible}
         historyList={historyList}
         currentId={currentId}
-        onCancel={handleCloseHistoryModal}
-        onSelect={handleSelectHistory}
-        onDelete={handleDeleteHistory}
+        handleCloseHistoryModal={handleCloseHistoryModal}
+        handleSelectHistory={handleSelectHistory}
+        handleDeleteHistory={handleDeleteHistory}
       />
     </div>
   );

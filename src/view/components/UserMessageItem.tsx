@@ -29,7 +29,7 @@ const UserMessageItem = ({message}: UserMessageItemProps) => {
   return (
     <div className="message user">
       <div className="body-container" dangerouslySetInnerHTML={{__html: parsedContent}} />
-      <ActionBar onCopy={handleCopy} isCopied={isCopied} placement="bottomRight" />
+      <ActionBar handleCopy={handleCopy} isCopied={isCopied} placement="bottomRight" />
     </div>
   );
 };

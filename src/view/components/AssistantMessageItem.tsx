@@ -73,7 +73,7 @@ const AssistantMessageItem = ({message}: AssistantMessageItemProps) => {
           <div dangerouslySetInnerHTML={{__html: parsedContent || '<p>暂无正文</p>'}} />
         )}
       </div>
-      <ActionBar onCopy={handleCopy} isCopied={isCopied} />
+      <ActionBar handleCopy={handleCopy} isCopied={isCopied} />
     </div>
   );
 };

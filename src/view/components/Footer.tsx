@@ -35,7 +35,7 @@ interface FooterProps {
   handleSend: () => Promise<void>;
   handleStop: () => Promise<void>;
   handleKeyDown: (e: KeyboardEvent<HTMLTextAreaElement>) => void;
-  onChange: (value: string) => void;
+  setUserInputValue: (value: string) => void;
 }
 
 const Footer = ({
@@ -50,7 +50,7 @@ const Footer = ({
   handleSend,
   handleStop,
   handleKeyDown,
-  onChange,
+  setUserInputValue,
 }: FooterProps) => {
   return (
     <div className="bottom-container">
@@ -114,7 +114,7 @@ const Footer = ({
           placeholder="发消息..."
           value={userInputValue}
           onChange={(e) => {
-            onChange(e.target.value);
+            setUserInputValue(e.target.value);
           }}
           onKeyDown={handleKeyDown}
           ref={userInputRef}

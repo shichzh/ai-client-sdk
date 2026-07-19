@@ -14,46 +14,37 @@
  * limitations under the License.
  */
 
-import {memo, type MouseEvent} from 'react';
+import {memo} from 'react';
 import {Modal} from 'antd';
 import dayjs from 'dayjs';
 import type {HistoryItem} from '../../models/HistoryItem';
 import DeleteIcon from './icons/DeleteIcon';
 
 interface HistoryModalProps {
-  open: boolean;
+  isHistoryModalVisible: boolean;
   historyList: HistoryItem[];
   currentId: string;
-  onCancel: () => void;
-  onSelect: (item: HistoryItem) => void;
-  onDelete: (item: HistoryItem) => void;
+  handleCloseHistoryModal: () => void;
+  handleSelectHistory: (item: HistoryItem) => void;
+  handleDeleteHistory: (item: HistoryItem) => void;
 }
 
 const HistoryModal = ({
-  open,
+  isHistoryModalVisible,
   historyList,
   currentId,
-  onCancel,
-  onSelect,
-  onDelete,
+  handleCloseHistoryModal,
+  handleSelectHistory,
+  handleDeleteHistory,
 }: HistoryModalProps) => {
-  const handleDelete = (item: HistoryItem, e: MouseEvent) => {
-    e.stopPropagation();
-    Modal.confirm({
-      title: '确认删除',
-      content: '确定要删除这条历史对话吗？此操作无法撤销。',
-      okText: '删除',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk: () => {
-        onDelete(item);
-      },
-    });
-  };
-
   return (
-    <Modal title="历史对话" open={open} onCancel={onCancel} footer={null}>
-      {open && (
+    <Modal
+      title="历史对话"
+      open={isHistoryModalVisible}
+      onCancel={handleCloseHistoryModal}
+      footer={null}
+    >
+      {isHistoryModalVisible && (
         <div className="history-list">
           {historyList.length === 0 ? (
             <div className="history-empty">暂无历史对话</div>
@@ -64,7 +55,7 @@ const HistoryModal = ({
                   key={item.id}
                   className={`history-item ${currentId === item.id ? 'selected' : ''}`}
                   onClick={() => {
-                    onSelect(item);
+                    handleSelectHistory(item);
                   }}
                 >
                   <div className="history-info">
@@ -78,7 +69,8 @@ const HistoryModal = ({
                     type="button"
                     aria-label="删除历史对话"
                     onClick={(e) => {
-                      handleDelete(item, e);
+                      e.stopPropagation();
+                      handleDeleteHistory(item);
                     }}
                   >
                     <DeleteIcon />
