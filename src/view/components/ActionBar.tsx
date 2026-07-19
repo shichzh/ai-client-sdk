@@ -15,23 +15,19 @@
  */
 
 import {memo, type MouseEvent} from 'react';
-import {Tooltip, type TooltipProps} from 'antd';
 import CopyIcon from './icons/CopyIcon';
 
 interface ActionBarProps {
   handleCopy: (e: MouseEvent) => void;
   isCopied: boolean;
-  placement?: TooltipProps['placement'];
 }
 
-const ActionBar = ({handleCopy, isCopied, placement = 'bottomLeft'}: ActionBarProps) => {
+const ActionBar = ({handleCopy, isCopied}: ActionBarProps) => {
   return (
     <div className="button-container">
-      <Tooltip title="复制" placement={placement}>
-        <button className="icon square plain" type="button" aria-label="复制" onClick={handleCopy}>
-          {isCopied ? 'Copied' : <CopyIcon />}
-        </button>
-      </Tooltip>
+      <button className="icon square plain" type="button" aria-label="复制" onClick={handleCopy}>
+        {isCopied ? 'Copied' : <CopyIcon />}
+      </button>
     </div>
   );
 };

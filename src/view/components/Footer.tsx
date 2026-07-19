@@ -15,7 +15,6 @@
  */
 
 import {memo, type KeyboardEvent, type RefObject} from 'react';
-import {Tooltip} from 'antd';
 import type {Message} from '../../types';
 import CreateIcon from './icons/CreateIcon';
 import DeleteIcon from './icons/DeleteIcon';
@@ -55,30 +54,26 @@ const Footer = ({
   return (
     <div className="bottom-container">
       <div className="action-bar">
-        <Tooltip title="新对话" placement="bottomLeft">
-          <button
-            className="icon square plain"
-            type="button"
-            aria-label="新对话"
-            onClick={() => {
-              void handleCreate();
-            }}
-            disabled={!!streamingMessage}
-          >
-            <CreateIcon />
-          </button>
-        </Tooltip>
-        <Tooltip title="历史对话" placement="bottomLeft">
-          <button
-            className="icon square plain"
-            type="button"
-            aria-label="历史对话"
-            onClick={handleOpenHistoryModal}
-            disabled={!!streamingMessage}
-          >
-            <HistoryIcon />
-          </button>
-        </Tooltip>
+        <button
+          className="icon square plain"
+          type="button"
+          aria-label="新对话"
+          onClick={() => {
+            void handleCreate();
+          }}
+          disabled={!!streamingMessage}
+        >
+          <CreateIcon />
+        </button>
+        <button
+          className="icon square plain"
+          type="button"
+          aria-label="历史对话"
+          onClick={handleOpenHistoryModal}
+          disabled={!!streamingMessage}
+        >
+          <HistoryIcon />
+        </button>
       </div>
       {context && (
         <>
@@ -121,35 +116,31 @@ const Footer = ({
         />
         <div className="button-wrap">
           {streamingMessage ? (
-            <Tooltip title="停止" placement="topLeft">
-              <button
-                className="icon square plain"
-                type="button"
-                aria-label="停止"
-                onClick={() => {
-                  void handleStop();
-                }}
-              >
-                <div className="stop-icon">
-                  <StopIcon />
-                </div>
-              </button>
-            </Tooltip>
+            <button
+              className="icon square plain"
+              type="button"
+              aria-label="停止"
+              onClick={() => {
+                void handleStop();
+              }}
+            >
+              <div className="stop-icon">
+                <StopIcon />
+              </div>
+            </button>
           ) : (
-            <Tooltip title="发送 (↵)" placement="topLeft">
-              <button
-                className="icon square plain"
-                type="button"
-                aria-label="发送 (↵)"
-                onClick={() => {
-                  void handleSend();
-                }}
-              >
-                <div className="send-icon">
-                  <SendIcon />
-                </div>
-              </button>
-            </Tooltip>
+            <button
+              className="icon square plain"
+              type="button"
+              aria-label="发送 (↵)"
+              onClick={() => {
+                void handleSend();
+              }}
+            >
+              <div className="send-icon">
+                <SendIcon />
+              </div>
+            </button>
           )}
         </div>
       </div>
