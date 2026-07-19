@@ -16,7 +16,6 @@
 
 import {isAssistantMessage} from '../utils/guard';
 import type {Message, UpdateMessagePayload} from '../types';
-import {generateId} from '../utils/uuid';
 import {type HistoryItem, createHistoryItem} from '../models/HistoryItem';
 
 export const STORAGE_KEY = 'chatHistory';
@@ -104,15 +103,13 @@ export const reducer = (state: State, action: Action): State => {
       };
     }
     case 'PUSH_MESSAGE': {
-      const payload = action.payload;
-      const message = payload.id ? payload : {...payload, id: generateId()};
-      if (isAssistantMessage(message) && message.loading) {
+      if (isAssistantMessage(action.payload) && action.payload.loading) {
         return {
           ...state,
-          streamingMessage: message,
+          streamingMessage: action.payload,
         };
       }
-      return addCompletedMessage(state, message);
+      return addCompletedMessage(state, action.payload);
     }
     case 'SET_COMPLETED_MESSAGES': {
       return {

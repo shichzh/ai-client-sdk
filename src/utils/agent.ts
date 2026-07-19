@@ -74,8 +74,7 @@ export class Agent {
   }
 
   pushMessage(message: Message) {
-    const _message = message.id ? message : {...message, id: generateId()};
-    this.#messages.push(_message);
+    this.#messages.push(message);
   }
 
   resetMessages() {
