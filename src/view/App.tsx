@@ -114,7 +114,7 @@ const App = ({onReady, eventBus}: AppProps) => {
         disposer();
       });
     };
-  }, [pushMessage, updateMessage, updateContext]);
+  }, [pushMessage, updateMessage, updateContext, eventBus]);
 
   const handleDeleteContext = useCallback(() => {
     setContext('');
@@ -145,7 +145,7 @@ const App = ({onReady, eventBus}: AppProps) => {
         userInputRef.current?.focus();
       }
     },
-    [context],
+    [context, eventBus],
   );
 
   const handleSend = useCallback(async () => {
@@ -166,7 +166,7 @@ const App = ({onReady, eventBus}: AppProps) => {
       placement: 'top',
       closable: false,
     });
-  }, [api]);
+  }, [api, eventBus]);
 
   const create = useCallback(() => {
     dispatch({type: 'CREATE'});
@@ -182,7 +182,7 @@ const App = ({onReady, eventBus}: AppProps) => {
       placement: 'top',
       closable: false,
     });
-  }, [api, create]);
+  }, [api, create, eventBus]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
