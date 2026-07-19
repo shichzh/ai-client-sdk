@@ -76,7 +76,7 @@ export interface Definition {
   };
 }
 
-export interface AgentConfig {
+export interface AgentOptions {
   model: string;
   url: string;
   systemMessageContent?: string;

@@ -19,7 +19,7 @@ import {mergeWith} from 'lodash-es';
 import {generateId} from './uuid';
 import {MCPClient} from './mcp';
 import type {
-  AgentConfig,
+  AgentOptions,
   Chunk,
   Definition,
   Message,
@@ -42,8 +42,8 @@ export class Agent {
   #mcpClientOptions?: MCPClientOptions;
   #messages: Message[] = [];
 
-  private constructor(config: AgentConfig) {
-    const {model, url, systemMessageContent, maxRounds, mcpClientOptions} = config;
+  private constructor(options: AgentOptions) {
+    const {model, url, systemMessageContent, maxRounds, mcpClientOptions} = options;
     this.#model = model;
     this.#url = url;
     this.#mcpClientOptions = mcpClientOptions;
@@ -59,8 +59,8 @@ export class Agent {
     }
   }
 
-  static async create(config: AgentConfig): Promise<Agent> {
-    const agent = new Agent(config);
+  static async create(options: AgentOptions): Promise<Agent> {
+    const agent = new Agent(options);
     await agent.#initMCPClient();
     return agent;
   }
