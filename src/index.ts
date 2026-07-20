@@ -18,7 +18,8 @@
 import {EventBus} from './utils/eventBus';
 import {init} from './view/index';
 import {Agent} from './utils/agent';
-import type {Message, StreamResult, AssistantMessage, UpdateMessagePayload} from './types';
+import type {Message, AssistantMessage} from './models/Message';
+import type {StreamResult, UpdateMessagePayload} from './types';
 
 interface AIChatPanelOptions {
   container: HTMLElement | null;

@@ -15,7 +15,7 @@
  */
 
 import {memo} from 'react';
-import type {Message} from '../../types';
+import type {Message} from '../../models/Message';
 import {useMessage} from '../hooks/useMessage';
 import ActionBar from './ActionBar';
 

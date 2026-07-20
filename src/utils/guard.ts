@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type {Message, AssistantMessage} from '../types';
+import type {Message, AssistantMessage} from '../models/Message';
 
 export const isAssistantMessage = (message: Message): message is AssistantMessage => {
   return message.role === 'assistant' || message.role === null;

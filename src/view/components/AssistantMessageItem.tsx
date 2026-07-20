@@ -15,7 +15,7 @@
  */
 
 import {memo, useState, useEffect} from 'react';
-import type {AssistantMessage} from '../../types';
+import type {AssistantMessage} from '../../models/Message';
 import {parseMarkdown} from '../../utils/markdown';
 import ArrowIcon from './icons/ArrowIcon';
 import LoadingIcon from './icons/LoadingIcon';

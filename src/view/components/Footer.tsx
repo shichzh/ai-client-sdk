@@ -15,7 +15,7 @@
  */
 
 import {memo, type KeyboardEvent, type RefObject} from 'react';
-import type {Message} from '../../types';
+import type {Message} from '../../models/Message';
 import CreateIcon from './icons/CreateIcon';
 import DeleteIcon from './icons/DeleteIcon';
 import StopIcon from './icons/StopIcon';

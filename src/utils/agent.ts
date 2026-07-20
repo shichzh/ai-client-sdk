@@ -16,18 +16,22 @@
  */
 
 import {mergeWith} from 'lodash-es';
-import {generateId} from './uuid';
 import {MCPClient} from './mcp';
+import {
+  createSystemMessage,
+  createAssistantMessage,
+  createToolMessage,
+  type Message,
+  type ToolCall,
+} from '../models/Message';
 import type {
   AgentOptions,
   Chunk,
   Definition,
-  Message,
   MCPClientOptions,
   Params,
   StreamResult,
   Arguments,
-  ToolCall,
 } from '../types';
 
 export class Agent {
@@ -51,11 +55,7 @@ export class Agent {
       this.#maxRounds = maxRounds;
     }
     if (systemMessageContent) {
-      this.#messages[0] = {
-        id: generateId(),
-        role: 'system',
-        content: systemMessageContent,
-      };
+      this.#messages[0] = createSystemMessage(systemMessageContent);
     }
   }
 
@@ -152,18 +152,13 @@ export class Agent {
         return;
       }
 
-      const {content, role, tool_calls} = message;
+      const {content, tool_calls} = message;
 
       if (!tool_calls?.length) {
         return message;
       }
 
-      this.#messages.push({
-        id: generateId(),
-        content,
-        role,
-        tool_calls,
-      });
+      this.#messages.push(createAssistantMessage({content, tool_calls}));
       await this.#executeTools(tool_calls);
 
       // 剩余轮次 > 0 时继续回调
@@ -223,12 +218,7 @@ export class Agent {
       const result = await client.callTool(name, JSON.parse(args) as Arguments);
       const resp = typeof result === 'string' ? result : JSON.stringify(result);
 
-      this.#messages.push({
-        id: generateId(),
-        content: resp,
-        role: 'tool',
-        tool_call_id: id,
-      });
+      this.#messages.push(createToolMessage({content: resp, tool_call_id: id}));
     });
     await Promise.all(promises);
   }

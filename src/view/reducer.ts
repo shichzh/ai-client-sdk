@@ -15,7 +15,8 @@
  */
 
 import {isAssistantMessage} from '../utils/guard';
-import type {Message, UpdateMessagePayload} from '../types';
+import type {Message} from '../models/Message';
+import type {UpdateMessagePayload} from '../types';
 import {type HistoryItem, createHistoryItem} from '../models/HistoryItem';
 
 export const STORAGE_KEY = 'chatHistory';

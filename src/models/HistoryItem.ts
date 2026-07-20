@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type {Message} from '../types';
+import type {Message} from './Message';
 import {generateId} from '../utils/uuid';
 
 export interface HistoryItem {

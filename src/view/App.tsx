@@ -26,7 +26,8 @@ import {
 } from 'react';
 import {debounce} from 'lodash-es';
 import {isAssistantMessage} from '../utils/guard';
-import type {Message, UpdateMessagePayload, Resolve} from '../types';
+import {createUserMessage, type Message} from '../models/Message';
+import type {UpdateMessagePayload, Resolve} from '../types';
 import AssistantMessageItem from './components/AssistantMessageItem';
 import UserMessageItem from './components/UserMessageItem';
 import HistoryModal from './components/HistoryModal';
@@ -34,7 +35,6 @@ import Footer from './components/Footer';
 import type {EventBus} from '../utils/eventBus';
 import {Modal, notification} from 'antd';
 import styles from './css/index.css?inline';
-import {generateId} from '../utils/uuid';
 import type {HistoryItem} from '../models/HistoryItem';
 import {STORAGE_KEY, reducer, getHistoryList} from './reducer';
 
@@ -130,7 +130,7 @@ const App = ({onReady, eventBus}: AppProps) => {
       try {
         setUserInputValue('');
         const finalContent = context.trim() ? `${context}\n\n${trimmedContent}` : trimmedContent;
-        const message: Message = {id: generateId(), role: 'user', content: finalContent};
+        const message: Message = createUserMessage(finalContent);
         dispatch({type: 'ADD_COMPLETED_MESSAGE', payload: message});
         /**
          * messages-container 滚动到最底部

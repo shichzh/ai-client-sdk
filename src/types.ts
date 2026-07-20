@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type {AssistantMessage} from './models/Message';
+
 interface StringParameter {
   type: 'string';
   description?: string;
@@ -90,38 +92,6 @@ export interface MCPClientOptions {
 }
 
 export type Arguments = Record<string, unknown>;
-
-export type ToolCall = {
-  id: string;
-  function: {
-    name: string;
-    arguments: string;
-  };
-};
-
-export interface SimpleMessage {
-  id: string;
-  role: 'system' | 'user';
-  content: string;
-}
-
-export interface AssistantMessage {
-  id: string;
-  role: 'assistant' | null;
-  content: string;
-  reasoning_content?: string;
-  tool_calls?: ToolCall[] | null;
-  loading?: boolean;
-}
-
-export interface ToolMessage {
-  id: string;
-  role: 'tool';
-  content: string;
-  tool_call_id: string;
-}
-
-export type Message = SimpleMessage | AssistantMessage | ToolMessage;
 
 export interface Params {
   roundsLeft?: number;

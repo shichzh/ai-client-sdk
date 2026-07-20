@@ -16,7 +16,7 @@
 
 import {useState, useEffect, useRef, type MouseEvent} from 'react';
 import {parseMarkdown} from '../../utils/markdown';
-import type {Message} from '../../types';
+import type {Message} from '../../models/Message';
 
 export const useMessage = (message: Message) => {
   const [parsedContent, setParsedContent] = useState('');
