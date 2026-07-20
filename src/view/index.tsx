@@ -28,7 +28,7 @@ interface Params {
   eventBus: EventBus;
 }
 
-export const init = ({domNode, onReady, eventBus}: Params): void => {
+export const mount = ({domNode, onReady, eventBus}: Params): void => {
   const cache = createCache();
 
   const root = ReactDOM.createRoot(domNode);

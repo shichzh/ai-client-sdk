@@ -16,7 +16,7 @@
  */
 
 import {EventBus} from './utils/eventBus';
-import {init} from './view/index';
+import {mount} from './view/index';
 import {Agent} from './utils/agent';
 import type {Message, AssistantMessage} from './models/Message';
 import type {StreamResult, UpdateMessagePayload} from './types';
@@ -40,7 +40,7 @@ export class AIChatPanel {
     const {promise, resolve} = Promise.withResolvers<undefined>();
     this.#promise = promise;
     const shadowRoot = container.attachShadow({mode: 'open'});
-    init({domNode: shadowRoot, onReady: resolve, eventBus: this.#eventBus});
+    mount({domNode: shadowRoot, onReady: resolve, eventBus: this.#eventBus});
   }
 
   async pushMessage(payload: Message): Promise<void> {
