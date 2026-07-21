@@ -22,13 +22,13 @@ import {StyleProvider, createCache} from '@ant-design/cssinjs';
 import type {Resolve} from '../types';
 import type {EventBus} from '../utils/eventBus';
 
-interface Params {
+interface MountParams {
   domNode: ShadowRoot;
   onReady: Resolve;
   eventBus: EventBus;
 }
 
-export const mount = ({domNode, onReady, eventBus}: Params): void => {
+export const mount = ({domNode, onReady, eventBus}: MountParams): void => {
   const cache = createCache();
 
   const root = ReactDOM.createRoot(domNode);
