@@ -16,7 +16,7 @@
  */
 
 // 只能从 src/index.ts 引入
-import {AIChatPanel, Agent, type Message, type StreamResult} from '../src';
+import {AIChatPanel, Agent, createAssistantMessage, type Message, type StreamResult} from '../src';
 
 const main = async () => {
   const container = document.getElementById('container');
@@ -33,7 +33,7 @@ const main = async () => {
   });
 
   const init = async () => {
-    await panel.pushMessage({id: crypto.randomUUID(), role: 'assistant', content: 'hello'});
+    await panel.pushMessage(createAssistantMessage({content: 'hello'}));
   };
 
   const isMessage = (v: Message | StreamResult): v is Message => {
@@ -41,8 +41,9 @@ const main = async () => {
   };
 
   const processGenerator = async (generator: StreamResult): Promise<void> => {
-    const id = crypto.randomUUID();
-    await panel.pushMessage({id, role: 'assistant', content: '', loading: true});
+    const message = createAssistantMessage({content: '', loading: true});
+    const id = message.id;
+    await panel.pushMessage(message);
     let reasoningContentMarkdownStr = '';
     let contentMarkdownStr = '';
     for (;;) {

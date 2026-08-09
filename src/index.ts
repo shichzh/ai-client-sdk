@@ -18,7 +18,7 @@
 import {EventBus} from './utils/eventBus';
 import {mount} from './view/index';
 import {Agent} from './utils/agent';
-import type {Message, AssistantMessage} from './models/Message';
+import {createAssistantMessage, type Message, type AssistantMessage} from './models/Message';
 import type {StreamResult, UpdateMessagePayload} from './types';
 
 interface AIChatPanelOptions {
@@ -61,6 +61,7 @@ export class AIChatPanel {
 
 export {
   Agent,
+  createAssistantMessage,
   type AIChatPanelOptions,
   type Message,
   type UpdateMessagePayload,
