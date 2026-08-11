@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-import {unified} from 'unified';
-import remarkParse from 'remark-parse';
-import remarkGfm from 'remark-gfm';
-import remarkRehype from 'remark-rehype';
-import rehypeStringify from 'rehype-stringify';
+import {micromark} from 'micromark';
+import {gfm, gfmHtml} from 'micromark-extension-gfm';
 import DOMPurify from 'dompurify';
 
-const markdownProcessor = unified()
-  .use(remarkParse)
-  .use(remarkGfm)
-  .use(remarkRehype, {allowDangerousHtml: true})
-  .use(rehypeStringify, {allowDangerousHtml: true});
-
-export const parseMarkdown = async (content: string): Promise<string> => {
-  const file = await markdownProcessor.process(content);
-  const dirty = String(file);
+export const parseMarkdown = (content: string): string => {
+  const dirty = micromark(content, {
+    extensions: [gfm()],
+    htmlExtensions: [gfmHtml()],
+  });
   return DOMPurify.sanitize(dirty);
 };

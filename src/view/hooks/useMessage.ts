@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-import {useState, useEffect, useRef, type MouseEvent} from 'react';
+import {useState, useEffect, useRef, useMemo, type MouseEvent} from 'react';
 import {parseMarkdown} from '../../utils/markdown';
 import type {Message} from '../../models/Message';
 
 export const useMessage = (message: Message) => {
-  const [parsedContent, setParsedContent] = useState('');
-  const [isCopied, setIsCopied] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (message.content) {
-      parseMarkdown(message.content)
-        .then(setParsedContent)
-        .catch((err: unknown) => {
-          console.error('Failed to parse markdown:', err);
-        });
+  const parsedContent = useMemo(() => {
+    if (!message.content) {
+      return '';
+    }
+    try {
+      return parseMarkdown(message.content);
+    } catch (err) {
+      console.error('Failed to parse markdown:', err);
+      return '';
     }
   }, [message.content]);
+
+  const [isCopied, setIsCopied] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {

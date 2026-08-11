@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {memo, useState, useEffect} from 'react';
+import {memo, useState, useMemo} from 'react';
 import type {AssistantMessage} from '../../models/Message';
 import {parseMarkdown} from '../../utils/markdown';
 import ArrowIcon from './icons/ArrowIcon';
@@ -28,16 +28,17 @@ interface AssistantMessageItemProps {
 
 const AssistantMessageItem = ({message}: AssistantMessageItemProps) => {
   const {parsedContent, handleCopy, isCopied} = useMessage(message);
-  const [parsedReasoningContent, setParsedReasoningContent] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(true);
 
-  useEffect(() => {
-    if (message.reasoning_content) {
-      parseMarkdown(message.reasoning_content)
-        .then(setParsedReasoningContent)
-        .catch((err: unknown) => {
-          console.error('Failed to parse markdown:', err);
-        });
+  const parsedReasoningContent = useMemo(() => {
+    if (!message.reasoning_content) {
+      return '';
+    }
+    try {
+      return parseMarkdown(message.reasoning_content);
+    } catch (err) {
+      console.error('Failed to parse markdown:', err);
+      return '';
     }
   }, [message.reasoning_content]);
 
