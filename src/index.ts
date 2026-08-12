@@ -18,6 +18,7 @@
 import {EventBus} from './utils/eventBus';
 import {mount} from './view/index';
 import {Agent} from './utils/agent';
+import {MCPClient} from './utils/mcp';
 import {createAssistantMessage, type Message, type AssistantMessage} from './models/Message';
 import type {StreamResult, UpdateMessagePayload} from './types';
 
@@ -27,7 +28,7 @@ interface AIChatPanelOptions {
 
 export class AIChatPanel {
   readonly #eventBus: EventBus;
-  readonly #promise: Promise<undefined>;
+  readonly #promise: Promise<void>;
   readonly on: EventBus['subscribe'];
 
   constructor(options: AIChatPanelOptions) {
@@ -37,7 +38,8 @@ export class AIChatPanel {
     }
     this.#eventBus = new EventBus();
     this.on = this.#eventBus.subscribe.bind(this.#eventBus);
-    const {promise, resolve} = Promise.withResolvers<undefined>();
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+    const {promise, resolve} = Promise.withResolvers<void>();
     this.#promise = promise;
     const shadowRoot = container.attachShadow({mode: 'open'});
     mount({domNode: shadowRoot, onReady: resolve, eventBus: this.#eventBus});
@@ -61,6 +63,7 @@ export class AIChatPanel {
 
 export {
   Agent,
+  MCPClient,
   createAssistantMessage,
   type AIChatPanelOptions,
   type Message,

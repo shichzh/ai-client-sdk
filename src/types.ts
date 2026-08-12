@@ -83,7 +83,6 @@ export interface AgentOptions {
   url: string;
   systemMessageContent?: string;
   maxRounds?: number;
-  mcpClientOptions?: MCPClientOptions;
 }
 
 export interface MCPClientOptions {
@@ -110,4 +109,4 @@ export type UpdateMessagePayload =
   | {id: string; field: 'reasoning_content'; value: string}
   | {id: string; field: 'loading'; value: boolean};
 
-export type Resolve = (value: PromiseLike<undefined> | undefined) => void;
+export type Resolve = (value: void | PromiseLike<void>) => void;

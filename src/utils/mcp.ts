@@ -23,6 +23,7 @@ export class MCPClient {
   readonly #transport: StreamableHTTPClientTransport;
   #isConnected = false;
   #tools: Definition[] = [];
+  #promise: Promise<void> | null = null;
 
   constructor(options: MCPClientOptions) {
     this.#transport = new StreamableHTTPClientTransport(new URL(options.serverUrl), {
@@ -35,14 +36,27 @@ export class MCPClient {
     });
   }
 
-  async connect(): Promise<void> {
+  connect(): Promise<void> {
     if (this.#isConnected) {
-      return;
+      return Promise.resolve();
     }
 
-    await this.#client.connect(this.#transport);
-    this.#isConnected = true;
-    await this.#fetchTools();
+    if (this.#promise) {
+      return this.#promise;
+    }
+
+    this.#promise = this.#client
+      .connect(this.#transport)
+      .then(() => {
+        this.#isConnected = true;
+        return this.#fetchTools();
+      })
+      .catch((error: unknown) => {
+        this.#promise = null;
+        throw error;
+      });
+
+    return this.#promise;
   }
 
   async callTool(name: string, args: Arguments) {
@@ -59,6 +73,7 @@ export class MCPClient {
     if (this.#isConnected) {
       await this.#transport.close();
       this.#isConnected = false;
+      this.#tools = [];
     }
   }
 

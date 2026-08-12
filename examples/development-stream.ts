@@ -16,21 +16,30 @@
  */
 
 // 只能从 src/index.ts 引入
-import {AIChatPanel, Agent, createAssistantMessage, type Message, type StreamResult} from '../src';
+import {
+  AIChatPanel,
+  Agent,
+  MCPClient,
+  createAssistantMessage,
+  type Message,
+  type StreamResult,
+} from '../src';
 
 const main = async () => {
   const container = document.getElementById('container');
   const panel = new AIChatPanel({container});
-  /**
-   * agent 必须用工厂模式创建
-   */
-  const agent = await Agent.create({
+
+  const agent = new Agent({
     model: 'doubao-seed-2-0-pro-260215', // 大模型 ID
     url: 'http://localhost:8080/api/chat/completions', // 大模型 API 的代理接口
-    mcpClientOptions: {
-      serverUrl: 'https://learn.microsoft.com/api/mcp',
-    },
   });
+
+  const client = new MCPClient({
+    serverUrl: 'https://learn.microsoft.com/api/mcp',
+  });
+  await client.connect();
+
+  agent.useMCP(client);
 
   const init = async () => {
     await panel.pushMessage(createAssistantMessage({content: 'hello'}));

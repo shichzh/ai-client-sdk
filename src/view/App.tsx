@@ -71,7 +71,7 @@ const App = ({onReady, eventBus}: AppProps) => {
   );
 
   useEffect(() => {
-    onReady(undefined);
+    onReady();
   }, [onReady]);
 
   useEffect(() => {

@@ -16,7 +16,7 @@
  */
 
 import {mergeWith} from 'lodash-es';
-import {MCPClient} from './mcp';
+import type {MCPClient} from './mcp';
 import {
   createSystemMessage,
   createAssistantMessage,
@@ -24,15 +24,7 @@ import {
   type Message,
   type ToolCall,
 } from '../models/Message';
-import type {
-  AgentOptions,
-  Chunk,
-  Definition,
-  MCPClientOptions,
-  Params,
-  StreamResult,
-  Arguments,
-} from '../types';
+import type {AgentOptions, Chunk, Definition, Params, StreamResult, Arguments} from '../types';
 
 export class Agent {
   #model = '';
@@ -43,14 +35,12 @@ export class Agent {
   };
   #controller: AbortController | null = null;
   #mcpClient: MCPClient | null = null;
-  #mcpClientOptions?: MCPClientOptions;
   #messages: Message[] = [];
 
-  private constructor(options: AgentOptions) {
-    const {model, url, systemMessageContent, maxRounds, mcpClientOptions} = options;
+  constructor(options: AgentOptions) {
+    const {model, url, systemMessageContent, maxRounds} = options;
     this.#model = model;
     this.#url = url;
-    this.#mcpClientOptions = mcpClientOptions;
     if (typeof maxRounds === 'number') {
       this.#maxRounds = maxRounds;
     }
@@ -59,10 +49,8 @@ export class Agent {
     }
   }
 
-  static async create(options: AgentOptions): Promise<Agent> {
-    const agent = new Agent(options);
-    await agent.#initMCPClient();
-    return agent;
+  useMCP(client: MCPClient): void {
+    this.#mcpClient = client;
   }
 
   abort(): void {
@@ -86,11 +74,7 @@ export class Agent {
     this.abort();
     this.#controller = new AbortController();
     try {
-      let tools: Definition[] = [];
-
-      if (this.#mcpClient?.connected) {
-        tools = this.#mcpClient.tools;
-      }
+      const tools: Definition[] = this.#mcpClient?.connected ? this.#mcpClient.tools : [];
 
       const response = await fetch(this.#url, {
         method: 'POST',
@@ -168,17 +152,6 @@ export class Agent {
     } finally {
       this.#controller = null;
     }
-  }
-
-  async #initMCPClient(): Promise<void> {
-    if (!this.#mcpClientOptions) {
-      return;
-    }
-    if (this.#mcpClient?.connected) {
-      return;
-    }
-    this.#mcpClient = new MCPClient(this.#mcpClientOptions);
-    await this.#mcpClient.connect();
   }
 
   #merge<T extends object, S extends object>(
