@@ -37,7 +37,19 @@ const main = async () => {
   const client = new MCPClient({
     serverUrl: 'https://learn.microsoft.com/api/mcp',
   });
-  await client.connect();
+
+  const message = createAssistantMessage({content: '正在连接 MCP 服务 ...'});
+  await panel.pushMessage(message);
+  try {
+    await client.connect();
+    await panel.updateMessage({id: message.id, field: 'content', value: 'MCP 服务连接成功'});
+  } catch (error) {
+    await panel.updateMessage({
+      id: message.id,
+      field: 'content',
+      value: `MCP 服务连接失败：${error instanceof Error ? error.message : String(error)}`,
+    });
+  }
 
   agent.useMCP(client);
 

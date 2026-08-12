@@ -88,19 +88,37 @@ export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'UPDATE_MESSAGE': {
       const {id, field, value} = action.payload;
-      if (state.streamingMessage?.id !== id) {
+      if (state.streamingMessage?.id === id) {
+        const message = {
+          ...state.streamingMessage,
+          [field]: value,
+        };
+        if (isAssistantMessage(message) && message.loading === false) {
+          return addCompletedMessage(state, message);
+        }
+        return {
+          ...state,
+          streamingMessage: message,
+        };
+      }
+      if (!state.completedMessages.some((item) => item.id === id)) {
         return state;
       }
-      const message = {
-        ...state.streamingMessage,
-        [field]: value,
-      };
-      if (isAssistantMessage(message) && message.loading === false) {
-        return addCompletedMessage(state, message);
-      }
+      const newCompletedMessages = state.completedMessages.map((item) => {
+        if (item.id === id) {
+          return {...item, [field]: value};
+        }
+        return item;
+      });
       return {
         ...state,
-        streamingMessage: message,
+        completedMessages: newCompletedMessages,
+        historyList: state.historyList.map((item) => {
+          if (item.id === state.currentId) {
+            return {...item, messages: newCompletedMessages};
+          }
+          return item;
+        }),
       };
     }
     case 'PUSH_MESSAGE': {
