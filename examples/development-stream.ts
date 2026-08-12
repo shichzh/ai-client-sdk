@@ -38,7 +38,7 @@ const main = async () => {
     serverUrl: 'https://learn.microsoft.com/api/mcp',
   });
 
-  const message = createAssistantMessage({content: '正在连接 MCP 服务 ...'});
+  const message = createAssistantMessage({content: '正在连接 MCP 服务'});
   await panel.pushMessage(message);
   try {
     await client.connect();
