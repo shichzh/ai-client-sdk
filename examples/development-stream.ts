@@ -42,7 +42,7 @@ const main = async () => {
     type: 'info',
     title: 'MCP 服务',
     content: '正在连接 MCP 服务...',
-    maskClosable: false,
+    mask: {closable: false},
   });
   try {
     await client.connect();
