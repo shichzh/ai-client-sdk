@@ -15,7 +15,8 @@
  */
 
 import type {Message} from '../models/Message';
-import type {UpdateMessagePayload} from '../types';
+import type {NotificationArgsProps} from 'antd';
+import type {UpdateMessagePayload, ShowModalPayload} from '../types';
 
 type Events = {
   pushMessage: [payload: Message];
@@ -24,6 +25,9 @@ type Events = {
   send: [payload: Message];
   create: [];
   stop: [];
+  showNotification: [payload: NotificationArgsProps];
+  showModal: [payload: ShowModalPayload];
+  closeModal: [];
 };
 
 type Listener<T extends keyof Events> = (...args: Events[T]) => void | Promise<void>;
@@ -40,6 +44,9 @@ export class EventBus {
     send: [],
     create: [],
     stop: [],
+    showNotification: [],
+    showModal: [],
+    closeModal: [],
   };
 
   async publish<T extends keyof Events>(type: T, ...args: Events[T]): Promise<void> {

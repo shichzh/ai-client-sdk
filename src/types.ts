@@ -15,6 +15,7 @@
  */
 
 import type {AssistantMessage} from './models/Message';
+import type {ModalFuncProps} from 'antd';
 
 interface StringParameter {
   type: 'string';
@@ -110,3 +111,9 @@ export type UpdateMessagePayload =
   | {id: string; field: 'loading'; value: boolean};
 
 export type Resolve = (value: void | PromiseLike<void>) => void;
+
+export type ModalType = 'info' | 'success' | 'warning' | 'error' | 'confirm';
+
+export interface ShowModalPayload extends Omit<ModalFuncProps, 'type'> {
+  type: ModalType;
+}

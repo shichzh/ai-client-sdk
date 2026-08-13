@@ -27,13 +27,13 @@ import {
 import {debounce} from 'lodash-es';
 import {isAssistantMessage} from '../utils/guard';
 import {createUserMessage, type Message} from '../models/Message';
-import type {UpdateMessagePayload, Resolve} from '../types';
+import type {UpdateMessagePayload, Resolve, ShowModalPayload, ModalType} from '../types';
 import AssistantMessageItem from './components/AssistantMessageItem';
 import UserMessageItem from './components/UserMessageItem';
 import HistoryModal from './components/HistoryModal';
 import Footer from './components/Footer';
 import type {EventBus} from '../utils/eventBus';
-import {Modal, notification} from 'antd';
+import {Modal, notification, type NotificationArgsProps} from 'antd';
 import styles from './css/index.css?inline';
 import type {HistoryItem} from '../models/HistoryItem';
 import {STORAGE_KEY, reducer, getHistoryList} from './reducer';
@@ -55,7 +55,8 @@ const App = ({onReady, eventBus}: AppProps) => {
   );
   const [userInputValue, setUserInputValue] = useState('');
   const [context, setContext] = useState('');
-  const [api, contextHolder] = notification.useNotification();
+  const [api, notificationContextHolder] = notification.useNotification();
+  const [modal, modalContextHolder] = Modal.useModal();
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
   const userInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -102,11 +103,36 @@ const App = ({onReady, eventBus}: AppProps) => {
     setContext(payload);
   }, []);
 
+  const handleShowNotification = useCallback(
+    (payload: NotificationArgsProps) => {
+      api.open(payload);
+    },
+    [api],
+  );
+
+  const instanceRef = useRef<ReturnType<(typeof modal)[ModalType]> | null>(null);
+
+  const handleShowModal = useCallback(
+    (payload: ShowModalPayload) => {
+      const {type, ...rest} = payload;
+      instanceRef.current = modal[type](rest);
+    },
+    [modal],
+  );
+
+  const handleCloseModal = useCallback(() => {
+    instanceRef.current?.destroy();
+    instanceRef.current = null;
+  }, []);
+
   useEffect(() => {
     const disposers = [
       eventBus.subscribe('pushMessage', pushMessage),
       eventBus.subscribe('updateMessage', updateMessage),
       eventBus.subscribe('updateContext', updateContext),
+      eventBus.subscribe('showNotification', handleShowNotification),
+      eventBus.subscribe('showModal', handleShowModal),
+      eventBus.subscribe('closeModal', handleCloseModal),
     ];
 
     return () => {
@@ -114,7 +140,15 @@ const App = ({onReady, eventBus}: AppProps) => {
         disposer();
       });
     };
-  }, [pushMessage, updateMessage, updateContext, eventBus]);
+  }, [
+    pushMessage,
+    updateMessage,
+    updateContext,
+    handleShowNotification,
+    handleShowModal,
+    handleCloseModal,
+    eventBus,
+  ]);
 
   const handleDeleteContext = useCallback(() => {
     setContext('');
@@ -161,7 +195,6 @@ const App = ({onReady, eventBus}: AppProps) => {
     dispatch({type: 'STOP'});
     userInputRef.current?.focus();
     api.info({
-      title: '已停止',
       description: '对话已停止',
       placement: 'top',
       closable: false,
@@ -177,7 +210,6 @@ const App = ({onReady, eventBus}: AppProps) => {
     userInputRef.current?.focus();
     await eventBus.publish('create');
     api.success({
-      title: '已创建',
       description: '新对话已创建',
       placement: 'top',
       closable: false,
@@ -209,7 +241,7 @@ const App = ({onReady, eventBus}: AppProps) => {
 
   const handleDeleteHistory = useCallback(
     (item: HistoryItem) => {
-      Modal.confirm({
+      modal.confirm({
         title: '确认删除',
         content: '确定要删除这条历史对话吗？此操作无法撤销。',
         okText: '删除',
@@ -218,7 +250,6 @@ const App = ({onReady, eventBus}: AppProps) => {
         onOk: () => {
           dispatch({type: 'DELETE_HISTORY', payload: item.id});
           api.warning({
-            title: '已删除',
             description: '历史对话已删除',
             placement: 'top',
             closable: false,
@@ -226,7 +257,7 @@ const App = ({onReady, eventBus}: AppProps) => {
         },
       });
     },
-    [api],
+    [api, modal],
   );
 
   const getMessageItem = useCallback(
@@ -255,7 +286,8 @@ const App = ({onReady, eventBus}: AppProps) => {
   return (
     <div className="app-container">
       <style>{styles}</style>
-      {contextHolder}
+      {notificationContextHolder}
+      {modalContextHolder}
       <div className="messages-container" ref={messagesContainerRef}>
         {messageItems}
       </div>

@@ -38,16 +38,29 @@ const main = async () => {
     serverUrl: 'https://learn.microsoft.com/api/mcp',
   });
 
-  const message = createAssistantMessage({content: '正在连接 MCP 服务'});
-  await panel.pushMessage(message);
+  await panel.showModal({
+    type: 'info',
+    title: 'MCP 服务',
+    content: '正在连接 MCP 服务...',
+    maskClosable: false,
+  });
   try {
     await client.connect();
-    await panel.updateMessage({id: message.id, field: 'content', value: 'MCP 服务连接成功'});
+    await panel.closeModal();
+    await panel.notify({
+      type: 'success',
+      title: 'MCP 服务连接成功',
+      placement: 'top',
+      closable: false,
+    });
   } catch (error) {
-    await panel.updateMessage({
-      id: message.id,
-      field: 'content',
-      value: `MCP 服务连接失败：${error instanceof Error ? error.message : String(error)}`,
+    await panel.closeModal();
+    const content = error instanceof Error ? error.message : String(error);
+    await panel.showModal({
+      type: 'error',
+      title: 'MCP 服务连接失败',
+      content,
+      okText: '知道了',
     });
   }
 

@@ -20,7 +20,8 @@ import {mount} from './view/index';
 import {Agent} from './utils/agent';
 import {MCPClient} from './utils/mcp';
 import {createAssistantMessage, type Message, type AssistantMessage} from './models/Message';
-import type {StreamResult, UpdateMessagePayload} from './types';
+import type {NotificationArgsProps} from 'antd';
+import type {StreamResult, UpdateMessagePayload, ShowModalPayload} from './types';
 
 interface AIChatPanelOptions {
   container: HTMLElement | null;
@@ -58,6 +59,21 @@ export class AIChatPanel {
   async updateContext(payload: string): Promise<void> {
     await this.#promise;
     await this.#eventBus.publish('updateContext', payload);
+  }
+
+  async notify(payload: NotificationArgsProps): Promise<void> {
+    await this.#promise;
+    await this.#eventBus.publish('showNotification', payload);
+  }
+
+  async showModal(payload: ShowModalPayload): Promise<void> {
+    await this.#promise;
+    await this.#eventBus.publish('showModal', payload);
+  }
+
+  async closeModal(): Promise<void> {
+    await this.#promise;
+    await this.#eventBus.publish('closeModal');
   }
 }
 
