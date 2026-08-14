@@ -38,7 +38,7 @@ export type Action =
   | {type: 'SELECT_HISTORY'; payload: HistoryItem}
   | {type: 'DELETE_HISTORY'; payload: string};
 
-export const getHistoryList = (): HistoryItem[] => {
+const getHistoryList = (): HistoryItem[] => {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
     try {
@@ -49,6 +49,13 @@ export const getHistoryList = (): HistoryItem[] => {
   }
   return [];
 };
+
+export const init = (): State => ({
+  completedMessages: [],
+  streamingMessage: null,
+  historyList: getHistoryList(),
+  currentId: '',
+});
 
 const createHistory = (historyList: HistoryItem[]): State => {
   const newHistoryItem = createHistoryItem();

@@ -50,13 +50,19 @@ export class EventBus {
   };
 
   async publish<T extends keyof Events>(type: T, ...args: Events[T]): Promise<void> {
-    for (const listener of this.#store[type]) {
-      try {
-        await listener(...args);
-      } catch (error) {
-        console.error(`Error in listener for ${type}:`, error);
-      }
+    const listeners = this.#store[type];
+    if (listeners.length === 0) {
+      return;
     }
+    await Promise.all(
+      listeners.map(async (listener) => {
+        try {
+          await listener(...args);
+        } catch (error) {
+          console.error(`Error in listener for ${type}:`, error);
+        }
+      }),
+    );
   }
 
   subscribe<T extends keyof Events>(type: T, listener: Listener<T>): () => void {

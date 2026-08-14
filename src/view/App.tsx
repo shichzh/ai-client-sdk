@@ -24,7 +24,7 @@ import {
   useMemo,
   type KeyboardEvent,
 } from 'react';
-import {debounce} from 'lodash-es';
+import debounce from 'lodash-es/debounce';
 import {isAssistantMessage} from '../utils/guard';
 import {createUserMessage, type Message} from '../models/Message';
 import type {UpdateMessagePayload, Resolve, ShowModalPayload, ModalType} from '../types';
@@ -36,7 +36,7 @@ import type {EventBus} from '../utils/eventBus';
 import {Modal, notification, type NotificationArgsProps} from 'antd';
 import styles from './css/index.css?inline';
 import type {HistoryItem} from '../models/HistoryItem';
-import {STORAGE_KEY, reducer, getHistoryList} from './reducer';
+import {STORAGE_KEY, reducer, init} from './reducer';
 
 interface AppProps {
   onReady: Resolve;
@@ -46,12 +46,8 @@ interface AppProps {
 const App = ({onReady, eventBus}: AppProps) => {
   const [{completedMessages, streamingMessage, historyList, currentId}, dispatch] = useReducer(
     reducer,
-    {
-      completedMessages: [],
-      streamingMessage: null,
-      historyList: getHistoryList(),
-      currentId: '',
-    },
+    undefined,
+    init,
   );
   const [userInputValue, setUserInputValue] = useState('');
   const [context, setContext] = useState('');

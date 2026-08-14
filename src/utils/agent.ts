@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import {mergeWith} from 'lodash-es';
+import mergeWith from 'lodash-es/mergeWith';
 import type {MCPClient} from './mcp';
 import {
   createSystemMessage,
@@ -25,6 +25,8 @@ import {
   type ToolCall,
 } from '../models/Message';
 import type {AgentOptions, Chunk, Definition, Params, StreamResult, Arguments} from '../types';
+
+const DATA_PREFIX_REGEX = /^data: /;
 
 export class Agent {
   #model = '';
@@ -73,6 +75,7 @@ export class Agent {
     const {roundsLeft = this.#maxRounds} = params;
     this.abort();
     this.#controller = new AbortController();
+
     try {
       const tools: Definition[] = this.#mcpClient?.connected ? this.#mcpClient.tools : [];
 
@@ -117,7 +120,7 @@ export class Agent {
           if (item === 'data: [DONE]') {
             break;
           }
-          const jsonStr = item.trim().replace(/^data: /, '');
+          const jsonStr = item.trim().replace(DATA_PREFIX_REGEX, '');
           try {
             const json = JSON.parse(buffer + jsonStr) as Chunk;
             result = this.#merge(result, json, ['content', 'arguments']);

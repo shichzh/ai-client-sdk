@@ -48,7 +48,7 @@ const AssistantMessageItem = ({message}: AssistantMessageItemProps) => {
 
   return (
     <div className="message assistant">
-      {parsedReasoningContent && (
+      {parsedReasoningContent ? (
         <div className={`reasoning-container ${isCollapsed ? 'collapsed' : ''}`}>
           <button
             className="reasoning-header plain"
@@ -64,7 +64,7 @@ const AssistantMessageItem = ({message}: AssistantMessageItemProps) => {
             dangerouslySetInnerHTML={{__html: parsedReasoningContent}}
           />
         </div>
-      )}
+      ) : null}
       <div className="body-container">
         {message.loading && !parsedContent ? (
           <p>

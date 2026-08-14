@@ -75,7 +75,7 @@ const Footer = ({
           <HistoryIcon />
         </button>
       </div>
-      {context && (
+      {context ? (
         <>
           <div className="context-container">
             <p className="context-text">{context}</p>
@@ -101,7 +101,7 @@ const Footer = ({
             </button>
           </div>
         </>
-      )}
+      ) : null}
       <div className="user-input-container">
         <textarea
           name="user-input"

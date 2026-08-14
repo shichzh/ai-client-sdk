@@ -44,7 +44,7 @@ const HistoryModal = ({
       onCancel={handleCloseHistoryModal}
       footer={null}
     >
-      {isHistoryModalVisible && (
+      {isHistoryModalVisible ? (
         <div className="history-list">
           {historyList.length === 0 ? (
             <div className="history-empty">暂无历史对话</div>
@@ -80,7 +80,7 @@ const HistoryModal = ({
             </ul>
           )}
         </div>
-      )}
+      ) : null}
     </Modal>
   );
 };
