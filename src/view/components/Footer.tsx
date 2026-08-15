@@ -14,138 +14,173 @@
  * limitations under the License.
  */
 
-import {memo, type KeyboardEvent, type RefObject} from 'react';
-import type {Message} from '../../models/Message';
 import CreateIcon from './icons/CreateIcon';
 import DeleteIcon from './icons/DeleteIcon';
 import StopIcon from './icons/StopIcon';
 import SendIcon from './icons/SendIcon';
 import HistoryIcon from './icons/HistoryIcon';
+import {useChat} from './Chat';
 
-interface FooterProps {
-  context: string;
-  streamingMessage: Message | null;
-  userInputValue: string;
-  userInputRef: RefObject<HTMLTextAreaElement | null>;
-  handleCreate: () => Promise<void>;
-  handleOpenHistoryModal: () => void;
-  handleDeleteContext: () => void;
-  handleTranslate: () => Promise<void>;
-  handleSend: () => Promise<void>;
-  handleStop: () => Promise<void>;
-  handleKeyDown: (e: KeyboardEvent<HTMLTextAreaElement>) => void;
-  setUserInputValue: (value: string) => void;
+/* ─────────────────────────────────────────────────────────────────────
+ * Frame — Footer 容器骨架
+ * ───────────────────────────────────────────────────────────────────── */
+function Frame({children}: {children: React.ReactNode}) {
+  return <div className="bottom-container">{children}</div>;
 }
 
-const Footer = ({
-  context,
-  streamingMessage,
-  userInputValue,
-  userInputRef,
-  handleCreate,
-  handleOpenHistoryModal,
-  handleDeleteContext,
-  handleTranslate,
-  handleSend,
-  handleStop,
-  handleKeyDown,
-  setUserInputValue,
-}: FooterProps) => {
+/* ─────────────────────────────────────────────────────────────────────
+ * ActionBar — 顶部操作按钮区（新对话 / 历史对话）
+ * ───────────────────────────────────────────────────────────────────── */
+function ActionBar() {
+  const {state, actions} = useChat();
+  const {streamingMessage} = state;
+  const {create, openHistoryModal} = actions;
+
   return (
-    <div className="bottom-container">
-      <div className="action-bar">
-        <button
-          className="icon square plain"
-          type="button"
-          aria-label="新对话"
-          onClick={() => {
-            void handleCreate();
-          }}
-          disabled={!!streamingMessage}
-        >
-          <CreateIcon />
-        </button>
-        <button
-          className="icon square plain"
-          type="button"
-          aria-label="历史对话"
-          onClick={handleOpenHistoryModal}
-          disabled={!!streamingMessage}
-        >
-          <HistoryIcon />
-        </button>
-      </div>
-      {context ? (
-        <>
-          <div className="context-container">
-            <p className="context-text">{context}</p>
-            <button
-              className="context-delete"
-              type="button"
-              aria-label="删除上下文"
-              onClick={handleDeleteContext}
-            >
-              <DeleteIcon />
-            </button>
-          </div>
-          <div className="shortcut-bar">
-            <button
-              className="text square plain"
-              type="button"
-              aria-label="翻译"
-              onClick={() => {
-                void handleTranslate();
-              }}
-            >
-              翻译
-            </button>
-          </div>
-        </>
-      ) : null}
-      <div className="user-input-container">
-        <textarea
-          name="user-input"
-          className="user-input"
-          placeholder="发消息..."
-          value={userInputValue}
-          onChange={(e) => {
-            setUserInputValue(e.target.value);
-          }}
-          onKeyDown={handleKeyDown}
-          ref={userInputRef}
-        />
-        <div className="button-wrap">
-          {streamingMessage ? (
-            <button
-              className="icon square plain"
-              type="button"
-              aria-label="停止"
-              onClick={() => {
-                void handleStop();
-              }}
-            >
-              <div className="stop-icon">
-                <StopIcon />
-              </div>
-            </button>
-          ) : (
-            <button
-              className="icon square plain"
-              type="button"
-              aria-label="发送 (↵)"
-              onClick={() => {
-                void handleSend();
-              }}
-            >
-              <div className="send-icon">
-                <SendIcon />
-              </div>
-            </button>
-          )}
-        </div>
-      </div>
+    <div className="action-bar">
+      <button
+        className="icon square plain"
+        type="button"
+        aria-label="新对话"
+        onClick={() => {
+          void create();
+        }}
+        disabled={!!streamingMessage}
+      >
+        <CreateIcon />
+      </button>
+      <button
+        className="icon square plain"
+        type="button"
+        aria-label="历史对话"
+        onClick={openHistoryModal}
+        disabled={!!streamingMessage}
+      >
+        <HistoryIcon />
+      </button>
     </div>
   );
-};
+}
 
-export default memo(Footer);
+/* ─────────────────────────────────────────────────────────────────────
+ * Context — 上下文展示区（含翻译快捷按钮）
+ * ───────────────────────────────────────────────────────────────────── */
+function Context() {
+  const {state, actions} = useChat();
+  const {context} = state;
+  const {deleteContext, translate} = actions;
+
+  if (!context) {
+    return null;
+  }
+
+  return (
+    <>
+      <div className="context-container">
+        <p className="context-text">{context}</p>
+        <button
+          className="context-delete"
+          type="button"
+          aria-label="删除上下文"
+          onClick={deleteContext}
+        >
+          <DeleteIcon />
+        </button>
+      </div>
+      <div className="shortcut-bar">
+        <button
+          className="text square plain"
+          type="button"
+          aria-label="翻译"
+          onClick={() => {
+            void translate();
+          }}
+        >
+          翻译
+        </button>
+      </div>
+    </>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+ * 显式 Variant 按钮 — SendButton / StopButton
+ * ───────────────────────────────────────────────────────────────────── */
+function SendButton() {
+  const {actions} = useChat();
+  const {send} = actions;
+
+  return (
+    <button
+      className="icon square plain"
+      type="button"
+      aria-label="发送 (↵)"
+      onClick={() => {
+        void send();
+      }}
+    >
+      <div className="send-icon">
+        <SendIcon />
+      </div>
+    </button>
+  );
+}
+
+function StopButton() {
+  const {actions} = useChat();
+  const {stop} = actions;
+
+  return (
+    <button
+      className="icon square plain"
+      type="button"
+      aria-label="停止"
+      onClick={() => {
+        void stop();
+      }}
+    >
+      <div className="stop-icon">
+        <StopIcon />
+      </div>
+    </button>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+ * UserInput — 输入框 + 发送/停止按钮（根据 streaming 状态选择 variant）
+ * ───────────────────────────────────────────────────────────────────── */
+function UserInput() {
+  const {state, actions, meta} = useChat();
+  const {streamingMessage, userInputValue} = state;
+  const {keyDown, setUserInputValue} = actions;
+  const {userInputRef} = meta;
+
+  return (
+    <div className="user-input-container">
+      <textarea
+        name="user-input"
+        className="user-input"
+        placeholder="发消息..."
+        value={userInputValue}
+        onChange={(e) => {
+          setUserInputValue(e.target.value);
+        }}
+        onKeyDown={keyDown}
+        ref={userInputRef}
+      />
+      <div className="button-wrap">{streamingMessage ? <StopButton /> : <SendButton />}</div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+ * 复合组件对象
+ * ───────────────────────────────────────────────────────────────────── */
+export const Footer = {
+  Frame,
+  ActionBar,
+  Context,
+  UserInput,
+  SendButton,
+  StopButton,
+};

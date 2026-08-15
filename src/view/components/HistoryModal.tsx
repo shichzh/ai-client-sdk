@@ -17,70 +17,51 @@
 import {memo} from 'react';
 import {Modal} from 'antd';
 import dayjs from 'dayjs';
-import type {HistoryItem} from '../../models/HistoryItem';
 import DeleteIcon from './icons/DeleteIcon';
+import {useChat} from './Chat';
 
-interface HistoryModalProps {
-  isHistoryModalVisible: boolean;
-  historyList: HistoryItem[];
-  currentId: string;
-  handleCloseHistoryModal: () => void;
-  handleSelectHistory: (item: HistoryItem) => void;
-  handleDeleteHistory: (item: HistoryItem) => void;
-}
+const HistoryModal = () => {
+  const {state, actions} = useChat();
+  const {isHistoryModalVisible, historyList, currentId} = state;
+  const {closeHistoryModal, selectHistory, deleteHistory} = actions;
 
-const HistoryModal = ({
-  isHistoryModalVisible,
-  historyList,
-  currentId,
-  handleCloseHistoryModal,
-  handleSelectHistory,
-  handleDeleteHistory,
-}: HistoryModalProps) => {
   return (
-    <Modal
-      title="历史对话"
-      open={isHistoryModalVisible}
-      onCancel={handleCloseHistoryModal}
-      footer={null}
-    >
-      {isHistoryModalVisible ? (
-        <div className="history-list">
-          {historyList.length === 0 ? (
-            <div className="history-empty">暂无历史对话</div>
-          ) : (
-            <ul className="history-items">
-              {historyList.map((item) => (
-                <li
-                  key={item.id}
-                  className={`history-item ${currentId === item.id ? 'selected' : ''}`}
-                  onClick={() => {
-                    handleSelectHistory(item);
+    <Modal title="历史对话" open={isHistoryModalVisible} onCancel={closeHistoryModal} footer={null}>
+      <div className="history-list">
+        {historyList.length === 0 ? (
+          <div className="history-empty">暂无历史对话</div>
+        ) : (
+          <ul className="history-items">
+            {historyList.map((item) => (
+              <li
+                key={item.id}
+                className={`history-item ${currentId === item.id ? 'selected' : ''}`}
+                onClick={() => {
+                  selectHistory(item);
+                }}
+              >
+                <div className="history-info">
+                  <div className="history-content">{item.messages[0]?.content || '无对话'}</div>
+                  <div className="history-time">
+                    {dayjs(item.createdAt).format('YYYY-MM-DD HH:mm:ss')}
+                  </div>
+                </div>
+                <button
+                  className="history-delete"
+                  type="button"
+                  aria-label="删除历史对话"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteHistory(item);
                   }}
                 >
-                  <div className="history-info">
-                    <div className="history-content">{item.messages[0]?.content || '无对话'}</div>
-                    <div className="history-time">
-                      {dayjs(item.createdAt).format('YYYY-MM-DD HH:mm:ss')}
-                    </div>
-                  </div>
-                  <button
-                    className="history-delete"
-                    type="button"
-                    aria-label="删除历史对话"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteHistory(item);
-                    }}
-                  >
-                    <DeleteIcon />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ) : null}
+                  <DeleteIcon />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </Modal>
   );
 };
