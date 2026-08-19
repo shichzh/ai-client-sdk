@@ -20,7 +20,7 @@ import App from './App';
 import {ConfigProvider} from 'antd';
 import {StyleProvider, createCache} from '@ant-design/cssinjs';
 import type {Resolve} from '../types';
-import type {EventBus} from '../utils/eventBus';
+import type {EventBus} from '../services/eventBus';
 
 interface MountParams {
   domNode: ShadowRoot;

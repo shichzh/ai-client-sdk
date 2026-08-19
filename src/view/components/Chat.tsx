@@ -33,7 +33,7 @@ import {createUserMessage, type Message} from '../../models/Message';
 import type {UpdateMessagePayload, Resolve, ShowModalPayload, ModalType} from '../../types';
 import AssistantMessageItem from './AssistantMessageItem';
 import UserMessageItem from './UserMessageItem';
-import type {EventBus} from '../../utils/eventBus';
+import type {EventBus} from '../../services/eventBus';
 import {Modal, notification, type NotificationArgsProps} from 'antd';
 import type {HistoryItem} from '../../models/HistoryItem';
 import {STORAGE_KEY, reducer, init} from '../reducer';

@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import {EventBus} from './utils/eventBus';
+import {EventBus} from './services/eventBus';
 import {mount} from './view/index';
-import {Agent} from './utils/agent';
-import {MCPClient} from './utils/mcp';
+import {Agent} from './core/agent';
+import {MCPClient} from './services/mcp';
 import {createAssistantMessage, type Message, type AssistantMessage} from './models/Message';
 import type {NotificationArgsProps} from 'antd';
 import type {StreamResult, UpdateMessagePayload, ShowModalPayload} from './types';

@@ -15,7 +15,7 @@
  */
 
 import type {Resolve} from '../types';
-import type {EventBus} from '../utils/eventBus';
+import type {EventBus} from '../services/eventBus';
 import styles from './css/index.css?inline';
 import {Chat} from './components/Chat';
 

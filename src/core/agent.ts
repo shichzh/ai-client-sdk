@@ -16,7 +16,7 @@
  */
 
 import mergeWith from 'lodash-es/mergeWith';
-import type {MCPClient} from './mcp';
+import type {MCPClient} from '../services/mcp';
 import {
   createSystemMessage,
   createAssistantMessage,
