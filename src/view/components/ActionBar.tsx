@@ -25,7 +25,12 @@ interface ActionBarProps {
 const ActionBar = ({handleCopy, isCopied}: ActionBarProps) => {
   return (
     <div className="button-container">
-      <button className="icon square plain" type="button" aria-label="复制" onClick={handleCopy}>
+      <button
+        className="icon square plain"
+        type="button"
+        aria-label={isCopied ? '已复制' : '复制'}
+        onClick={handleCopy}
+      >
         {isCopied ? 'Copied' : <CopyIcon />}
       </button>
     </div>
