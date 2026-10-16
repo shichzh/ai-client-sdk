@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+/* ───────────────────────── 整体骨架 ───────────────────────── */
+
 .app-container {
   height: 100%;
   background: #fff;
@@ -53,46 +55,53 @@
   align-items: center;
   gap: 12px;
 }
+
 .messages-container {
   height: 100%;
-  padding: 12px;
-  padding-bottom: calc(100vh - 12px);
+  padding: 16px;
+  /* 预留近一屏空白，使发送后滚动到底部时最新一条消息出现在视口顶部 */
+  padding-bottom: calc(100vh - 16px);
   overflow-x: hidden;
   overflow-y: auto;
 }
 .message {
-  max-width: 80%;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
 }
+
 .body-container {
-  padding: 0 12px;
-  border-radius: 8px;
+  min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
-  color: black;
-  word-wrap: break-word;
+  color: var(--aic-text);
+  word-break: break-word;
 }
+
+/* 用户消息：深石墨实心气泡，右对齐 */
 .message.user {
+  max-width: 85%;
   margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 .message.user .body-container {
-  background: #e3f2fd;
+  padding: 9px 14px;
+  background: var(--aic-user-bubble);
+  color: #fff;
+  border-radius: var(--aic-radius-l);
 }
-.message.assistant {
-  margin-right: auto;
-}
-.message.assistant .body-container {
-  background: #f1f1f1;
-}
+
+/* 消息操作区（复制） */
 .button-container {
   display: flex;
-  margin-top: 8px;
+  margin-top: 4px;
 }
-.button-container button {
-  height: 26px;
-  display: flex;
-  align-items: center;
+.button-container > button {
+  width: 28px;
+  height: 28px;
+  color: var(--aic-text-tertiary);
 }
 .message.user .button-container {
   justify-content: flex-end;
@@ -134,6 +143,7 @@
   margin-bottom: 8px;
 }
 .message.assistant .reasoning-container .reasoning-header {
+  width: 100%;
   display: flex;
   /* 覆盖 button 的 justify-content 居中 */
   justify-content: flex-start;
@@ -144,20 +154,23 @@
   width: 100%;
 }
 .message.assistant .reasoning-container .reasoning-header svg {
+  flex-shrink: 0;
   transform: rotate(90deg);
-  transition: transform 0.3s;
-}
-.message.assistant .reasoning-container .reasoning-content {
-  padding: 0 12px;
+  transition: transform 0.2s ease;
 }
 .message.assistant .reasoning-container.collapsed .reasoning-header svg {
   transform: rotate(0deg);
-  transition: transform 0.3s;
+}
+.message.assistant .reasoning-container .reasoning-content {
+  padding: 0 12px 12px;
+  font-size: 12px;
+  color: var(--aic-text-secondary);
 }
 .message.assistant .reasoning-container.collapsed .reasoning-content {
   height: 0;
   overflow: hidden;
 }
+
 .context-container {
   display: flex;
   align-items: center;
@@ -244,7 +257,6 @@
   font-size: 12px;
   color: #999;
 }
-
 .history-empty {
   text-align: center;
   color: #999;
@@ -264,11 +276,9 @@
   transition: all 0.2s;
   opacity: 0;
 }
-
 .history-item:hover .history-delete {
   opacity: 1;
 }
-
 .history-delete:hover {
   background-color: rgba(0, 0, 0, 0.05);
   color: #ef4444;

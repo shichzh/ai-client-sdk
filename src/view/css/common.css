@@ -15,12 +15,68 @@
  * limitations under the License.
  */
 
+/*
+ * 设计 token：组件运行在 Shadow DOM 内，自定义属性可沿继承链穿透 shadow 边界，
+ * 宿主只需在容器元素上覆盖 --aic-* 变量即可定制主题。
+ */
+:host {
+  /* 颜色 —— 表面与文本 */
+  --aic-bg: #ffffff;
+  --aic-surface: #f5f6f8;
+  --aic-surface-hover: #eceef1;
+  --aic-text: #1f2329;
+  --aic-text-secondary: #646a73;
+  --aic-text-tertiary: #9aa0aa;
+  --aic-border: #e5e6eb;
+
+  /* 颜色 —— 品牌与状态 */
+  --aic-accent: #3370ff;
+  --aic-accent-bg: rgba(51, 112, 255, 0.1);
+  --aic-on-accent: #ffffff;
+  --aic-user-bubble: #242933;
+  --aic-danger: #f54a45;
+
+  /* 颜色 —— 代码块（深色阅读面） */
+  --aic-code-bg: #16181d;
+  --aic-code-text: #e6e8ec;
+
+  /* 圆角 */
+  --aic-radius-s: 8px;
+  --aic-radius-m: 12px;
+  --aic-radius-l: 16px;
+
+  /* 字体 */
+  --aic-font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --aic-font-mono:
+    'SF Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+
+  display: block;
+  height: 100%;
+  color: var(--aic-text);
+  font-family: var(--aic-font-family);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 * {
   box-sizing: border-box;
 }
+
 textarea {
   padding: 0;
+  font: inherit;
 }
 textarea:focus-visible {
   outline: 0;
+}
+
+/* 统一键盘焦点样式（antd 弹层在同一 ShadowRoot 内，其自身焦点环优先级更高） */
+:focus-visible {
+  outline: 2px solid var(--aic-accent);
+  outline-offset: 1px;
 }
