@@ -66,6 +66,3 @@ button.text:disabled {
 button.square {
   border-radius: var(--aic-radius-s);
 }
-button.circle {
-  border-radius: 50%;
-}

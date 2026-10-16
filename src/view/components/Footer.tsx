@@ -181,6 +181,4 @@ export const Footer = {
   Frame,
   ActionBar,
   UserInput,
-  SendButton,
-  StopButton,
 };

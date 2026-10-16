@@ -21,17 +21,16 @@ import {type HistoryItem, createHistoryItem} from '../models/HistoryItem';
 
 export const STORAGE_KEY = 'chatHistory';
 
-export interface State {
+interface State {
   completedMessages: Message[];
   streamingMessage: Message | null;
   historyList: HistoryItem[];
   currentId: string;
 }
 
-export type Action =
+type Action =
   | {type: 'UPDATE_MESSAGE'; payload: UpdateMessagePayload}
   | {type: 'PUSH_MESSAGE'; payload: Message}
-  | {type: 'SET_COMPLETED_MESSAGES'; payload: Message[]}
   | {type: 'ADD_COMPLETED_MESSAGE'; payload: Message}
   | {type: 'STOP'}
   | {type: 'CREATE'}
@@ -136,12 +135,6 @@ export const reducer = (state: State, action: Action): State => {
         };
       }
       return addCompletedMessage(state, action.payload);
-    }
-    case 'SET_COMPLETED_MESSAGES': {
-      return {
-        ...state,
-        completedMessages: action.payload,
-      };
     }
     case 'ADD_COMPLETED_MESSAGE': {
       return addCompletedMessage(state, action.payload);

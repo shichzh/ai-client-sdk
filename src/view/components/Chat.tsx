@@ -45,7 +45,7 @@ import HistoryModal from './HistoryModal';
  *    任何 Provider 只要实现此接口，UI 组件即可零改动复用
  * ───────────────────────────────────────────────────────────────────── */
 
-export interface State {
+interface State {
   completedMessages: Message[];
   streamingMessage: Message | null;
   historyList: HistoryItem[];
@@ -55,7 +55,7 @@ export interface State {
   isHistoryModalVisible: boolean;
 }
 
-export interface Actions {
+interface Actions {
   pushMessage: (payload: Message) => void;
   updateMessage: (payload: UpdateMessagePayload) => void;
   updateContext: (payload: string) => void;
@@ -75,12 +75,12 @@ export interface Actions {
   setUserInputValue: (value: string) => void;
 }
 
-export interface Meta {
+interface Meta {
   userInputRef: RefObject<HTMLTextAreaElement | null>;
   messagesContainerRef: RefObject<HTMLDivElement | null>;
 }
 
-export interface ContextValue {
+interface ContextValue {
   state: State;
   actions: Actions;
   meta: Meta;
