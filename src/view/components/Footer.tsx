@@ -39,7 +39,7 @@ function ActionBar() {
   return (
     <div className="action-bar">
       <button
-        className="icon square plain"
+        className="icon square"
         type="button"
         aria-label="新对话"
         onClick={() => {
@@ -50,7 +50,7 @@ function ActionBar() {
         <CreateIcon />
       </button>
       <button
-        className="icon square plain"
+        className="icon square"
         type="button"
         aria-label="历史对话"
         onClick={openHistoryModal}
@@ -89,7 +89,7 @@ function Context() {
       </div>
       <div className="shortcut-bar">
         <button
-          className="text square plain"
+          className="text square"
           type="button"
           aria-label="翻译"
           onClick={() => {
@@ -112,7 +112,7 @@ function SendButton() {
 
   return (
     <button
-      className="icon square plain"
+      className="icon square"
       type="button"
       aria-label="发送 (↵)"
       onClick={() => {
@@ -132,7 +132,7 @@ function StopButton() {
 
   return (
     <button
-      className="icon square plain"
+      className="icon square"
       type="button"
       aria-label="停止"
       onClick={() => {
@@ -147,7 +147,7 @@ function StopButton() {
 }
 
 /* ─────────────────────────────────────────────────────────────────────
- * UserInput — 输入框 + 发送/停止按钮（根据 streaming 状态选择 variant）
+ * UserInput — 消息编辑区（context 引用 + 快捷操作 + 输入框 + 发送/停止按钮）
  * ───────────────────────────────────────────────────────────────────── */
 function UserInput() {
   const {state, actions, meta} = useChat();
@@ -157,6 +157,7 @@ function UserInput() {
 
   return (
     <div className="user-input-container">
+      <Context />
       <textarea
         name="user-input"
         className="user-input"
@@ -179,7 +180,6 @@ function UserInput() {
 export const Footer = {
   Frame,
   ActionBar,
-  Context,
   UserInput,
   SendButton,
   StopButton,

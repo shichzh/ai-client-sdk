@@ -49,9 +49,20 @@ button.icon:disabled {
 }
 
 button.text {
-  padding: 0 12px;
-  height: 28px;
+  padding: 0 10px;
+  height: 26px;
+  font-size: 12px;
+  color: var(--aic-text-secondary);
+  border: 1px solid var(--aic-border);
 }
+button.text:hover:not(:disabled) {
+  background-color: var(--aic-surface-hover);
+  color: var(--aic-text);
+}
+button.text:disabled {
+  opacity: 0.4;
+}
+
 button.square {
   border-radius: var(--aic-radius-s);
 }

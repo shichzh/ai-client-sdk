@@ -32,7 +32,6 @@ const App = ({onReady, eventBus}: AppProps) => {
         <Chat.Messages />
         <Chat.Footer.Frame>
           <Chat.Footer.ActionBar />
-          <Chat.Footer.Context />
           <Chat.Footer.UserInput />
         </Chat.Footer.Frame>
         <Chat.HistoryModal />

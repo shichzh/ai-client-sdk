@@ -26,7 +26,7 @@ const ActionBar = ({handleCopy, isCopied}: ActionBarProps) => {
   return (
     <div className="button-container">
       <button
-        className="icon square plain"
+        className="icon square"
         type="button"
         aria-label={isCopied ? '已复制' : '复制'}
         onClick={handleCopy}

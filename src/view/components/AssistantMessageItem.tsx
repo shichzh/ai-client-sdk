@@ -51,7 +51,7 @@ const AssistantMessageItem = ({message}: AssistantMessageItemProps) => {
       {parsedReasoningContent ? (
         <div className={`reasoning-container ${isCollapsed ? 'collapsed' : ''}`}>
           <button
-            className="reasoning-header plain"
+            className="reasoning-header"
             type="button"
             aria-label="思考过程"
             onClick={handleToggle}
