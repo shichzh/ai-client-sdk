@@ -28,12 +28,13 @@ import type {AgentOptions, Chunk, Definition, Params, StreamResult, Arguments} f
 
 const DATA_PREFIX_REGEX = /^data: /;
 
+const DEFAULT_MAX_ROUNDS = 4;
+
 export class Agent {
   #model = '';
   #url = '';
-  #maxRounds = 4;
   #defaultParams: Params = {
-    roundsLeft: this.#maxRounds,
+    roundsLeft: DEFAULT_MAX_ROUNDS,
   };
   #controller: AbortController | null = null;
   #mcpClient: MCPClient | null = null;
@@ -44,7 +45,7 @@ export class Agent {
     this.#model = model;
     this.#url = url;
     if (typeof maxRounds === 'number') {
-      this.#maxRounds = maxRounds;
+      this.#defaultParams.roundsLeft = maxRounds;
     }
     if (systemMessageContent) {
       this.#messages[0] = createSystemMessage(systemMessageContent);
@@ -72,7 +73,7 @@ export class Agent {
   }
 
   async *invokeStream(params = this.#defaultParams): StreamResult {
-    const {roundsLeft = this.#maxRounds} = params;
+    const {roundsLeft = DEFAULT_MAX_ROUNDS} = params;
     this.abort();
     this.#controller = new AbortController();
 
