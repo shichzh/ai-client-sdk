@@ -75,7 +75,8 @@ export class Agent {
   async *invokeStream(params = this.#defaultParams): StreamResult {
     const {roundsLeft = DEFAULT_MAX_ROUNDS} = params;
     this.abort();
-    this.#controller = new AbortController();
+    const controller = new AbortController();
+    this.#controller = controller;
 
     try {
       const tools: Definition[] = this.#mcpClient?.connected ? this.#mcpClient.tools : [];
@@ -91,12 +92,10 @@ export class Agent {
           tools,
           stream: true,
         }),
-        signal: this.#controller.signal,
+        signal: controller.signal,
       });
 
-      if (this.#controller.signal.aborted) {
-        throw new DOMException('对话已停止', 'AbortError');
-      }
+      controller.signal.throwIfAborted();
 
       const reader = response.body?.getReader();
 
@@ -149,12 +148,18 @@ export class Agent {
       this.#messages.push(createAssistantMessage({content, tool_calls}));
       await this.#executeTools(tool_calls);
 
+      // executeTools 内部的 callTool 无法响应 signal 中断，期间发生的 abort 在此处拦截，避免继续发起下一轮
+      controller.signal.throwIfAborted();
+
       // 剩余轮次 > 0 时继续回调
       if (roundsLeft - 1 > 0) {
         return this.invokeStream({roundsLeft: roundsLeft - 1});
       }
     } finally {
-      this.#controller = null;
+      // 仅当槽位仍属于本次调用时才清空，避免误清后续调用抢占的 controller
+      if (this.#controller === controller) {
+        this.#controller = null;
+      }
     }
   }
 
