@@ -33,7 +33,7 @@ const DEFAULT_MAX_ROUNDS = 4;
 export class Agent {
   #model = '';
   #url = '';
-  #defaultParams: Params = {
+  #defaultParams: Required<Params> = {
     roundsLeft: DEFAULT_MAX_ROUNDS,
   };
   #controller: AbortController | null = null;
@@ -72,8 +72,8 @@ export class Agent {
     this.#messages = systemMessage ? [systemMessage] : [];
   }
 
-  async *invokeStream(params = this.#defaultParams): StreamResult {
-    const {roundsLeft = DEFAULT_MAX_ROUNDS} = params;
+  async *invokeStream(params: Params = this.#defaultParams): StreamResult {
+    const roundsLeft = params.roundsLeft ?? this.#defaultParams.roundsLeft;
     this.abort();
     const controller = new AbortController();
     this.#controller = controller;
@@ -156,6 +156,9 @@ export class Agent {
         return this.invokeStream({roundsLeft: roundsLeft - 1});
       }
     } finally {
+      // 中止本次调用的在途请求：正常完成时流已读完，abort 是空操作；
+      // 消费方提前放弃生成器（gen.return()）时，这里是掐断在途 fetch 的唯一时机
+      controller.abort();
       // 仅当槽位仍属于本次调用时才清空，避免误清后续调用抢占的 controller
       if (this.#controller === controller) {
         this.#controller = null;
