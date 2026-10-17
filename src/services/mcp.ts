@@ -74,6 +74,8 @@ export class MCPClient {
       await this.#transport.close();
       this.#isConnected = false;
       this.#tools = [];
+      // 清空已完成的连接 Promise，否则后续 connect() 会直接返回旧 Promise，不会真正重连
+      this.#promise = null;
     }
   }
 
