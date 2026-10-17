@@ -197,11 +197,21 @@ export class Agent {
         id,
       } = element;
 
-      const result = await client.callTool(name, JSON.parse(args) as Arguments);
-      const resp = typeof result === 'string' ? result : JSON.stringify(result);
-
-      this.#messages.push(createToolMessage({content: resp, tool_call_id: id}));
+      try {
+        const result = await client.callTool(name, JSON.parse(args) as Arguments);
+        const resp = typeof result === 'string' ? result : JSON.stringify(result);
+        return {id, resp};
+      } catch (error) {
+        // 工具失败不中断对话：错误占位为 tool 消息回传，由模型决定下一步
+        const message = error instanceof Error ? error.message : String(error);
+        return {id, resp: JSON.stringify({error: message})};
+      }
     });
-    await Promise.all(promises);
+
+    // 并发执行完所有工具后，按 tool_calls 原始顺序入档，保证 tool 消息与 tool_calls 一一对应
+    const results = await Promise.all(promises);
+    for (const {id, resp} of results) {
+      this.#messages.push(createToolMessage({content: resp, tool_call_id: id}));
+    }
   }
 }
