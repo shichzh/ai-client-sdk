@@ -97,6 +97,15 @@ export class Agent {
 
       controller.signal.throwIfAborted();
 
+      // fetch 对 4xx/5xx 不会 reject，必须先校验状态码，避免把错误响应当 SSE 流解析导致静默失败
+      if (!response.ok) {
+        // 错误体可能是大段 HTML，截断后拼入异常信息，避免异常消息过大
+        const errorText = (await response.text()).slice(0, 500);
+        // statusText 在 HTTP/2 下恒为空串，过滤掉避免消息中出现多余空格
+        const status = [String(response.status), response.statusText].filter(Boolean).join(' ');
+        throw new Error(`HTTP ${status}: ${errorText}`);
+      }
+
       const reader = response.body?.getReader();
 
       if (!reader) {
