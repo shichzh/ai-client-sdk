@@ -42,23 +42,21 @@ export const useMessage = (message: Message) => {
     };
   }, []);
 
-  const handleCopy = (e: MouseEvent) => {
+  const handleCopy = async (e: MouseEvent) => {
     e.stopPropagation();
     const text = message.content;
-    navigator.clipboard
-      .writeText(text)
-      .catch((err: unknown) => {
-        console.error('Failed to copy text: ', err);
-      })
-      .finally(() => {
-        if (timerRef.current) {
-          clearTimeout(timerRef.current);
-        }
-        setIsCopied(true);
-        timerRef.current = setTimeout(() => {
-          setIsCopied(false);
-        }, 1500);
-      });
+    try {
+      await navigator.clipboard.writeText(text);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+      setIsCopied(true);
+      timerRef.current = setTimeout(() => {
+        setIsCopied(false);
+      }, 1500);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
   };
 
   return {

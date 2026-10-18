@@ -18,7 +18,7 @@ import {memo, type MouseEvent} from 'react';
 import CopyIcon from './icons/CopyIcon';
 
 interface ActionBarProps {
-  handleCopy: (e: MouseEvent) => void;
+  handleCopy: (e: MouseEvent) => Promise<void>;
   isCopied: boolean;
 }
 
@@ -29,7 +29,9 @@ const ActionBar = ({handleCopy, isCopied}: ActionBarProps) => {
         className="icon square"
         type="button"
         aria-label={isCopied ? '已复制' : '复制'}
-        onClick={handleCopy}
+        onClick={(e) => {
+          void handleCopy(e);
+        }}
       >
         {isCopied ? 'Copied' : <CopyIcon />}
       </button>
