@@ -67,9 +67,7 @@ const AssistantMessageItem = ({message}: AssistantMessageItemProps) => {
       ) : null}
       <div className="body-container">
         {message.loading && !parsedContent ? (
-          <p>
-            <LoadingIcon />
-          </p>
+          <LoadingIcon />
         ) : (
           <div dangerouslySetInnerHTML={{__html: parsedContent || '<p>暂无正文</p>'}} />
         )}

@@ -17,10 +17,15 @@
 
 .loading-spinner {
   display: inline-flex;
+  /* 裁剪内部 svg 旋转时的画笔溢出，避免撑大 .body-container 的可滚动区域而出现纵向滚动条 */
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.loading-spinner > svg {
   animation: spin 1s linear infinite;
   will-change: transform;
   backface-visibility: hidden;
-  vertical-align: top;
 }
 
 @keyframes spin {

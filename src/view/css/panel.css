@@ -105,9 +105,6 @@
 .body-container .loading-spinner {
   color: var(--aic-text-tertiary);
 }
-.body-container p:has(> .loading-spinner) {
-  margin: 0;
-}
 
 /* ───────────────────────── Markdown 正文排版 ───────────────────────── */
 
