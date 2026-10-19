@@ -199,7 +199,7 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
   const submitMessage = useCallback(
     async (content: string) => {
       const trimmedContent = content.trim();
-      if (!trimmedContent) {
+      if (!trimmedContent || streamingMessage) {
         return;
       }
       try {
@@ -220,7 +220,7 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
         userInputRef.current?.focus();
       }
     },
-    [context, eventBus],
+    [context, eventBus, streamingMessage],
   );
 
   const send = useCallback(async () => {

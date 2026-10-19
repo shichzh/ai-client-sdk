@@ -67,7 +67,7 @@ function ActionBar() {
  * ───────────────────────────────────────────────────────────────────── */
 function Context() {
   const {state, actions} = useChat();
-  const {context} = state;
+  const {context, streamingMessage} = state;
   const {deleteContext, translate} = actions;
 
   if (!context) {
@@ -95,6 +95,7 @@ function Context() {
           onClick={() => {
             void translate();
           }}
+          disabled={!!streamingMessage}
         >
           翻译
         </button>
