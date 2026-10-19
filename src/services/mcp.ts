@@ -20,15 +20,15 @@ import type {Arguments, Definition, MCPClientOptions} from '../types';
 
 export class MCPClient {
   readonly #client: Client;
-  readonly #transport: StreamableHTTPClientTransport;
+  readonly #serverUrl: URL;
+  readonly #headers: Record<string, string>;
   #isConnected = false;
   #tools: Definition[] = [];
   #promise: Promise<void> | null = null;
 
   constructor(options: MCPClientOptions) {
-    this.#transport = new StreamableHTTPClientTransport(new URL(options.serverUrl), {
-      requestInit: {headers: options.headers || {}},
-    });
+    this.#serverUrl = new URL(options.serverUrl);
+    this.#headers = options.headers || {};
 
     this.#client = new Client({
       name: 'OpenAI-compatible-mcp-client',
@@ -45,13 +45,21 @@ export class MCPClient {
       return this.#promise;
     }
 
+    // StreamableHTTPClientTransport 是一次性实例：start() 在 _abortController 已存在时抛
+    // 'already started'，且 connect 失败后 SDK 内部会关闭 transport。因此每次 connect() 新建
+    // transport 实例，保证失败后的重试可用；Client（协议层）在 _onclose 中会完整重置自身状态，可复用。
+    const transport = new StreamableHTTPClientTransport(this.#serverUrl, {
+      requestInit: {headers: this.#headers},
+    });
+
     this.#promise = this.#client
-      .connect(this.#transport)
+      .connect(transport)
       .then(() => {
         this.#isConnected = true;
         return this.#fetchTools();
       })
       .catch((error: unknown) => {
+        // 失败后清空，允许下次 connect() 重试
         this.#promise = null;
         throw error;
       });
@@ -64,19 +72,6 @@ export class MCPClient {
       name,
       arguments: args,
     });
-  }
-
-  /**
-   * 主动关闭连接
-   */
-  async close(): Promise<void> {
-    if (this.#isConnected) {
-      await this.#transport.close();
-      this.#isConnected = false;
-      this.#tools = [];
-      // 清空已完成的连接 Promise，否则后续 connect() 会直接返回旧 Promise，不会真正重连
-      this.#promise = null;
-    }
   }
 
   get tools(): Definition[] {
