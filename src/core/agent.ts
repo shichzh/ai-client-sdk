@@ -148,13 +148,15 @@ export class Agent {
         return;
       }
 
-      const {content, tool_calls} = message;
+      const {content, tool_calls, reasoning_content} = message;
 
       if (!tool_calls?.length) {
         return message;
       }
 
-      this.#messages.push(createAssistantMessage({content, tool_calls}));
+      // 回填推理内容到 assistant 消息，保证多轮工具调用时思维链不丢失；
+      // 值为 undefined 时 JSON.stringify 会自动省略该键，不输出此字段的后端不受影响
+      this.#messages.push(createAssistantMessage({content, tool_calls, reasoning_content}));
       await this.#executeTools(tool_calls);
 
       // executeTools 内部的 callTool 无法响应 signal 中断，期间发生的 abort 在此处拦截，避免继续发起下一轮
