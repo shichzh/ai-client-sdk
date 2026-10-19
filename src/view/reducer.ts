@@ -153,7 +153,7 @@ export const reducer = (state: State, action: Action): State => {
       const {messages, id} = action.payload;
       return {
         ...state,
-        completedMessages: messages,
+        completedMessages: [...messages],
         streamingMessage: null,
         currentId: id,
       };
