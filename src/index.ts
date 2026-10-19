@@ -40,10 +40,15 @@ export class AIChatPanel {
     this.#eventBus = new EventBus();
     this.on = this.#eventBus.subscribe.bind(this.#eventBus);
     // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-    const {promise, resolve} = Promise.withResolvers<void>();
+    const {promise, resolve, reject} = Promise.withResolvers<void>();
     this.#promise = promise;
+    /* 渲染异常会让 promise 进入 rejected；这里只是旁路记录，避免宿主从未 await 时
+       只留下浏览器含糊的未处理 rejection 提示。公开方法 await #promise 仍会拿到该错误 */
+    void promise.catch((error: unknown) => {
+      console.error('[ai-client-sdk] 面板初始化失败：', error);
+    });
     const shadowRoot = container.attachShadow({mode: 'open'});
-    mount({domNode: shadowRoot, onReady: resolve, eventBus: this.#eventBus});
+    mount({domNode: shadowRoot, onReady: resolve, onError: reject, eventBus: this.#eventBus});
   }
 
   async pushMessage(payload: Message): Promise<void> {

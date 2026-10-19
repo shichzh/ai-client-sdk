@@ -17,28 +17,36 @@
 import {StrictMode} from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import ErrorBoundary from './components/ErrorBoundary';
+import styles from './css/index.css?inline';
 import {ConfigProvider} from 'antd';
 import {StyleProvider, createCache} from '@ant-design/cssinjs';
-import type {Resolve} from '../types';
+import type {Reject, Resolve} from '../types';
 import type {EventBus} from '../services/eventBus';
 
 interface MountParams {
   domNode: ShadowRoot;
   onReady: Resolve;
+  onError: Reject;
   eventBus: EventBus;
 }
 
-export const mount = ({domNode, onReady, eventBus}: MountParams): void => {
+export const mount = ({domNode, onReady, onError, eventBus}: MountParams): void => {
   const cache = createCache();
 
   const root = ReactDOM.createRoot(domNode);
   root.render(
     <StrictMode>
-      <StyleProvider cache={cache} container={domNode}>
-        <ConfigProvider getPopupContainer={() => domNode}>
-          <App onReady={onReady} eventBus={eventBus} />
-        </ConfigProvider>
-      </StyleProvider>
+      {/* 样式挂在 ShadowRoot 顶层且在边界之外，保证兜底 UI 渲染时样式依然存在 */}
+      <style>{styles}</style>
+      {/* 边界包住 antd 的 StyleProvider/ConfigProvider，其渲染期异常同样能兜底 */}
+      <ErrorBoundary onError={onError}>
+        <StyleProvider cache={cache} container={domNode}>
+          <ConfigProvider getPopupContainer={() => domNode}>
+            <App onReady={onReady} eventBus={eventBus} />
+          </ConfigProvider>
+        </StyleProvider>
+      </ErrorBoundary>
     </StrictMode>,
   );
 };

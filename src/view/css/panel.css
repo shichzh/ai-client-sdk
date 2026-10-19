@@ -531,3 +531,34 @@ button:hover .stop-icon {
     opacity: 1;
   }
 }
+
+/* ───────────────────────── 渲染异常兜底 ───────────────────────── */
+
+.error-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  padding: 24px 20px;
+  text-align: center;
+  background: var(--aic-bg);
+  color: var(--aic-text);
+  overflow: hidden;
+}
+
+.error-fallback-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--aic-text);
+}
+
+.error-fallback-desc {
+  margin: 0;
+  max-width: 320px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--aic-text-secondary);
+}

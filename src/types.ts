@@ -110,7 +110,10 @@ export type UpdateMessagePayload =
   | {id: string; field: 'reasoning_content'; value: string}
   | {id: string; field: 'loading'; value: boolean};
 
-export type Resolve = (value: void | PromiseLike<void>) => void;
+/* 直接派生自 Promise.withResolvers 的返回类型，避免手写签名与 lib 漂移 */
+export type Resolve = PromiseWithResolvers<void>['resolve'];
+
+export type Reject = PromiseWithResolvers<void>['reject'];
 
 export type ModalType = 'info' | 'success' | 'warning' | 'error' | 'confirm';
 

@@ -168,7 +168,11 @@ export const reducer = (state: State, action: Action): State => {
         historyList: newHistoryList,
       };
     }
-    default:
-      throw Error('Unknown action');
+    default: {
+      /* 穷尽性检查：所有 action 都被覆盖时 exhaustive 收窄为 never，此赋值合法；
+         一旦 Action 新增变体却漏写 case，这里就会在编译期报错 */
+      const exhaustive: never = action;
+      throw new Error(`Unknown action: ${JSON.stringify(exhaustive)}`);
+    }
   }
 };

@@ -16,7 +16,6 @@
 
 import type {Resolve} from '../types';
 import type {EventBus} from '../services/eventBus';
-import styles from './css/index.css?inline';
 import {Chat} from './components/Chat';
 
 interface AppProps {
@@ -28,7 +27,6 @@ const App = ({onReady, eventBus}: AppProps) => {
   return (
     <Chat.Provider onReady={onReady} eventBus={eventBus}>
       <Chat.Frame>
-        <style>{styles}</style>
         <Chat.Messages />
         <Chat.Footer.Frame>
           <Chat.Footer.ActionBar />
