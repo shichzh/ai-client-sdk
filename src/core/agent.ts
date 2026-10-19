@@ -132,7 +132,7 @@ export class Agent {
           const jsonStr = item.trim().replace(DATA_PREFIX_REGEX, '');
           try {
             const json = JSON.parse(buffer + jsonStr) as Chunk;
-            result = this.#merge(result, json, ['content', 'arguments']);
+            result = this.#merge(result, json, ['content', 'arguments', 'reasoning_content']);
             yield json;
             buffer = '';
           } catch (error) {
