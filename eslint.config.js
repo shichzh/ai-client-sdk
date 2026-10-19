@@ -26,13 +26,9 @@ export default defineConfig([
       react.configs.flat['jsx-runtime'],
       reactHooks.configs.flat.recommended,
     ],
-    /**
-     * TODO: 目前 eslint-plugin-react 在配置 version: 'detect' 时，会报错
-     * 先固定版本号
-     */
     settings: {
       react: {
-        version: '19.2.7',
+        version: 'detect',
       },
     },
   },
