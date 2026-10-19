@@ -52,13 +52,14 @@ const panel = new AIChatPanel({container});
 
 ### 参数说明
 
-| Parameter   | Type                  | Required | Description             |
-| ----------- | --------------------- | :------: | ----------------------- |
-| `container` | `HTMLElement \| null` |    Y     | 对话界面挂载的 DOM 容器 |
+| Parameter   | Type                  | Required | Description                         |
+| ----------- | --------------------- | :------: | ----------------------------------- |
+| `container` | `HTMLElement \| null` |    Y     | 对话界面挂载的 DOM 容器，需设置宽高 |
 
 ### 注意事项
 
 - 在 DOM 准备就绪后实例化 `AIChatPanel`，确保 `container` 元素已存在。
+- 请为 `container` 设置明确的宽度和高度（例如 `height: 100vh`），面板会自适应容器尺寸；未设置高度时面板不会显示。
 
 ## License
 

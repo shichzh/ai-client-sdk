@@ -18,6 +18,10 @@
 /* ───────────────────────── 整体骨架 ───────────────────────── */
 
 .app-container {
+  /* 绝对定位锚点：输入区等浮层相对容器定位，而非视口 */
+  position: relative;
+  /* 尺寸查询容器：消息区滚动尾部用 cqh 跟随容器高度 */
+  container-type: size;
   height: 100%;
   background: var(--aic-bg);
   color: var(--aic-text);
@@ -27,14 +31,16 @@
 .messages-container {
   height: 100%;
   padding: 16px;
-  /* 预留近一屏空白，使发送后滚动到底部时最新一条消息出现在视口顶部 */
+  /* 预留近一屏空白，使发送后滚动到底部时最新一条消息出现在容器顶部 */
+  /* 按容器高度（cqh）计算；不支持容器查询单位时回退为视口高度（整屏场景下等价） */
   padding-bottom: calc(100vh - 16px);
+  padding-bottom: calc(100cqh - 16px);
   overflow-x: hidden;
   overflow-y: auto;
 }
 
 .bottom-container {
-  position: fixed;
+  position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
