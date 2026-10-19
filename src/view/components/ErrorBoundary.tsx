@@ -23,7 +23,7 @@ interface ErrorBoundaryProps {
    * 渲染异常时的通知回调，用于让 mount 的 onReady Promise 落地为 reject，
    * 避免组件树崩溃后宿主侧 await 相关的调用永久挂起
    */
-  onError?: Reject;
+  onError: Reject;
 }
 
 interface ErrorBoundaryState {
@@ -43,7 +43,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     console.error('[ai-client-sdk] 组件渲染异常：', error, errorInfo.componentStack);
-    this.props.onError?.(error);
+    this.props.onError(error);
   }
 
   render(): ReactNode {
