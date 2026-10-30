@@ -255,6 +255,10 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
 
   const keyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
+      // 输入法组合态（拼音候选/确认阶段）不触发发送
+      if (e.nativeEvent.isComposing) {
+        return;
+      }
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         void send();
