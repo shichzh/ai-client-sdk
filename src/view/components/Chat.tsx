@@ -208,8 +208,18 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
         const message: Message = createUserMessage(finalContent);
         dispatch({type: 'ADD_COMPLETED_MESSAGE', payload: message});
         /**
-         * messages-container 滚动到最底部
-         * 将最新一轮对话里的 user message 显示在屏幕顶部
+         * 滚动到 messages-container 底部，使最新一轮的 user message 显示在屏幕顶部。
+         *
+         * 注意（设计意图，勿当 bug 修）：
+         * 此处 dispatch 之后同步读取 scrollHeight，此时 React 尚未提交新消息 DOM，
+         * 拿到的是「旧内容 + padding-bottom」的高度。但 .messages-container 的
+         * padding-bottom ≈ 100cqh（约一屏），会把旧底部撑到视口顶部附近；等新 user
+         * message 提交后被追加在旧最后一条消息之后、padding 之前，正好落在视口顶部，
+         * 从而实现「user message 顶到顶部」的需求。
+         *
+         * 若改成在 useEffect 里用提交后的 scrollHeight 滚到底，反而会把新消息顶到
+         * 视口上方（只剩 padding），破坏需求。流式回复不滚动同样是既定需求，故此处
+         * 不做流式跟随。
          */
         if (!messagesContainerRef.current) {
           return;
