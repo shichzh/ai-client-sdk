@@ -118,18 +118,26 @@ export class Agent {
 
       let buffer = '';
 
-      for (;;) {
+      stream: for (;;) {
         const {done, value} = await reader.read();
         if (done) {
           break;
         }
         const chunk = decoder.decode(value, {stream: true});
         const arr = chunk.split('\n\n').filter((item) => item.trim() !== '');
-        for (const item of arr) {
+        for (const raw of arr) {
+          const item = raw.trim();
           if (item === 'data: [DONE]') {
-            break;
+            // 收到结束标记即终止读取：不能依赖服务端主动关流，否则 keep-alive 下 reader.read() 会一直挂起
+            // cancel() 是清理动作，失败不影响已完整收到的业务结果；但也不静默，保留 debug 级别的排查信号
+            try {
+              await reader.cancel();
+            } catch (error) {
+              console.debug('[agent] SSE stream cancel failed after [DONE] (ignored):', error);
+            }
+            break stream;
           }
-          const jsonStr = item.trim().replace(DATA_PREFIX_REGEX, '');
+          const jsonStr = item.replace(DATA_PREFIX_REGEX, '');
           try {
             const json = JSON.parse(buffer + jsonStr) as Chunk;
             result = this.#merge(result, json, ['content', 'arguments', 'reasoning_content']);
