@@ -265,11 +265,9 @@ export class Agent {
   }
 
   async #executeTools(tool_calls: ToolCall[]): Promise<void> {
-    if (!this.#mcpClient?.connected) {
-      throw new Error('MCP 客户端未连接');
-    }
-
-    const client = this.#mcpClient;
+    // 未连接不能抛错：带 tool_calls 的 assistant 消息已入档，抛错会让它永远没有配对的 tool 应答，
+    // 后续每轮请求都因消息序列不完整被 OpenAI 兼容 API 拒绝（400），只能 resetMessages 才能恢复
+    const client = this.#mcpClient?.connected ? this.#mcpClient : null;
     const promises = tool_calls.map(async (element) => {
       const {
         function: {name, arguments: args},
@@ -277,6 +275,9 @@ export class Agent {
       } = element;
 
       try {
+        if (!client) {
+          throw new Error('MCP 客户端未连接');
+        }
         const result = await client.callTool(name, JSON.parse(args) as Arguments);
         const resp = typeof result === 'string' ? result : JSON.stringify(result);
         return {id, resp};
