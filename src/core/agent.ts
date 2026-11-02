@@ -26,9 +26,9 @@ import {
 } from '../models/Message';
 import type {AgentOptions, Chunk, Definition, Params, StreamResult, Arguments} from '../types';
 
-const DATA_PREFIX_REGEX = /^data: /;
-
 const DEFAULT_MAX_ROUNDS = 4;
+
+const DATA_PREFIX = 'data:';
 
 export class Agent {
   #model = '';
@@ -120,14 +120,33 @@ export class Agent {
 
       stream: for (;;) {
         const {done, value} = await reader.read();
+
         if (done) {
-          break;
+          // TextDecoder 在 stream 模式下会缓存不完整的 UTF-8 字节，流结束时必须 flush，
+          // 否则流恰好截断在多字节字符中间时，尾部这段数据会丢失
+          buffer += decoder.decode();
+          // 残留为空说明所有事件都已处理完，直接结束
+          if (buffer === '') {
+            break;
+          }
+          // 流结束兜底：非规范服务端可能不发末尾的 \n\n，补一个虚拟分隔符让残留走统一的切分流程
+          buffer += '\n\n';
+        } else {
+          // CRLF → LF 归一化，兼容 Windows 代理改写或旧式 SSE 服务器
+          const chunk = decoder.decode(value, {stream: true});
+          // 事件切分只认 \n\n，CRLF（\r\n\r\n）或孤立 \r 会切不出事件，需先统一为 \n。
+          // /\r\n?/g 同时覆盖 CRLF 与孤立 CR；分块恰好切在 \r 与 \n 之间时也能正确归一化
+          buffer += chunk.replace(/\r\n?/g, '\n');
         }
-        const chunk = decoder.decode(value, {stream: true});
-        const arr = chunk.split('\n\n').filter((item) => item.trim() !== '');
-        for (const raw of arr) {
-          const item = raw.trim();
-          if (item === 'data: [DONE]') {
+
+        // 按协议空行切出所有完整事件块；最后一段是尚未以 \n\n 结尾的残留，留回 buffer。
+        // JSON 字符串内的换行必须转义为 \n，所以正文里不会出现裸 \n\n，切分是安全的
+        const eventBlocks = buffer.split('\n\n');
+        buffer = eventBlocks.pop() ?? '';
+
+        for (const eventBlock of eventBlocks) {
+          const {payload, isDone} = this.#parseEventBlock(eventBlock);
+          if (isDone) {
             // 收到结束标记即终止读取：不能依赖服务端主动关流，否则 keep-alive 下 reader.read() 会一直挂起
             // cancel() 是清理动作，失败不影响已完整收到的业务结果；但也不静默，保留 debug 级别的排查信号
             try {
@@ -137,16 +156,19 @@ export class Agent {
             }
             break stream;
           }
-          const jsonStr = item.replace(DATA_PREFIX_REGEX, '');
-          try {
-            const json = JSON.parse(buffer + jsonStr) as Chunk;
-            result = this.#merge(result, json, ['content', 'arguments', 'reasoning_content']);
-            yield json;
-            buffer = '';
-          } catch (error) {
-            console.warn('JSON 解析失败，等待下一个数据块继续拼接', {error, jsonStr});
-            buffer += jsonStr;
+          if (payload !== null) {
+            try {
+              const json = JSON.parse(payload) as Chunk;
+              result = this.#merge(result, json, ['content', 'arguments', 'reasoning_content']);
+              yield json;
+            } catch (error) {
+              console.warn('JSON 解析失败', {error, payload});
+            }
           }
+        }
+
+        if (done) {
+          break;
         }
       }
 
@@ -183,6 +205,41 @@ export class Agent {
         this.#controller = null;
       }
     }
+  }
+
+  /**
+   * 解析一个完整的 SSE 事件块（已不含 \n\n 分隔符）。
+   * 严格遵循 WHATWG SSE 规范：只收集 data 字段的行，
+   * value 去掉一个可选的前导空格，其余原样保留（包括行尾空白）。
+   *
+   * 返回值：
+   * - payload: 拼接后的有效数据；事件块仅含注释/空行/空 data → null
+   * - isDone: payload 去除首尾空白后为 '[DONE]' 时为 true
+   */
+  #parseEventBlock(eventBlock: string): {payload: string | null; isDone: boolean} {
+    const values: string[] = [];
+    for (const rawLine of eventBlock.split('\n')) {
+      // 只有 data 字段参与拼接；注释行（: 开头）、event/id/retry 字段和空行都不以此前缀开头，自然跳过
+      if (!rawLine.startsWith(DATA_PREFIX)) continue;
+
+      // value：去掉 "data:" 前缀，再按规范去掉一个可选的前导空格
+      let value = rawLine.slice(DATA_PREFIX.length);
+      if (value.startsWith(' ')) value = value.slice(1);
+
+      values.push(value);
+    }
+
+    // 没有任何 data 字段，或所有 data 字段的值均为空/仅空白 → 心跳帧，返回 null 避免走到 JSON.parse('')
+    // 空数组的 every 返回 true，因此无需额外判断 length
+    if (values.every((value) => value.trim() === '')) {
+      return {payload: null, isDone: false};
+    }
+    const payload = values.join('\n');
+    // [DONE] 是 OpenAI 约定而非合法 JSON，容忍行尾空白不会与任何合法 payload 冲突
+    if (payload.trim() === '[DONE]') {
+      return {payload: null, isDone: true};
+    }
+    return {payload, isDone: false};
   }
 
   #merge<T extends object, S extends object>(
