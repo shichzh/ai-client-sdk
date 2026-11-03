@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {memo} from 'react';
+import {memo, useMemo} from 'react';
 import {Modal} from 'antd';
 import dayjs from 'dayjs';
 import DeleteIcon from './icons/DeleteIcon';
@@ -25,8 +25,13 @@ const HistoryModal = () => {
   const {isHistoryModalVisible, historyList, currentId} = state;
   const {closeHistoryModal, selectHistory, deleteHistory} = actions;
 
-  return (
-    <Modal title="历史对话" open={isHistoryModalVisible} onCancel={closeHistoryModal} footer={null}>
+  /**
+   * 列表内容与流式 token 无关，但 HistoryModal 常驻挂载且订阅了 context，
+   * Provider 每个 token 重渲染都会触发本组件 render。用 useMemo 缓存列表，
+   * 避免每 token 重跑 historyList.map 和逐条 dayjs().format()
+   */
+  const historyContent = useMemo(
+    () => (
       <div className="history-list">
         {historyList.length === 0 ? (
           <div className="history-empty">暂无历史对话</div>
@@ -62,6 +67,13 @@ const HistoryModal = () => {
           </ul>
         )}
       </div>
+    ),
+    [historyList, currentId, selectHistory, deleteHistory],
+  );
+
+  return (
+    <Modal title="历史对话" open={isHistoryModalVisible} onCancel={closeHistoryModal} footer={null}>
+      {historyContent}
     </Modal>
   );
 };
