@@ -145,13 +145,19 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
     onReady();
   }, [onReady]);
 
+  // 每次 historyList 变化只重新排期，不在 cleanup 里 flush，
+  // 否则上一份快照会在下次变化时立刻落库，500ms 的合并窗口形同虚设
   useEffect(() => {
     debouncedSaveHistory(historyList);
-    return () => {
-      debouncedSaveHistory.flush();
-      debouncedSaveHistory.cancel();
-    };
   }, [historyList, debouncedSaveHistory]);
+
+  // 仅在卸载时冲刷最后一次待写快照
+  useEffect(
+    () => () => {
+      debouncedSaveHistory.flush();
+    },
+    [debouncedSaveHistory],
+  );
 
   /* ──────── Actions ──────── */
 
