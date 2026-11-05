@@ -261,7 +261,10 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
       }
       try {
         setUserInputValue('');
-        const finalContent = context.trim() ? `${context}\n\n${trimmedContent}` : trimmedContent;
+        const trimmedContext = context.trim();
+        const finalContent = trimmedContext
+          ? `${trimmedContext}\n\n${trimmedContent}`
+          : trimmedContent;
         const message: Message = createUserMessage(finalContent);
         dispatch({type: 'ADD_COMPLETED_MESSAGE', payload: message});
         /**
