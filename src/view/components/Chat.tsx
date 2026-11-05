@@ -126,6 +126,9 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
   const userInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<ReturnType<(typeof modal)[ModalType]> | null>(null);
+  // 流式更新缓冲：按 `${id}::${field}` 合并，配合 rAF 每帧最多派发一次
+  const pendingUpdatesRef = useRef<Map<string, UpdateMessagePayload>>(new Map());
+  const updateRafIdRef = useRef<number | null>(null);
 
   /**
    * TODO: 多页面场景下 localStorage 数据同步
@@ -162,10 +165,58 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
     dispatch({type: 'PUSH_MESSAGE', payload});
   }, []);
 
-  const updateMessage = useCallback((payload: UpdateMessagePayload) => {
+  /**
+   * 流式期间每个 token 都会触发一次 updateMessage。按 `${id}::${field}` 合并后，
+   * 每帧最多派发一次，避免每个 token 都让 Provider 全量重渲染、让流式消息整块
+   * 重新 parseMarkdown。
+   *
+   * loading 不走缓冲：它每条消息只出现两次，且完成状态需要在标签页隐藏
+   * （rAF 暂停）时也能落库。缓冲里剩余的内容更新会在完成后由 reducer 的
+   * 已完成消息分支补回。
+   */
+  const flushPendingUpdates = useCallback(() => {
+    updateRafIdRef.current = null;
+    const buffer = pendingUpdatesRef.current;
+    if (buffer.size === 0) {
+      return;
+    }
+    const payloads = Array.from(buffer.values());
+    buffer.clear();
     startTransition(() => {
-      dispatch({type: 'UPDATE_MESSAGE', payload});
+      payloads.forEach((payload) => {
+        dispatch({type: 'UPDATE_MESSAGE', payload});
+      });
     });
+  }, []);
+
+  const updateMessage = useCallback(
+    (payload: UpdateMessagePayload) => {
+      // loading 立即派发：延迟到下一帧会在后台标签页（rAF 暂停）时永远不落库
+      if (payload.field === 'loading') {
+        startTransition(() => {
+          dispatch({type: 'UPDATE_MESSAGE', payload});
+        });
+        return;
+      }
+      pendingUpdatesRef.current.set(`${payload.id}::${payload.field}`, payload);
+      if (updateRafIdRef.current !== null) {
+        return;
+      }
+      updateRafIdRef.current = requestAnimationFrame(flushPendingUpdates);
+    },
+    [flushPendingUpdates],
+  );
+
+  // 卸载时丢弃未派发的缓冲，避免 rAF 回调在组件销毁后触发 dispatch
+  useEffect(() => {
+    const buffer = pendingUpdatesRef.current;
+    return () => {
+      if (updateRafIdRef.current !== null) {
+        cancelAnimationFrame(updateRafIdRef.current);
+        updateRafIdRef.current = null;
+      }
+      buffer.clear();
+    };
   }, []);
 
   const updateContext = useCallback((payload: string) => {
