@@ -278,10 +278,12 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
          * 视口上方（只剩 padding），破坏需求。流式回复不滚动同样是既定需求，故此处
          * 不做流式跟随。
          */
-        if (!messagesContainerRef.current) {
-          return;
+        // 判空只保护滚动：宿主可能不渲染 Chat.Messages（无头/自定义布局），
+        // 此时 ref 为空，但消息已上屏，'send' 事件必须照常派发
+        const container = messagesContainerRef.current;
+        if (container) {
+          container.scrollTop = container.scrollHeight;
         }
-        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
         await eventBus.publish('send', message);
       } finally {
         userInputRef.current?.focus();
