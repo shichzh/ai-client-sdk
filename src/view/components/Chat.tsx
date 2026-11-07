@@ -23,7 +23,6 @@ import {
   useMemo,
   createContext,
   use,
-  startTransition,
   type KeyboardEvent,
   type RefObject,
 } from 'react';
@@ -126,9 +125,6 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
   const userInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<ReturnType<(typeof modal)[ModalType]> | null>(null);
-  // 流式更新缓冲：按 `${id}::${field}` 合并，配合 rAF 每帧最多派发一次
-  const pendingUpdatesRef = useRef<Map<string, UpdateMessagePayload>>(new Map());
-  const updateRafIdRef = useRef<number | null>(null);
 
   /**
    * TODO: 多页面场景下 localStorage 数据同步
@@ -167,63 +163,22 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
    * 暂时没有添加滚动逻辑是认为开发者应该只添加 assistant message
    * 而 user message 只在 user-input 里输入
    */
-  const pushMessage = useCallback((payload: Message) => {
-    dispatch({type: 'PUSH_MESSAGE', payload});
-  }, []);
-
-  /**
-   * 流式期间每个 token 都会触发一次 updateMessage。按 `${id}::${field}` 合并后，
-   * 每帧最多派发一次，避免每个 token 都让 Provider 全量重渲染、让流式消息整块
-   * 重新 parseMarkdown。
-   *
-   * loading 不走缓冲：它每条消息只出现两次，且完成状态需要在标签页隐藏
-   * （rAF 暂停）时也能落库。缓冲里剩余的内容更新会在完成后由 reducer 的
-   * 已完成消息分支补回。
-   */
-  const flushPendingUpdates = useCallback(() => {
-    updateRafIdRef.current = null;
-    const buffer = pendingUpdatesRef.current;
-    if (buffer.size === 0) {
-      return;
-    }
-    const payloads = Array.from(buffer.values());
-    buffer.clear();
-    startTransition(() => {
-      payloads.forEach((payload) => {
-        dispatch({type: 'UPDATE_MESSAGE', payload});
-      });
-    });
-  }, []);
+  const pushMessage = useCallback(
+    (payload: Message) => {
+      dispatch({type: 'PUSH_MESSAGE', payload});
+    },
+    [dispatch],
+  );
 
   const updateMessage = useCallback(
     (payload: UpdateMessagePayload) => {
-      // loading 立即派发：延迟到下一帧会在后台标签页（rAF 暂停）时永远不落库
-      if (payload.field === 'loading') {
-        startTransition(() => {
-          dispatch({type: 'UPDATE_MESSAGE', payload});
-        });
-        return;
-      }
-      pendingUpdatesRef.current.set(`${payload.id}::${payload.field}`, payload);
-      if (updateRafIdRef.current !== null) {
-        return;
-      }
-      updateRafIdRef.current = requestAnimationFrame(flushPendingUpdates);
+      // 直接派发，不做 rAF / transition 合并：
+      // 合并会让「缓冲中的内容」与「立即派发的收尾动作」分处两个优先级，
+      // 收尾可能先提交，导致完成态短暂带旧内容、甚至被下一条消息覆盖。
+      dispatch({type: 'UPDATE_MESSAGE', payload});
     },
-    [flushPendingUpdates],
+    [dispatch],
   );
-
-  // 卸载时丢弃未派发的缓冲，避免 rAF 回调在组件销毁后触发 dispatch
-  useEffect(() => {
-    const buffer = pendingUpdatesRef.current;
-    return () => {
-      if (updateRafIdRef.current !== null) {
-        cancelAnimationFrame(updateRafIdRef.current);
-        updateRafIdRef.current = null;
-      }
-      buffer.clear();
-    };
-  }, []);
 
   const updateContext = useCallback((payload: string) => {
     setContext(payload);
@@ -292,7 +247,7 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
         userInputRef.current?.focus();
       }
     },
-    [context, eventBus, streamingMessage],
+    [context, dispatch, eventBus, streamingMessage],
   );
 
   const send = useCallback(async () => {
@@ -312,7 +267,7 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
       placement: 'top',
       closable: false,
     });
-  }, [api, eventBus]);
+  }, [api, dispatch, eventBus]);
 
   const create = useCallback(async () => {
     dispatch({type: 'CREATE'});
@@ -323,7 +278,7 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
       placement: 'top',
       closable: false,
     });
-  }, [api, eventBus]);
+  }, [api, dispatch, eventBus]);
 
   const keyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -347,10 +302,13 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
     setIsHistoryModalVisible(false);
   }, []);
 
-  const selectHistory = useCallback((item: HistoryItem) => {
-    dispatch({type: 'SELECT_HISTORY', payload: item});
-    setIsHistoryModalVisible(false);
-  }, []);
+  const selectHistory = useCallback(
+    (item: HistoryItem) => {
+      dispatch({type: 'SELECT_HISTORY', payload: item});
+      setIsHistoryModalVisible(false);
+    },
+    [dispatch],
+  );
 
   const deleteHistory = useCallback(
     (item: HistoryItem) => {
@@ -370,7 +328,7 @@ function Provider({children, onReady, eventBus}: ProviderProps) {
         },
       });
     },
-    [api, modal],
+    [api, dispatch, modal],
   );
 
   /* ──────── EventBus 订阅 ──────── */
