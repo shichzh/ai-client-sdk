@@ -18,6 +18,8 @@ import {generateId} from '../utils/uuid';
 
 export type ToolCall = {
   id: string;
+  // 回传历史时 OpenAI schema 要求该字段；本 SDK 只支持 function 工具
+  type: 'function';
   function: {
     name: string;
     arguments: string;

@@ -97,9 +97,32 @@ export interface Params {
   roundsLeft?: number;
 }
 
+/**
+ * 流式 delta 中的工具调用分片。
+ * 协议只保证 index 必填：id / type / name 通常只在首个分片出现一次，
+ * arguments 是逐帧追加的增量，因此其余字段都必须是可选的。
+ */
+export interface ToolCallDelta {
+  index: number;
+  id?: string;
+  type?: 'function';
+  function?: {
+    name?: string;
+    arguments?: string;
+  };
+}
+
+/** assistant 流式增量：是 AssistantMessage 的局部投影，缺少 id 且字段均可缺失 */
+export interface Delta {
+  role?: 'assistant' | null;
+  content?: string | null;
+  reasoning_content?: string;
+  tool_calls?: ToolCallDelta[];
+}
+
 export interface Chunk {
   choices?: Array<{
-    delta?: AssistantMessage;
+    delta?: Delta;
   }>;
 }
 

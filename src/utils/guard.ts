@@ -15,7 +15,22 @@
  */
 
 import type {Message, AssistantMessage} from '../models/Message';
+import type {ToolCallDelta} from '../types';
 
 export const isAssistantMessage = (message: Message): message is AssistantMessage => {
   return message.role === 'assistant' || message.role === null;
+};
+
+/** 聚合只依赖 index，其余字段在 #mergeToolCalls / 归一化阶段再判空 */
+export const isToolCallDeltaArray = (value: unknown): value is ToolCallDelta[] => {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (item: unknown) =>
+        typeof item === 'object' &&
+        item !== null &&
+        'index' in item &&
+        typeof item.index === 'number',
+    )
+  );
 };

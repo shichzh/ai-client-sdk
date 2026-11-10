@@ -17,6 +17,7 @@
 
 import mergeWith from 'lodash-es/mergeWith';
 import type {MCPClient} from '../services/mcp';
+import {isToolCallDeltaArray} from '../utils/guard';
 import {
   createSystemMessage,
   createAssistantMessage,
@@ -24,7 +25,15 @@ import {
   type Message,
   type ToolCall,
 } from '../models/Message';
-import type {AgentOptions, Chunk, Definition, Params, StreamResult, Arguments} from '../types';
+import type {
+  AgentOptions,
+  Chunk,
+  Definition,
+  Params,
+  StreamResult,
+  Arguments,
+  ToolCallDelta,
+} from '../types';
 
 const DEFAULT_MAX_ROUNDS = 4;
 
@@ -159,7 +168,7 @@ export class Agent {
           if (payload !== null) {
             try {
               const json = JSON.parse(payload) as Chunk;
-              result = this.#merge(result, json, ['content', 'arguments', 'reasoning_content']);
+              result = this.#merge(result, json, ['content', 'reasoning_content']);
               yield json;
             } catch (error) {
               console.warn('JSON 解析失败', {error, payload});
@@ -172,21 +181,42 @@ export class Agent {
         }
       }
 
-      const message = result?.choices?.[0]?.delta;
+      const delta = result?.choices?.[0]?.delta;
 
-      if (!message) {
+      if (!delta) {
         return;
       }
 
-      const {content, tool_calls, reasoning_content} = message;
+      const {content, reasoning_content} = delta;
 
-      if (!tool_calls?.length) {
-        return message;
+      // delta 聚合后仍是分片结构，落库/执行前必须归一化成完整的 ToolCall
+      const tool_calls = (delta.tool_calls ?? []).reduce<ToolCall[]>((acc, call) => {
+        if (!call.id || !call.function?.name) {
+          // 缺 id/name 无法与 tool 消息配对，丢弃比用空串污染消息序列安全
+          console.warn('[agent] 丢弃字段不完整的 tool_call：', call);
+          return acc;
+        }
+        acc.push({
+          id: call.id,
+          type: 'function',
+          function: {
+            name: call.function.name,
+            arguments: call.function.arguments ?? '{}',
+          },
+        });
+        return acc;
+      }, []);
+
+      if (!tool_calls.length) {
+        // delta 不是完整消息（没有 id），补全后再交给宿主入档
+        return createAssistantMessage({content: content ?? '', reasoning_content});
       }
 
       // 回填推理内容到 assistant 消息，保证多轮工具调用时思维链不丢失；
       // 值为 undefined 时 JSON.stringify 会自动省略该键，不输出此字段的后端不受影响
-      this.#messages.push(createAssistantMessage({content, tool_calls, reasoning_content}));
+      this.#messages.push(
+        createAssistantMessage({content: content ?? '', tool_calls, reasoning_content}),
+      );
       await this.#executeTools(tool_calls);
 
       // executeTools 内部的 callTool 无法响应 signal 中断，期间发生的 abort 在此处拦截，避免继续发起下一轮
@@ -252,6 +282,13 @@ export class Agent {
       target,
       source,
       (objValue: unknown, srcValue: unknown, key: string) => {
+        // tool_calls 必须按 index 聚合：lodash 默认按数组下标合并，
+        // 而并行工具流的每个 chunk 通常只带一个元素，下标恒为 0，只有 index 能区分调用。
+        // 约定：Chunk 中只有 choices[].delta.tool_calls 一处同名键；形状不符的值由 isToolCallDeltaArray 拦截。
+        // 若未来其他层级引入同名字段，此处需改为路径判断
+        if (key === 'tool_calls') {
+          return this.#mergeToolCalls(objValue, srcValue);
+        }
         // 检查当前键是否需要拼接且都是字符串类型
         if (fieldsToConcat.includes(key)) {
           const objStr = typeof objValue === 'string' ? objValue : '';
@@ -262,6 +299,49 @@ export class Agent {
         return undefined;
       },
     );
+  }
+
+  /**
+   * 按 index 聚合 tool_calls 增量。
+   * id / type / name 只在首个分片出现，arguments 逐帧追加，因此同 index 的字段需要合并，
+   * 不同 index 的调用必须保持独立，最后按 index 排序以稳定执行顺序。
+   * 入参来自 lodash customizer（unknown），由守卫收窄；非法输入按空数组处理，
+   * 同时天然兼容 wire 上常见的 "tool_calls": null。
+   */
+  #mergeToolCalls(target: unknown, source: unknown): ToolCallDelta[] {
+    const targetCalls = isToolCallDeltaArray(target) ? target : [];
+    const sourceCalls = isToolCallDeltaArray(source) ? source : [];
+    const byIndex = new Map<number, ToolCallDelta>();
+
+    // 先复制已有结果，避免后续写入污染上一轮的 result
+    for (const call of targetCalls) {
+      byIndex.set(call.index, {...call, function: call.function && {...call.function}});
+    }
+
+    for (const call of sourceCalls) {
+      // index 在协议中必填，是区分并行调用的唯一依据
+      const current = byIndex.get(call.index) ?? {index: call.index};
+
+      if (call.id) current.id = call.id;
+      if (call.type) current.type = call.type;
+
+      if (call.function?.name) {
+        current.function = {...current.function, name: call.function.name};
+      }
+
+      // 协议规定 arguments 是字符串增量；个别实现发成对象，直接拼接会得到 "[object Object]"
+      const argsDelta = call.function?.arguments;
+      if (typeof argsDelta === 'string' && argsDelta) {
+        current.function = {
+          ...current.function,
+          arguments: (current.function?.arguments ?? '') + argsDelta,
+        };
+      }
+
+      byIndex.set(call.index, current);
+    }
+
+    return [...byIndex.values()].sort((a, b) => a.index - b.index);
   }
 
   async #executeTools(tool_calls: ToolCall[]): Promise<void> {
