@@ -46,6 +46,7 @@ export class Agent {
     roundsLeft: DEFAULT_MAX_ROUNDS,
   };
   #controller: AbortController | null = null;
+  #aborted = false;
   #mcpClient: MCPClient | null = null;
   #messages: Message[] = [];
 
@@ -66,6 +67,15 @@ export class Agent {
   }
 
   abort(): void {
+    this.#aborted = true;
+    this.#abortCurrentController();
+  }
+
+  /**
+   * 仅中止当前 controller 槽位（如果有）。
+   * 与 abort() 不同：不设置 #aborted 标志，避免在 invokeStream 内部自调用时污染跨轮状态。
+   */
+  #abortCurrentController(): void {
     if (this.#controller) {
       this.#controller.abort();
       this.#controller = null;
@@ -81,9 +91,24 @@ export class Agent {
     this.#messages = systemMessage ? [systemMessage] : [];
   }
 
-  async *invokeStream(params: Params = this.#defaultParams): StreamResult {
+  async *invokeStream(params: Params = this.#defaultParams, isRecursive = false): StreamResult {
     const roundsLeft = params.roundsLeft ?? this.#defaultParams.roundsLeft;
-    this.abort();
+
+    if (isRecursive) {
+      // 递归子 generator 启动时：跨轮间隙中 #controller 已被上一轮 finally 清空，
+      // 此时 abort() 只能通过 #aborted 标志传递，必须在此拦截避免发起下一轮 fetch
+      if (this.#aborted) {
+        this.#aborted = false;
+        throw new DOMException('Aborted', 'AbortError');
+      }
+    } else {
+      // 外部新建调用：清除之前可能遗留的 abort 状态，保证 abort 后可以正常发起新请求
+      this.#aborted = false;
+    }
+
+    // 清理可能仍在运行的上一个调用的 controller（消费方未等上一轮完成就发起新一轮的场景）
+    this.#abortCurrentController();
+
     const controller = new AbortController();
     this.#controller = controller;
 
@@ -224,7 +249,7 @@ export class Agent {
 
       // 剩余轮次 > 0 时继续回调
       if (roundsLeft - 1 > 0) {
-        return this.invokeStream({roundsLeft: roundsLeft - 1});
+        return this.invokeStream({roundsLeft: roundsLeft - 1}, true);
       }
     } finally {
       // 中止本次调用的在途请求：正常完成时流已读完，abort 是空操作；
